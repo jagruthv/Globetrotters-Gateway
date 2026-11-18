@@ -7,7 +7,8 @@ import BentoDistrictExplorer from './components/BentoDistrictExplorer';
 import AiFluidTripStudio from './components/AiFluidTripStudio';
 import CircuitShowcase from './components/CircuitShowcase';
 import HolographicGatePass from './components/HolographicGatePass';
-import GateScannerView from './components/GateScannerView';
+import AgentPortalView from './components/AgentPortalView';
+import AgentVerificationModal from './components/AgentVerificationModal';
 import VoiceConciergeModal from './components/VoiceConciergeModal';
 import WhatsAppConcierge from './components/WhatsAppConcierge';
 import CookieConsentBanner from './components/CookieConsentBanner';
@@ -23,8 +24,7 @@ const HASH_MAP = {
   'packages': 'circuits',
   'circuits': 'circuits',
   'passes': 'passes',
-  'tickets': 'passes',
-  'scanner': 'scanner'
+  'tickets': 'passes'
 };
 
 const TAB_TO_HASH = {
@@ -32,8 +32,7 @@ const TAB_TO_HASH = {
   explore: 'districts',
   planner: 'planner',
   circuits: 'packages',
-  passes: 'passes',
-  scanner: 'scanner'
+  passes: 'passes'
 };
 
 const getInitialTab = () => {
@@ -47,14 +46,29 @@ export default function App() {
   const [selectedPlaces, setSelectedPlaces] = useState([]);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-  const [isStaffMode, setIsStaffMode] = useState(false);
+  const [agentVerificationOpen, setAgentVerificationOpen] = useState(false);
+  const [isAgentPortalActive, setIsAgentPortalActive] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const raw = window.location.hash.replace('#/', '').replace('#', '').trim().toLowerCase();
+    return (raw === 'agent' || raw === 'scanner') && localStorage.getItem('globetrotter_is_agent') === 'true';
+  });
+
   const [issuedPassData, setIssuedPassData] = useState(() => {
     try {
       const stored = localStorage.getItem('globetrotter_passes');
       if (stored) {
         const list = JSON.parse(stored);
-        if (Array.isArray(list) && list.length > 0) {
-          return list[0];
+        if (Array.isArray(list)) {
+          // Strictly purge any obsolete demo pass!
+          const clean = list.filter(p => 
+            p && 
+            p.reference !== 'BMS-GT-89421' && 
+            !p.token?.includes('e3b0c442')
+          );
+          if (clean.length !== list.length) {
+            localStorage.setItem('globetrotter_passes', JSON.stringify(clean));
+          }
+          if (clean.length > 0) return clean[0];
         }
       }
       return null;
@@ -72,9 +86,37 @@ export default function App() {
     }
   };
 
+  const handleOpenAgentPortal = () => {
+    const isAgent = localStorage.getItem('globetrotter_is_agent') === 'true';
+    if (isAgent) {
+      setIsAgentPortalActive(true);
+      window.history.pushState(null, '', '#/agent');
+    } else {
+      setAgentVerificationOpen(true);
+    }
+  };
+
+  const handleExitAgentMode = () => {
+    setIsAgentPortalActive(false);
+    setActiveTab('home');
+    window.history.pushState(null, '', '#/');
+  };
+
   useEffect(() => {
     const handleHashSync = () => {
-      setActiveTabState(getInitialTab());
+      const raw = window.location.hash.replace('#/', '').replace('#', '').trim().toLowerCase();
+      if (raw === 'agent' || raw === 'scanner') {
+        const isAgent = localStorage.getItem('globetrotter_is_agent') === 'true';
+        if (isAgent) {
+          setIsAgentPortalActive(true);
+        } else {
+          setIsAgentPortalActive(false);
+          setAgentVerificationOpen(true);
+        }
+      } else {
+        setIsAgentPortalActive(false);
+        setActiveTabState(getInitialTab());
+      }
     };
     window.addEventListener('hashchange', handleHashSync);
     window.addEventListener('popstate', handleHashSync);
@@ -83,15 +125,6 @@ export default function App() {
       window.removeEventListener('popstate', handleHashSync);
     };
   }, []);
-
-  const handleToggleStaffMode = (enable) => {
-    setIsStaffMode(enable);
-    if (enable) {
-      setActiveTab('scanner');
-    } else {
-      setActiveTab('home');
-    }
-  };
 
   // When switching tabs, reset view to top
   useEffect(() => {
@@ -165,6 +198,16 @@ export default function App() {
     setActiveTab('passes');
   };
 
+  // DEDICATED SEPARATE FIELD AGENT INTERFACE
+  if (isAgentPortalActive) {
+    return (
+      <AgentPortalView
+        onExitAgentMode={handleExitAgentMode}
+        passData={issuedPassData}
+      />
+    );
+  }
+
   return (
     <div className="relative min-h-[100dvh] bg-[#06080D] text-slate-100 font-sans-clean overflow-x-hidden selection:bg-cyan-500/20 pb-20 md:pb-0">
       
@@ -174,8 +217,6 @@ export default function App() {
         setActiveTab={setActiveTab}
         selectedPlacesCount={selectedPlaces.length}
         onOpenSettings={() => setSettingsModalOpen(true)}
-        isStaffMode={isStaffMode}
-        onExitStaffMode={() => handleToggleStaffMode(false)}
       />
 
       {/* Main Tab Views with Framer Motion Spring Transition */}
@@ -247,7 +288,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="pt-16"
+              className="pt-28 pb-16"
             >
               <BentoDistrictExplorer
                 onSelectPlaceForTrip={handleSelectPlaceForTrip}
@@ -263,7 +304,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="pt-16"
+              className="pt-28 pb-16"
             >
               <AiFluidTripStudio
                 selectedPlaces={selectedPlaces}
@@ -274,9 +315,10 @@ export default function App() {
                 onBookCustomPlan={(customPlan) => {
                   const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
                   const allStops = (customPlan.days || []).flatMap(d => (d.stops || []).map(s => s.name || s.placeName || s));
+                  const passRef = `APTG-${randomCode}`;
                   setIssuedPassData({
-                    reference: `GT-2026-AI-${randomCode}`,
-                    token: `GT_PASS:CUSTOM:${Date.now()}:ed25519_gemini_${randomCode}`,
+                    reference: passRef,
+                    token: passRef,
                     touristName: 'Verified Visitor',
                     circuitName: customPlan.title || 'Personalized Gemini Circuit Pass',
                     validFrom: new Date().toISOString().split('T')[0],
@@ -298,7 +340,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="pt-16"
+              className="pt-28 pb-16"
             >
               <CircuitShowcase
                 onSelectCircuit={handleSelectCircuit}
@@ -314,7 +356,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="pt-16"
+              className="pt-28 pb-16"
             >
               <HolographicGatePass
                 passData={issuedPassData}
@@ -332,12 +374,18 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="pt-16"
+              className="pt-28 pb-16"
             >
-              <GateScannerView 
-                passData={issuedPassData} 
-                onExitStaffMode={() => handleToggleStaffMode(false)}
-              />
+              <div className="max-w-md mx-auto text-center p-8 bg-[#0D121F] rounded-3xl border border-white/10 flex flex-col items-center gap-4">
+                <h3 className="text-xl font-bold text-white">Field Agent Portal</h3>
+                <p className="text-xs text-slate-400">Gate scanning and ticket verification are hosted in the dedicated Field Agent Console.</p>
+                <button
+                  onClick={handleOpenAgentPortal}
+                  className="px-5 py-2.5 rounded-xl bg-cyan-400 text-slate-950 font-bold text-xs cursor-pointer"
+                >
+                  Enter Agent Portal
+                </button>
+              </div>
             </motion.div>
           )}
 
@@ -373,8 +421,17 @@ export default function App() {
       <SettingsModal
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
-        isStaffMode={isStaffMode}
-        onToggleStaffMode={handleToggleStaffMode}
+        onOpenAgentPortal={handleOpenAgentPortal}
+      />
+
+      {/* Field Agent Verification & Accreditation Modal */}
+      <AgentVerificationModal
+        isOpen={agentVerificationOpen}
+        onClose={() => setAgentVerificationOpen(false)}
+        onAgentApproved={() => {
+          setIsAgentPortalActive(true);
+          window.history.pushState(null, '', '#/agent');
+        }}
       />
 
       {/* Native Mobile Bottom Navigation Dock (iOS / Android Feel) */}
@@ -417,6 +474,13 @@ export default function App() {
               <a href="/terms.html" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors underline-offset-4 hover:underline">
                 Terms & 24-Hr Refund Policy
               </a>
+              <span>•</span>
+              <button
+                onClick={handleOpenAgentPortal}
+                className="hover:text-cyan-300 text-slate-400 transition-colors underline-offset-4 hover:underline cursor-pointer"
+              >
+                Agent Portal
+              </button>
             </div>
           </div>
 

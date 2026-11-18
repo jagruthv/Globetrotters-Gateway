@@ -30,13 +30,26 @@ export default function HolographicGatePass({
 
   // Retrieve booked pass from prop or localStorage
   const activePass = (() => {
-    if (passData) return passData;
+    if (passData && passData.reference !== 'BMS-GT-89421' && !passData.token?.includes('e3b0c442')) {
+      return passData;
+    }
     try {
       const stored = localStorage.getItem('globetrotter_passes');
       if (stored) {
         const list = JSON.parse(stored);
         if (Array.isArray(list) && list.length > 0) {
-          return list[0];
+          // Strictly reject any old unbooked dummy pass!
+          const clean = list.filter(p => 
+            p && 
+            p.reference !== 'BMS-GT-89421' && 
+            !p.token?.includes('e3b0c442')
+          );
+          if (clean.length !== list.length) {
+            localStorage.setItem('globetrotter_passes', JSON.stringify(clean));
+          }
+          if (clean.length > 0) {
+            return clean[0];
+          }
         }
       }
       return null;
@@ -45,11 +58,15 @@ export default function HolographicGatePass({
     }
   })();
 
-  // Real Dynamic QR Code Generator
+  // Real Dynamic QR Code Generator (Encodes clean ticket verification URL or ticket reference)
   useEffect(() => {
-    if (activePass?.token) {
-      QRCode.toDataURL(activePass.token, {
-        width: 300,
+    if (activePass?.reference || activePass?.token) {
+      const qrPayload = activePass.reference 
+        ? `https://globtroter-gateway.pages.dev/#/verify?t=${activePass.reference}`
+        : activePass.token;
+
+      QRCode.toDataURL(qrPayload, {
+        width: 320,
         margin: 1,
         color: {
           dark: '#06080D',
@@ -59,7 +76,7 @@ export default function HolographicGatePass({
       .then((url) => setQrCodeDataUrl(url))
       .catch((err) => console.error('QR Generator Error:', err));
     }
-  }, [activePass?.token]);
+  }, [activePass?.reference, activePass?.token]);
 
   const handleCopyShareLink = () => {
     if (!activePass) return;
@@ -318,10 +335,10 @@ export default function HolographicGatePass({
                     Real Scannable Turnstile QR
                   </span>
                   <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean max-w-xs">
-                    Works 100% offline. Scan with any camera or at the gate scanner to verify entry token.
+                    Works 100% offline. Scan with any phone camera or turnstile reader to verify.
                   </p>
-                  <span className="text-[9px] text-cyan-400 font-mono truncate max-w-[200px]">
-                    Token: {activePass.token}
+                  <span className="text-[10px] text-cyan-300 font-mono font-semibold tracking-wider">
+                    Ticket Code: {activePass.reference}
                   </span>
                 </div>
               </div>

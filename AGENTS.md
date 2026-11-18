@@ -81,3 +81,11 @@ Before claiming any task is complete, run and verify all 4 tiers:
 
 ## Rule 8: Specialized Skills Lookup
 Whenever working on deep tasks (GIS routing, UI design systems, research papers, security hardening), refer to [MASTER_SKILLS_DIRECTORY_AND_SUBTOPIC_ROUTER.md](file:///d:/globtroter's%20gateway/MASTER_SKILLS_DIRECTORY_AND_SUBTOPIC_ROUTER.md) to load the exact skill and read its full instructions.
+
+---
+
+## Rule 9: Dedicated Field Agent Interface & Accreditation
+- **No Public Staff Clutter**: Normal tourists only see consumer features. Never clutter the main navigation dock with operational staff buttons.
+- **Accreditation Request & 5-Second Approval**: Users requesting agent access see the accreditation screen. Submitting a request runs a 5-second verification countdown, after which accreditation is automatically approved (`globetrotter_is_agent: true`).
+- **Dedicated Agent Workspace**: Accredited agents enter a completely separate operational interface with turnstile scanner, live attendance feed, checkpoint selection, and shift stats.
+- **Tourist Mode Return**: Inside the Agent Interface, an explicit "Tourist View" button returns the user directly back to the consumer website.

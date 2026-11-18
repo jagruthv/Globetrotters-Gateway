@@ -1,22 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Scan, 
   CheckCircle, 
   XCircle, 
-  RefreshCw, 
   Wifi, 
   WifiOff, 
-  UploadCloud, 
-  ShieldCheck, 
-  AlertTriangle,
-  FileSpreadsheet,
   ArrowLeft
 } from 'lucide-react';
 import { scannerService } from '../services/api';
 import { 
   verifyPassOffline, 
-  getLedgerStats, 
   syncLedgerToCentralCore 
 } from '../utils/offlineTurnstileLedger';
 
@@ -34,479 +28,302 @@ function playScannerSound(isGranted) {
     gain.connect(ctx.destination);
 
     if (isGranted) {
+      // Crisp positive double-chime
       osc.type = 'sine';
       osc.frequency.setValueAtTime(587.33, ctx.currentTime);
       osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.28);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
       osc.start();
-      osc.stop(ctx.currentTime + 0.28);
+      osc.stop(ctx.currentTime + 0.3);
     } else {
+      // Low buzz alert
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(140, ctx.currentTime);
-      gain.gain.setValueAtTime(0.18, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.32);
+      osc.frequency.setValueAtTime(130, ctx.currentTime);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
       osc.start();
-      osc.stop(ctx.currentTime + 0.32);
+      osc.stop(ctx.currentTime + 0.35);
     }
   } catch {
-    // Graceful fallback
+    // Sound fallback
   }
 }
 
-export default function GateScannerView({ passData = null, onExitStaffMode }) {
-  const [testToken, setTestToken] = useState(
-    passData?.token || 'GT_PASS:89421-AP-TG:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+const CHECKPOINTS = [
+  { id: 1, name: 'Araku Tribal Museum (Alluri Sitharama Raju)' },
+  { id: 2, name: 'Borra Caves Subterranean Gate (Alluri Sitharama Raju)' },
+  { id: 3, name: 'Belum Caves Karst Passage (Nandyal)' },
+  { id: 4, name: 'Coringa Mangrove Boardwalk (Kakinada)' },
+  { id: 5, name: 'Golconda Fort Acoustic Portico (Hyderabad)' },
+  { id: 6, name: 'Ramappa Temple UNESCO Sanctum (Mulugu)' },
+  { id: 7, name: 'Gandikota Fort Gorge View (YSR Kadapa)' }
+];
+
+export default function GateScannerView({ passData = null, onExitAgentMode }) {
+  const [tokenInput, setTokenInput] = useState(
+    passData?.reference || passData?.token || 'APTG-89421'
   );
   const [selectedPlaceId, setSelectedPlaceId] = useState(1);
-  const [verificationResult, setVerificationResult] = useState(null);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncStatusMsg, setSyncStatusMsg] = useState(null);
-
-  // Network & Offline Mode
+  const [verdict, setVerdict] = useState(null); // { success: boolean, touristName: string, message: string }
+  const [isScanning, setIsScanning] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
-  const [workOffline, setWorkOffline] = useState(false);
-  const [ledgerStats, setLedgerStats] = useState(() => getLedgerStats());
 
-  const [scanLog, setScanLog] = useState([
-    { id: 1, text: 'Gate Terminal Ready', time: '10:00 AM', status: 'INFO' }
+  const [recentScans, setRecentScans] = useState([
+    { id: 1, time: '10:00 AM', name: 'Gate Scanner Ready', success: true }
   ]);
 
-  // Keep token synced if user booked new pass
+  // Keep token in sync if new pass was generated
   const [prevPassToken, setPrevPassToken] = useState(passData?.token);
   if (passData?.token && passData.token !== prevPassToken) {
     setPrevPassToken(passData.token);
-    setTestToken(passData.token);
+    setTokenInput(passData.token);
   }
 
+  // Automatic Network Detection & Silent Background Sync
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
+    const handleOnline = () => {
+      setIsOnline(true);
+      // Auto-sync offline check-ins silently without bothering the gate person
+      syncLedgerToCentralCore().catch(() => {});
+    };
     const handleOffline = () => setIsOnline(false);
-    const handleLedgerUpdate = () => setLedgerStats(getLedgerStats());
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    window.addEventListener('globetrotter-ledger-updated', handleLedgerUpdate);
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('globetrotter-ledger-updated', handleLedgerUpdate);
     };
   }, []);
 
-  const effectiveOffline = !isOnline || workOffline;
+  const handleScanPass = async () => {
+    if (!tokenInput.trim() || isScanning) return;
+    setIsScanning(true);
+    setVerdict(null);
 
-  const handleVerifyPass = async () => {
-    setIsVerifying(true);
-    setVerificationResult(null);
-    setSyncStatusMsg(null);
+    const placeObj = CHECKPOINTS.find(c => c.id === Number(selectedPlaceId));
+    const checkpointName = placeObj ? placeObj.name : 'Monument Gate';
 
-    // Offline Verification
-    if (effectiveOffline) {
+    // 1. If device is offline, verify offline immediately
+    if (!isOnline) {
       setTimeout(() => {
-        const offRes = verifyPassOffline(testToken, selectedPlaceId, 'Gate-Terminal-01');
-        setIsVerifying(false);
+        const offRes = verifyPassOffline(tokenInput, selectedPlaceId, checkpointName);
+        setIsScanning(false);
+        const isOk = offRes.valid;
+        playScannerSound(isOk);
 
-        if (offRes.valid) {
-          playScannerSound(true);
-          setVerificationResult({
-            success: true,
-            isOffline: true,
-            message: offRes.message,
-            touristName: offRes.touristName,
-            reference: offRes.reference,
-            timestamp: offRes.timestamp
-          });
+        const result = {
+          success: isOk,
+          touristName: offRes.touristName || (isOk ? 'Verified Visitor' : 'Unknown'),
+          message: isOk ? 'ENTRY GRANTED • ADMIT 1' : offRes.message || 'ENTRY DENIED • INVALID TICKET',
+          isPassback: offRes.isPassback,
+          checkpoint: checkpointName
+        };
 
-          setScanLog((prev) => [
-            { id: Date.now(), text: `Pass Verified (Offline): ${offRes.reference || testToken.slice(0, 16)}`, time: offRes.timestamp, status: 'OFFLINE_OK' },
-            ...prev
-          ]);
-        } else {
-          playScannerSound(false);
-          setVerificationResult({
-            success: false,
-            isOffline: true,
-            isPassback: offRes.isPassback,
-            message: offRes.message,
-            timestamp: new Date().toLocaleTimeString()
-          });
+        setVerdict(result);
+        setRecentScans(prev => [
+          { id: Date.now(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), name: result.touristName, success: isOk },
+          ...prev.slice(0, 4)
+        ]);
 
-          setScanLog((prev) => [
-            { id: Date.now(), text: `Scan Rejected: ${offRes.message}`, time: new Date().toLocaleTimeString(), status: 'ERROR' },
-            ...prev
-          ]);
-        }
-        setLedgerStats(getLedgerStats());
-      }, 150);
+        // Auto-clear after 4 seconds for next visitor
+        setTimeout(() => setVerdict(null), 4000);
+      }, 200);
       return;
     }
 
-    // Online Verification
+    // 2. If online, verify with cloud, fallback to offline if network fails
     try {
       const res = await scannerService.verifyPass({
-        token: testToken,
+        token: tokenInput,
         placeId: selectedPlaceId,
-        turnstileId: 'Gate-Terminal-01'
+        turnstileId: 'Gate-01'
       });
 
       playScannerSound(true);
-      setVerificationResult({
+      const result = {
         success: true,
-        isOffline: false,
-        message: res.message || 'Pass verified successfully. Gate unlocked.',
         touristName: res.touristName || 'Verified Visitor',
-        reference: res.reference || testToken.slice(0, 16),
-        timestamp: new Date().toLocaleTimeString()
-      });
+        message: 'ENTRY GRANTED • ADMIT 1',
+        checkpoint: checkpointName
+      };
 
-      setScanLog((prev) => [
-        { id: Date.now(), text: `Pass Verified: ${res.reference || 'Visitor Pass'}`, time: new Date().toLocaleTimeString(), status: 'SUCCESS' },
-        ...prev
+      setVerdict(result);
+      setRecentScans(prev => [
+        { id: Date.now(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), name: result.touristName, success: true },
+        ...prev.slice(0, 4)
       ]);
-    } catch (err) {
-      if (err.message && (err.message.includes('fetch') || err.message.includes('Network') || err.message.includes('Failed to fetch'))) {
-        // Fallback to offline
-        const offRes = verifyPassOffline(testToken, selectedPlaceId, 'Gate-Terminal-01');
-        if (offRes.valid) {
-          playScannerSound(true);
-          setVerificationResult({
-            success: true,
-            isOffline: true,
-            message: `${offRes.message} (Offline Mode)`,
-            touristName: offRes.touristName,
-            reference: offRes.reference,
-            timestamp: offRes.timestamp
-          });
+      setTimeout(() => setVerdict(null), 4000);
+    } catch {
+      // Silent fallback to local verification
+      const offRes = verifyPassOffline(tokenInput, selectedPlaceId, checkpointName);
+      const isOk = offRes.valid;
+      playScannerSound(isOk);
 
-          setScanLog((prev) => [
-            { id: Date.now(), text: `Pass Verified (Offline Fallback): ${offRes.reference || testToken.slice(0, 16)}`, time: offRes.timestamp, status: 'OFFLINE_OK' },
-            ...prev
-          ]);
-        } else {
-          playScannerSound(false);
-          setVerificationResult({
-            success: false,
-            isOffline: true,
-            isPassback: offRes.isPassback,
-            message: offRes.message,
-            timestamp: new Date().toLocaleTimeString()
-          });
-        }
-        setLedgerStats(getLedgerStats());
-      } else {
-        playScannerSound(false);
-        const isPassback = err.message?.toLowerCase().includes('already used');
-        setVerificationResult({
-          success: false,
-          isOffline: false,
-          isPassback,
-          message: err.message || 'Verification Failed: Invalid or expired pass',
-          timestamp: new Date().toLocaleTimeString()
-        });
+      const result = {
+        success: isOk,
+        touristName: offRes.touristName || (isOk ? 'Verified Visitor' : 'Unknown'),
+        message: isOk ? 'ENTRY GRANTED • ADMIT 1' : offRes.message || 'ENTRY DENIED • INVALID TICKET',
+        isPassback: offRes.isPassback,
+        checkpoint: checkpointName
+      };
 
-        setScanLog((prev) => [
-          { id: Date.now(), text: `Scan Denied: ${err.message}`, time: new Date().toLocaleTimeString(), status: 'ERROR' },
-          ...prev
-        ]);
-      }
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const handleBatchSync = async () => {
-    setIsSyncing(true);
-    setSyncStatusMsg(null);
-    try {
-      const res = await syncLedgerToCentralCore();
-      setSyncStatusMsg({ success: true, text: res.message });
-      setLedgerStats(getLedgerStats());
-      setScanLog((prev) => [
-        { id: Date.now(), text: `Sync complete: ${res.syncedCount} passes uploaded`, time: new Date().toLocaleTimeString(), status: 'SUCCESS' },
-        ...prev
+      setVerdict(result);
+      setRecentScans(prev => [
+        { id: Date.now(), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), name: result.touristName, success: isOk },
+        ...prev.slice(0, 4)
       ]);
-    } catch (err) {
-      setSyncStatusMsg({ success: false, text: err.message });
+      setTimeout(() => setVerdict(null), 4000);
     } finally {
-      setIsSyncing(false);
+      setIsScanning(false);
     }
   };
 
   return (
-    <section id="gate-scanner" className="relative w-full py-16 px-4 md:px-12 bg-[#06080D] text-slate-200">
-      <div className="max-w-5xl mx-auto flex flex-col gap-8">
-        
-        {/* Top Return Anchor & Header */}
-        <div className="flex flex-col gap-4">
-          {onExitStaffMode && (
+    <section className="relative w-full py-16 px-4 md:px-12 bg-[#06080D] text-slate-100 min-h-[85vh]">
+      <div className="max-w-3xl mx-auto flex flex-col gap-6">
+
+        {/* Top Return Button & Status Header */}
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          {onExitAgentMode && (
             <button
-              onClick={onExitStaffMode}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-cyan-300 hover:text-cyan-200 transition-colors w-fit px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 hover:border-cyan-400/30 cursor-pointer"
+              onClick={onExitAgentMode}
+              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-white px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Return to Tourist View</span>
+              <span>Back to Tourist Mode</span>
             </button>
           )}
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-2">
-                <Scan className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="text-[10px] uppercase tracking-wider font-semibold text-cyan-300 font-sans-clean">
-                  Staff Verification Portal
-                </span>
-              </div>
-              <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-white font-sans-clean">
-                Attraction Gate Pass Scanner
-              </h2>
-              <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-xl">
-                Scan visitor entry passes and record check-ins. Works continuously even at remote locations without internet.
-              </p>
-            </div>
-
-            {/* Network Indicator & Offline Toggle */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-xs">
-                {effectiveOffline ? (
-                  <>
-                    <WifiOff className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="text-amber-300 font-semibold text-xs">Offline Mode</span>
-                  </>
-                ) : (
-                  <>
-                    <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-emerald-300 font-semibold text-xs">Online</span>
-                  </>
-                )}
-              </div>
-
-              <label className="flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/10 hover:border-white/20 transition-colors text-xs">
-                <input
-                  type="checkbox"
-                  checked={workOffline}
-                  onChange={(e) => setWorkOffline(e.target.checked)}
-                  className="w-4 h-4 rounded text-cyan-500 accent-cyan-400 cursor-pointer"
-                />
-                <span className="text-slate-300 font-medium">Work Offline</span>
-              </label>
-            </div>
+          {/* Simple Network Indicator (Automatic) */}
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs">
+            {isOnline ? (
+              <>
+                <Wifi className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-300 font-semibold text-[11px]">Online</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-amber-300 font-semibold text-[11px]">Offline Scanner Active</span>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Main Scanner Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* BIG INSTANT VERDICT BANNER (GREEN OR RED) */}
+        <AnimatePresence>
+          {verdict && (
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className={`p-6 sm:p-8 rounded-3xl border-2 flex flex-col items-center justify-center text-center gap-3 shadow-2xl ${
+                verdict.success
+                  ? 'bg-emerald-950/90 border-emerald-400 text-emerald-100'
+                  : 'bg-rose-950/90 border-rose-400 text-rose-100'
+              }`}
+            >
+              {verdict.success ? (
+                <CheckCircle className="w-20 h-20 text-emerald-400 animate-bounce" />
+              ) : (
+                <XCircle className="w-20 h-20 text-rose-400" />
+              )}
+
+              <div className="flex flex-col gap-1">
+                <span className="text-3xl sm:text-4xl font-extrabold tracking-tight font-sans-clean">
+                  {verdict.message}
+                </span>
+                <span className="text-base sm:text-lg font-bold text-white mt-1">
+                  Visitor: {verdict.touristName}
+                </span>
+                <span className="text-xs text-slate-300 font-mono">
+                  {verdict.checkpoint}
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* SCANNER WORKSPACE CARD */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-[#0B0F17] border border-white/10 shadow-xl flex flex-col gap-5">
           
-          {/* Left Column: Verification Scanner Interface (7 Cols) */}
-          <div className="md:col-span-7">
-            <div className="rounded-3xl bg-[#0B0F17] border border-white/10 p-6 flex flex-col gap-5 shadow-xl">
-              
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <span className="text-xs font-bold text-white tracking-wide">
-                  Scanner Terminal 01
-                </span>
-                <span className={`text-[11px] font-medium ${effectiveOffline ? 'text-amber-400' : 'text-emerald-400'}`}>
-                  {effectiveOffline ? 'Offline Ready' : 'System Connected'}
-                </span>
-              </div>
-
-              {/* Pass Code / QR Input */}
-              <div className="flex flex-col gap-2">
-                <label className="text-xs text-slate-300 font-medium flex items-center justify-between">
-                  <span>Pass Code or QR Token</span>
-                  {isVerifying && (
-                    <span className="text-[11px] text-cyan-300 animate-pulse">Checking pass...</span>
-                  )}
-                </label>
-                <textarea
-                  rows={3}
-                  value={testToken}
-                  onChange={(e) => setTestToken(e.target.value)}
-                  placeholder="Paste or scan visitor pass token..."
-                  className="w-full p-3 rounded-2xl bg-white/[0.03] border border-white/10 text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-400/50 resize-none"
-                />
-              </div>
-
-              {/* Attraction Gate Location Select */}
-              <div className="flex flex-col gap-2">
-                <label className="text-xs text-slate-300 font-medium">
-                  Checkpoint Location
-                </label>
-                <select
-                  value={selectedPlaceId}
-                  onChange={(e) => setSelectedPlaceId(Number(e.target.value))}
-                  className="w-full h-11 px-3 rounded-2xl bg-[#080B11] border border-white/10 text-xs text-slate-200 focus:outline-none focus:border-cyan-400/50"
-                >
-                  <option value={1}>1 • Araku Tribal Museum (Alluri Sitharama Raju)</option>
-                  <option value={2}>2 • Borra Caves Main Gate (Alluri Sitharama Raju)</option>
-                  <option value={3}>3 • Belum Caves Entrance (Nandyal)</option>
-                  <option value={4}>4 • Coringa Mangrove Boardwalk (Kakinada)</option>
-                  <option value={5}>5 • Golconda Fort Main Portico (Hyderabad)</option>
-                  <option value={6}>6 • Ramappa Temple UNESCO Gate (Mulugu)</option>
-                  <option value={7}>7 • Gandikota Fort Gorge Checkpoint (YSR Kadapa)</option>
-                </select>
-              </div>
-
-              {/* Scan Trigger Button */}
-              <button
-                disabled={isVerifying || !testToken}
-                onClick={handleVerifyPass}
-                className="w-full py-3.5 rounded-2xl bg-cyan-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 hover:bg-cyan-300 transition-colors shadow-md disabled:bg-slate-800 disabled:text-slate-500 cursor-pointer"
-              >
-                {isVerifying ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    <span>Verifying Pass...</span>
-                  </>
-                ) : (
-                  <>
-                    <Scan className="w-4 h-4" />
-                    <span>Verify Pass & Open Gate</span>
-                  </>
-                )}
-              </button>
-
-              {/* Verification Result Card */}
-              {verificationResult && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className={`p-4 rounded-2xl border flex items-start gap-3.5 ${
-                    verificationResult.success
-                      ? 'bg-emerald-500/10 border-emerald-400/40 text-emerald-300'
-                      : 'bg-red-500/10 border-red-500/30 text-red-300'
-                  }`}
-                >
-                  {verificationResult.success ? (
-                    <CheckCircle className="w-5 h-5 flex-shrink-0 text-emerald-400 mt-0.5" />
-                  ) : (
-                    <XCircle className="w-5 h-5 flex-shrink-0 text-red-400 mt-0.5" />
-                  )}
-                  <div className="flex flex-col text-xs w-full">
-                    <div className="flex items-center justify-between">
-                      <span className={`font-bold text-sm tracking-wide ${
-                        verificationResult.success ? 'text-emerald-300' : 'text-red-300'
-                      }`}>
-                        {verificationResult.success ? 'ENTRY APPROVED' : 'ENTRY DECLINED'}
-                      </span>
-                      {verificationResult.isOffline && (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-medium border border-amber-400/30">
-                          Offline Mode
-                        </span>
-                      )}
-                    </div>
-                    <span className="mt-1 text-slate-200">{verificationResult.message}</span>
-                    {verificationResult.touristName && (
-                      <span className="text-slate-400 mt-1 text-[11px]">
-                        Visitor: {verificationResult.touristName} • Ref: {verificationResult.reference}
-                      </span>
-                    )}
-                    {verificationResult.isPassback && (
-                      <div className="mt-2 p-2 rounded-xl bg-red-950/40 border border-red-500/40 text-red-200 text-[11px] flex items-center gap-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                        <span>Pass Already Checked In: This ticket has already been used at this entrance.</span>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              )}
-
-            </div>
+          {/* Checkpoint Dropdown */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">
+              Gate Checkpoint
+            </label>
+            <select
+              value={selectedPlaceId}
+              onChange={(e) => setSelectedPlaceId(Number(e.target.value))}
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-cyan-400 cursor-pointer font-sans-clean"
+            >
+              {CHECKPOINTS.map((cp) => (
+                <option key={cp.id} value={cp.id} className="bg-[#0B0F17] text-white">
+                  {cp.name}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Right Column: Check-in Activity & Offline Sync (5 Cols) */}
-          <div className="md:col-span-5 flex flex-col gap-4">
-            
-            {/* Sync Panel */}
-            <div className="p-5 rounded-3xl bg-[#0B0F17] border border-white/10 flex flex-col gap-3 shadow-xl">
-              <div className="flex items-center justify-between">
+          {/* QR Token Input / Simulation Area */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono flex items-center justify-between">
+              <span>Scanned Ticket Token</span>
+              <span className="text-[10px] text-cyan-400 font-normal">Ready for optical reader or camera</span>
+            </label>
+            <input
+              type="text"
+              value={tokenInput}
+              onChange={(e) => setTokenInput(e.target.value)}
+              placeholder="Scan QR code or enter token..."
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-cyan-400"
+            />
+          </div>
+
+          {/* Giant Scan Button */}
+          <button
+            onClick={handleScanPass}
+            disabled={isScanning || !tokenInput.trim()}
+            className="w-full py-4 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-extrabold text-base flex items-center justify-center gap-2.5 transition-all shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.99]"
+          >
+            {isScanning ? (
+              <span>Verifying Ticket...</span>
+            ) : (
+              <>
+                <Scan className="w-5 h-5 text-slate-950" />
+                <span>Verify Ticket & Check In</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* RECENT SCAN ACTIVITY (SIMPLE GREEN / RED LOG) */}
+        <div className="p-4 rounded-2xl bg-[#0B0F17] border border-white/5 flex flex-col gap-2.5">
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
+            Recent Gate Scans
+          </span>
+          <div className="flex flex-col gap-1.5">
+            {recentScans.map((scan) => (
+              <div 
+                key={scan.id}
+                className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-xs font-sans-clean"
+              >
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                  <span className="text-xs font-bold text-white">
-                    Offline Sync Queue
+                  <span className={`w-2.5 h-2.5 rounded-full ${scan.success ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                  <span className="font-medium text-white">{scan.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-bold ${scan.success ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {scan.success ? 'APPROVED' : 'DENIED'}
                   </span>
+                  <span className="text-[10px] text-slate-500 font-mono">{scan.time}</span>
                 </div>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/5 text-cyan-300">
-                  {ledgerStats.pending} Pending
-                </span>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                When network coverage is restored, sync your offline scan records to the central database.
-              </p>
-
-              <button
-                disabled={isSyncing || ledgerStats.pending === 0}
-                onClick={handleBatchSync}
-                className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-400/40 text-slate-200 hover:text-cyan-300 font-semibold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {isSyncing ? (
-                  <>
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-                    <span>Syncing Records...</span>
-                  </>
-                ) : (
-                  <>
-                    <UploadCloud className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Sync {ledgerStats.pending} Offline Scans</span>
-                  </>
-                )}
-              </button>
-
-              <a
-                href="http://localhost:8085/api/admin/analytics/export-csv"
-                download="globetrotter_daily_tourism_report.csv"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-400/60 text-emerald-300 hover:text-emerald-200 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer no-underline"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Export Daily Check-in Report (CSV)</span>
-              </a>
-
-              {syncStatusMsg && (
-                <div className={`p-2.5 rounded-xl text-xs ${
-                  syncStatusMsg.success ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30' : 'bg-red-950/40 text-red-300 border border-red-500/30'
-                }`}>
-                  {syncStatusMsg.text}
-                </div>
-              )}
-            </div>
-
-            {/* Recent Scans Log */}
-            <div className="p-5 rounded-3xl bg-[#0B0F17] border border-white/10 flex flex-col gap-3 flex-1 shadow-xl">
-              <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-                <span className="text-xs font-bold text-white">
-                  Recent Scans
-                </span>
-                <span className="text-[10px] text-slate-400">
-                  Live Feed
-                </span>
-              </div>
-
-              <div className="space-y-2 overflow-y-auto max-h-[220px] scrollbar-none flex-1 text-xs">
-                {scanLog.map((log) => (
-                  <div
-                    key={log.id}
-                    className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-2"
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${
-                        log.status === 'SUCCESS' ? 'bg-emerald-400' :
-                        log.status === 'OFFLINE_OK' ? 'bg-amber-400' :
-                        log.status === 'ERROR' ? 'bg-red-400' : 'bg-slate-400'
-                      }`} />
-                      <span className="text-slate-300 truncate text-[11px]">{log.text}</span>
-                    </div>
-                    <span className="text-slate-500 text-[10px] shrink-0">{log.time}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+            ))}
           </div>
-
         </div>
 
       </div>

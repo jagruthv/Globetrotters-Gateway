@@ -11,8 +11,7 @@ import {
   ChevronRight,
   User,
   LogOut,
-  Settings,
-  Shield
+  Settings
 } from 'lucide-react';
 import AuthModal from './AuthModal';
 
@@ -20,9 +19,7 @@ export default function FloatingIslandNav({
   activeTab, 
   setActiveTab, 
   selectedPlacesCount = 0,
-  onOpenSettings,
-  isStaffMode = false,
-  onExitStaffMode
+  onOpenSettings
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -119,26 +116,13 @@ export default function FloatingIslandNav({
           })}
         </div>
 
-        {/* Right Action: Audio Guide, Settings & Auth Button */}
+        {/* Right Action: Settings & Auth Button */}
         <div className="flex items-center gap-2 pr-1">
-          {/* Staff Mode Active Pill */}
-          {isStaffMode && (
-            <button
-              onClick={onExitStaffMode}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-semibold hover:bg-amber-500/30 transition-colors cursor-pointer"
-              title="Click to Exit Staff Mode"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Exit Staff Mode</span>
-            </button>
-          )}
-
-
           {/* Settings & Preferences Button */}
           <button
             onClick={onOpenSettings}
             className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-            title="Settings & Staff Portal"
+            title="Settings & Preferences"
             aria-label="Settings"
           >
             <Settings className="w-3.5 h-3.5" />
@@ -284,7 +268,7 @@ export default function FloatingIslandNav({
               >
                 <div className="flex items-center gap-3.5">
                   <Settings className="w-5 h-5 text-cyan-400" />
-                  <span className="font-semibold text-base">Settings & Staff Portal</span>
+                  <span className="font-semibold text-base">Settings & Preferences</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-500" />
               </button>

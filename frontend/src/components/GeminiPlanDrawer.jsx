@@ -44,10 +44,10 @@ function runAgentTool(toolName, _params, planToUse, onBookPass, latestPlan, curr
   const touristName = user?.fullName || 'Verified Explorer';
 
   if (toolName === 'book_pass') {
-    const orderRef = `BMS-GT-${Math.floor(10000 + Math.random() * 90000)}`;
+    const orderRef = `APTG-${Math.floor(10000 + Math.random() * 90000)}`;
     const newPass = {
       reference: orderRef,
-      token: `GT_PASS:${orderRef}:${Date.now()}`,
+      token: orderRef,
       touristName,
       circuitName: planToUse?.title || 'Custom Curated Tour Pass',
       validFrom: 'Today',

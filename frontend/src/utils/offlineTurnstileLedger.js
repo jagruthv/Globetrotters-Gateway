@@ -89,9 +89,15 @@ export function verifyPassOffline(passToken, placeId, gateTerminalId = 'Gate-Alp
 
   // 2. Syntax & Token Structural Validation
   // Supported tokens:
-  // - "GT_PASS:<ref>-<corridor>:<hash>"
+  // - "APTG-89421"
   // - "GT-2026-APTG-..."
-  const isGtPass = cleanToken.startsWith('GT_') || cleanToken.startsWith('GT-') || cleanToken.length >= 24;
+  // - "GT_PASS:<ref>-<corridor>:<hash>"
+  const isGtPass = 
+    cleanToken.startsWith('APTG-') || 
+    cleanToken.startsWith('GT-') || 
+    cleanToken.startsWith('GT_') || 
+    cleanToken.includes('APTG') || 
+    cleanToken.length >= 8;
 
   if (!isGtPass) {
     return {
