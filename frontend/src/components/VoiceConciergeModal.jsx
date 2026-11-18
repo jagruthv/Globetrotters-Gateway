@@ -27,7 +27,7 @@ const HERITAGE_STORIES = [
     languages: {
       en: {
         title: 'The Miracle of Floating Bricks at Ramappa',
-        narrative: "Welcome to Sri Rudreshwara Temple, famously known as Ramappa Temple, constructed in 1213 AD by General Recharla Rudra during the reign of Kakatiya King Ganapati Deva. This is the only temple in India named after its chief sculptor, Ramappa. The temple is an engineering marvel: its roof is constructed using bricks so light and porous that they actually float on water! Furthermore, Kakatiya engineers laid the foundation using an innovative 'sandbox technique'—a subterranean bed of sand, jaggery, and karakkaya fruit paste that acted as an earthquake damper, preserving these intricately carved black basalt pillars through multiple major earthquakes over eight centuries."
+        narrative: "Welcome to Sri Rudreshwara Temple, famously known as Ramappa Temple, constructed in 1213 AD by General Recharla Rudra during the reign of Kakatiya King Ganapati Deva. This is the only temple in India named after its chief sculptor, Ramappa. The temple is an engineering marvel: its roof is constructed using bricks so light and porous that they actually float on water! Furthermore, Kakatiya engineers laid the foundation using an innovative 'sandbox technique'—an underground bed of sand, jaggery, and karakkaya fruit paste that acted as an earthquake damper, preserving these intricately carved black basalt pillars through multiple major earthquakes over eight centuries."
       },
       te: {
         title: 'రామప్ప గుడి: నీటిపై తేలే ఇటుకల అద్భుతం',
@@ -49,7 +49,7 @@ const HERITAGE_STORIES = [
     languages: {
       en: {
         title: 'Charminar and the Whispering Laad Bazaar',
-        narrative: "Standing proudly in the heart of Hyderabad, Charminar was commissioned in 1591 by Muhammad Quli Qutb Shah, the fifth sultan of the Qutb Shahi dynasty, to commemorate the end of a catastrophic plague epidemic that devastated the city. Constructed of granite, lime, mortar, and pulverized marble, its four majestic minarets rise 48.7 meters into the sky. Legend has it that a secret subterranean vault and escape tunnel runs 9 kilometers underground connecting Charminar directly to Golconda Fort."
+        narrative: "Standing proudly in the heart of Hyderabad, Charminar was commissioned in 1591 by Muhammad Quli Qutb Shah, the fifth sultan of the Qutb Shahi dynasty, to commemorate the end of a catastrophic plague epidemic that devastated the city. Constructed of granite, lime, mortar, and pulverized marble, its four majestic minarets rise 48.7 meters into the sky. Legend has it that a secret underground tunnel runs 9 kilometers connecting Charminar directly to Golconda Fort."
       },
       te: {
         title: 'చార్మినార్: మహమ్మారి ముగింపుకు చిహ్నం',
@@ -63,15 +63,15 @@ const HERITAGE_STORIES = [
   },
   {
     id: 'borra-caves',
-    title: 'Borra Caves: Million-Year Karst Wonders',
+    title: 'Borra Caves: Ancient Million-Year Wonders',
     district: 'Alluri Sitharama Raju, Andhra Pradesh',
     duration: '1 min 40 sec',
     image: '/images/aptourism/borra_caves.jpg',
-    standout: 'Subterranean Karst Formations',
+    standout: 'Ancient Limestone Caves',
     languages: {
       en: {
-        title: 'Subterranean Karst Chambers of Borra',
-        narrative: "Deep in the Ananthagiri hill ranges of the Eastern Ghats, Borra Caves descend over 90 meters underground. Formed over millions of years by the perennial Gosthani River carving through crystalline limestone, these are among the deepest karst caves in the Indian subcontinent. British geologist William King discovered them in 1807. Inside, towering stalactites hanging from the ceiling and stalagmites rising from the floor form surreal natural sculptures revered by indigenous tribal communities."
+        title: 'Ancient Limestone Chambers of Borra',
+        narrative: "Deep in the Ananthagiri hill ranges of the Eastern Ghats, Borra Caves descend over 90 meters underground. Formed over millions of years by the flowing Gosthani River carving through natural limestone, these are among the deepest caves in the Indian subcontinent. British geologist William King discovered them in 1807. Inside, towering stalactites hanging from the ceiling and stalagmites rising from the floor form surreal natural sculptures revered by indigenous tribal communities."
       },
       te: {
         title: 'బొర్రా గుహలు: మిలియన్ ఏళ్ల సహజ గుహల అద్భుతం',

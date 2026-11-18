@@ -88,7 +88,7 @@ const HERO_DESTINATIONS = [
     state: 'Andhra Pradesh',
     image: '/images/aptourism/borra_caves.jpg',
     secondaryImage: '/images/aptourism/araku.jpg',
-    tag: 'NATURAL LIMESTONE KARST',
+    tag: 'NATURAL LIMESTONE CAVES',
     isTicketed: true,
     entryType: 'Official APTDC Ticketed Caverns',
     groundRate: 40,
@@ -100,7 +100,7 @@ const HERO_DESTINATIONS = [
     rating: '4.7 (18,400+ reviews)',
     advisory: 'CAVE SAFETY ADVISORY: Cave interior floor is moist limestone; wear sturdy footwear with grip. Still camera fee is ₹100 collected separately at gate.',
     foodTip: 'Famous Araku Bamboo Chicken cooked inside green bamboo shoots over wood embers (₹200–₹250), hot Araku Arabica coffee at mountain ridge stalls.',
-    tagline: 'Deep subterranean karst caves descending 80 meters into the misty Eastern Ghats mountains.',
+    tagline: 'Deep limestone caves descending 80 meters into the scenic Eastern Ghats mountains.',
     policyNotice: 'Ticketed Attraction: Official APTDC entry ticket is ₹40 / Person. Digital entry pass gives direct access through the gate scanner.'
   },
   {

@@ -58,7 +58,7 @@ const SIGNATURE_CIRCUITS = [
     passPrice: 310,
     savings: '32% Savings',
     image: '/images/aptourism/borra_caves.jpg',
-    description: 'Million-year-old subterranean karst limestone, organic high-altitude coffee estates, and cloud valleys.'
+    description: 'Ancient million-year-old limestone caves, organic coffee gardens, and scenic misty hill valleys.'
   }
 ];
 

@@ -356,7 +356,7 @@ export default function BentoDistrictExplorer({
             Showing <strong className="text-white font-telemetry">{filteredDistricts.length}</strong> of 59 Verified Districts
           </span>
           <span className="hidden sm:inline text-slate-500">
-            Click any district to explore spots, local food & live telemetry
+            Click any district to view places to visit, ticket fees, and travel tips
           </span>
         </div>
 
@@ -485,7 +485,7 @@ export default function BentoDistrictExplorer({
                       {/* Flagship Top Highlights Preview */}
                       {isFlagship && district.spots.length > 1 && (
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] text-slate-500 font-telemetry">Top Highlights:</span>
+                          <span className="text-[10px] text-slate-500 font-sans-clean font-medium">Top Sights:</span>
                           {district.spots.slice(0, 3).map((s) => (
                             <span
                               key={s.name}
