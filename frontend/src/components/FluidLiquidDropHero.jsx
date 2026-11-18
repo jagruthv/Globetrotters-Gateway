@@ -21,19 +21,6 @@ import {
   Sparkles
 } from 'lucide-react';
 
-function HeroMetric({ targetNumber, suffix = '', label }) {
-  return (
-    <div className="flex flex-col">
-      <span className="font-telemetry font-bold text-lg md:text-xl text-white">
-        {targetNumber}{suffix}
-      </span>
-      <span className="text-[11px] text-slate-400 font-sans-clean font-medium">
-        {label}
-      </span>
-    </div>
-  );
-}
-
 // Curated authentic showcase destinations with verified government status & real local photography
 const HERO_DESTINATIONS = [
   {
@@ -218,7 +205,7 @@ export default function FluidLiquidDropHero({
   };
 
   return (
-    <div className="relative min-h-[100dvh] w-full overflow-hidden bg-[#06080D] flex flex-col justify-between pt-24 md:pt-32 pb-16 px-4 md:px-12 select-none">
+    <div className="relative min-h-[100dvh] w-full overflow-hidden bg-[#080A0F] flex flex-col justify-center pt-16 sm:pt-20 pb-4 px-4 md:px-8 lg:px-12 select-none">
       
       {/* Cinematic Ambient Destination Photography Background */}
       <div className="absolute inset-0 z-0">
@@ -243,24 +230,24 @@ export default function FluidLiquidDropHero({
         <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-amber-600/10 rounded-full blur-[150px] pointer-events-none" />
       </div>
 
-      {/* Main Content Grid: Balanced Typography + Luxury Destination Showcase */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center flex-1 my-auto">
+      {/* Main Content Grid: Proportional Typography + Viewport-Disciplined Tourism Dock */}
+      <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center my-auto">
         
-        {/* Left Column: Official Government Tourism Authority & Smart Travel Dock */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
+        {/* Left Column: Official Authority, Compact Title & Travel Dock */}
+        <div className="lg:col-span-7 flex flex-col gap-2.5 sm:gap-3">
           
-          {/* Official Government Tourism Header Pill */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 w-max backdrop-blur-xl">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="text-[11px] font-medium text-emerald-300 font-sans-clean">
+          {/* Header Pill */}
+          <div className="flex items-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 w-max backdrop-blur-xl">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span className="text-[10px] font-medium text-emerald-300 font-sans-clean">
                 Smart Tourism Gateway • Andhra Pradesh & Telangana
               </span>
             </div>
           </div>
 
-          {/* Majestic Hero Headline */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08] font-sans-clean max-w-2xl">
+          {/* Authoritative Responsive Headline */}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-[42px] font-extrabold tracking-tight text-white leading-[1.12] font-sans-clean max-w-xl">
             Explore Andhra & Telangana.{' '}
             <span className="text-amber-400">
               Travel Authentically.
@@ -268,26 +255,41 @@ export default function FluidLiquidDropHero({
           </h1>
 
           {/* Value Proposition */}
-          <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl font-sans-clean">
-            Your verified companion across all 59 districts and 646 destinations. Get authentic local guides for free public sights, instant QR entry passes for ticketed monuments, and honest scam alerts with zero hidden markups.
+          <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed max-w-lg font-sans-clean">
+            Your verified companion across all 59 districts and 646 destinations. Authentic local guides for free sights, instant QR passes for ticketed monuments, and scam alerts with zero markups.
           </p>
 
-          {/* Live Telemetry Metrics Row (Animated via GreenSock GSAP 3.15) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-md max-w-2xl">
-            <HeroMetric targetNumber={59} label="Districts Verified" />
-            <HeroMetric targetNumber={646} label="Destinations Cataloged" />
-            <HeroMetric targetNumber={8} label="Signature Tours" />
-            <HeroMetric targetNumber={100} suffix="%" label="Offline Capable" />
+          {/* Live Telemetry Metrics Row: Streamlined High-Density Pill Strip */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 py-0.5 text-xs font-sans-clean">
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono font-bold text-amber-400 text-sm">59</span>
+              <span className="text-slate-400 text-[11px]">Districts Verified</span>
+            </div>
+            <span className="text-white/20 hidden sm:inline">•</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono font-bold text-amber-400 text-sm">646</span>
+              <span className="text-slate-400 text-[11px]">Destinations</span>
+            </div>
+            <span className="text-white/20 hidden sm:inline">•</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono font-bold text-amber-400 text-sm">8</span>
+              <span className="text-slate-400 text-[11px]">Signature Tours</span>
+            </div>
+            <span className="text-white/20 hidden sm:inline">•</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono font-bold text-emerald-400 text-sm">100%</span>
+              <span className="text-slate-400 text-[11px]">Offline Capable</span>
+            </div>
           </div>
 
           {/* Modern Floating Tourism Dock (Apple & High-End Government Travel Portal) */}
-          <div className="w-full max-w-3xl rounded-2xl bg-[#0E121A]/95 border border-white/10 p-4 sm:p-5 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="w-full max-w-2xl rounded-2xl bg-[#0E121A]/95 border border-white/10 p-3 sm:p-3.5 backdrop-blur-3xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] flex flex-col gap-2">
             
             {/* Top Row: Destination, Date, Visitors */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pb-3.5 border-b border-white/10">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-2 border-b border-white/10">
               
               {/* 1. Destination Selector */}
-              <div className="flex flex-col px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
+              <div className="flex flex-col px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
                 <label htmlFor="hero-dest-select" className="text-[10px] text-slate-400 font-medium flex items-center gap-1 font-sans-clean">
                   <MapPin className="w-3 h-3 text-amber-400" />
                   <span>Destination</span>
@@ -300,7 +302,7 @@ export default function FluidLiquidDropHero({
                     const foundIdx = HERO_DESTINATIONS.findIndex(d => d.id === e.target.value);
                     if (foundIdx !== -1) handleSelectDestination(foundIdx);
                   }}
-                  className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-1 truncate"
+                  className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-0.5 truncate"
                 >
                   {HERO_DESTINATIONS.map((d) => (
                     <option key={d.id} value={d.id} className="bg-[#0B0F17] text-white">
@@ -311,7 +313,7 @@ export default function FluidLiquidDropHero({
               </div>
 
               {/* 2. Date Selector */}
-              <div className="flex flex-col px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
+              <div className="flex flex-col px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
                 <label htmlFor="hero-date-select" className="text-[10px] text-slate-400 font-medium flex items-center gap-1 font-sans-clean">
                   <Calendar className="w-3 h-3 text-emerald-400" />
                   <span>Date of Visit</span>
@@ -321,7 +323,7 @@ export default function FluidLiquidDropHero({
                   aria-label="Select date of visit"
                   value={travelDate}
                   onChange={(e) => setTravelDate(e.target.value)}
-                  className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-1"
+                  className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-0.5"
                 >
                   <option value="Today" className="bg-[#0B0F17] text-white">Today</option>
                   <option value="Tomorrow" className="bg-[#0B0F17] text-white">Tomorrow</option>
@@ -331,7 +333,7 @@ export default function FluidLiquidDropHero({
               </div>
 
               {/* 3. Guests Selector */}
-              <div className="flex flex-col px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
+              <div className="flex flex-col px-2.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
                 <label htmlFor="hero-guests-select" className="text-[10px] text-slate-400 font-medium flex items-center gap-1 font-sans-clean">
                   <Users className="w-3 h-3 text-amber-400" />
                   <span>Travelers</span>
@@ -341,7 +343,7 @@ export default function FluidLiquidDropHero({
                   aria-label="Select number of travelers"
                   value={travelersCount}
                   onChange={(e) => setTravelersCount(Number(e.target.value))}
-                  className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-1"
+                  className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-0.5"
                 >
                   <option value={1} className="bg-[#0B0F17] text-white">1 Solo Traveler</option>
                   <option value={2} className="bg-[#0B0F17] text-white">2 Guests</option>
@@ -353,84 +355,84 @@ export default function FluidLiquidDropHero({
 
             </div>
 
-            {/* Middle Row: Official Ground Policy Banner & Optional Curated Audio Walk */}
-            <div className="py-3 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-sans-clean">
+            {/* Middle Row: Ground Status & Audio Walk */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-sans-clean">
               
               {/* Ground Truth Status */}
-              <div className="flex items-center gap-2.5">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+              <div className="flex items-center gap-2">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
                   activeDest.isTicketed ? 'bg-amber-500/15 text-amber-300' : 'bg-emerald-500/15 text-emerald-300'
                 }`}>
-                  {activeDest.isTicketed ? <Ticket className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                  {activeDest.isTicketed ? <Ticket className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
                 </div>
                 <div className="flex flex-col">
-                  <span className={`font-bold text-xs ${activeDest.isTicketed ? 'text-amber-300' : 'text-emerald-300'}`}>
+                  <span className={`font-bold text-[11px] ${activeDest.isTicketed ? 'text-amber-300' : 'text-emerald-300'}`}>
                     {activeDest.isTicketed 
                       ? `Official Entry Ticket: ₹${activeDest.groundRate} / Person (${activeDest.authority})` 
-                      : 'Free Public Heritage • No Ticket or Pass Required'}
+                      : 'Free Public Heritage • No Pass Required'}
                   </span>
                   <span className="text-[10px] text-slate-400">
                     {activeDest.isTicketed 
-                       ? 'Approved government rate • Direct QR gate entry' 
-                      : 'Open public square. Never pay street touts or unauthorized guides.'}
+                       ? 'Approved rate • Direct QR gate entry' 
+                      : 'Open public square. Never pay unauthorized touts.'}
                   </span>
                 </div>
               </div>
 
-              {/* Optional High-ROI Audio Guide Add-On */}
-              <label className="flex items-center gap-2 cursor-pointer p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-colors flex-shrink-0">
+              {/* Optional Audio Guide Add-On */}
+              <label className="flex items-center gap-1.5 cursor-pointer px-2 py-1 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-colors flex-shrink-0">
                 <input
                   type="checkbox"
                   checked={addAudioTour}
                   onChange={(e) => setAddAudioTour(e.target.checked)}
-                  className="w-4 h-4 rounded text-amber-400 bg-slate-900 border-white/20 focus:ring-0 cursor-pointer"
+                  className="w-3.5 h-3.5 rounded text-amber-400 bg-slate-900 border-white/20 focus:ring-0 cursor-pointer"
                 />
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-200">
+                <div className="flex items-center gap-1 text-[10px] text-slate-200">
                   <Headphones className="w-3 h-3 text-amber-400" />
-                  <span>Curated Audio Walk (+₹{activeDest.audioTourPrice})</span>
+                  <span>Audio Walk (+₹{activeDest.audioTourPrice})</span>
                 </div>
               </label>
 
             </div>
 
-            {/* Bottom Row: Transparent Price & Intelligent Action Button */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3">
+            {/* Bottom Row: Transparent Price & Single-Touch Action Button */}
+            <div className="flex items-center justify-between gap-3 pt-1.5 border-t border-white/5">
               
-              <div className="flex items-center gap-2 text-xs font-sans-clean w-full sm:w-auto">
-                <span className="text-slate-400">Total:</span>
+              <div className="flex items-center gap-1.5 text-xs font-sans-clean">
+                <span className="text-slate-400 text-[11px]">Total:</span>
                 <span className="font-extrabold text-sm text-white">
                   {totalPayable === 0 ? 'Free (₹0.00)' : `₹${totalPayable}.00`}
                 </span>
                 {activeDest.isTicketed && (
-                  <span className="text-[10px] text-slate-500">
-                    (Includes ₹15 state digital gate fee)
+                  <span className="text-[9px] text-slate-500 hidden sm:inline">
+                    (Includes state gate fee)
                   </span>
                 )}
               </div>
 
-              {/* Action Button: Adapts to Free Guide vs Ticket Booking */}
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              {/* Action Button */}
+              <div>
                 {!activeDest.isTicketed && !addAudioTour ? (
                   <button
                     onClick={() => setGuideModalOpen(true)}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                    className="px-4 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <FileText className="w-3.5 h-3.5 text-amber-400" />
-                    <span>View Free Visitor Guide & Map</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <span>View Free Guide & Map</span>
+                    <ChevronRight className="w-3 h-3" />
                   </button>
                 ) : (
                   <button
                     onClick={handlePrimaryAction}
-                    className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-[0.98] cursor-pointer"
+                    className="px-5 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all shadow-md active:scale-[0.98] cursor-pointer"
                   >
                     <span>
                       {activeDest.isTicketed 
-                        ? `Book Official e-Ticket • ₹${totalPayable}` 
-                        : `Get Verified Guide + Audio • ₹${totalPayable}`}
+                        ? `Book e-Ticket • ₹${totalPayable}` 
+                        : `Get Guide + Audio • ₹${totalPayable}`}
                     </span>
-                    <div className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center">
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-950" />
+                    <div className="w-4 h-4 rounded-full bg-black/10 flex items-center justify-center">
+                      <ChevronRight className="w-3 h-3 text-slate-950" />
                     </div>
                   </button>
                 )}
@@ -441,67 +443,64 @@ export default function FluidLiquidDropHero({
           </div>
 
           {/* Secondary Action Anchors */}
-          <div className="flex flex-wrap items-center gap-5 pt-1">
+          <div className="flex items-center gap-4 text-xs pt-0.5">
             <button
               onClick={onExploreDistricts}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
             >
-              <Compass className="w-4 h-4 text-amber-400" />
-              <span>Browse 59 Districts Directory</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
+              <span>Browse 59 Districts</span>
             </button>
-
-            <span className="text-slate-600 hidden sm:inline">•</span>
-
+            <span className="text-white/20">•</span>
             <button
               onClick={onLaunchTripPlanner}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-emerald-300 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-emerald-300 transition-colors cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <span>Plan My Multi-Day Tour</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Plan Custom Trip</span>
+              <ChevronRight className="w-3 h-3" />
             </button>
           </div>
 
         </div>
 
-        {/* Right Column: Luxury Travel Editorial Dossier & Un-Clipped Experience Highlights */}
+        {/* Right Column: Luxury Travel Editorial Spotlight */}
         <div className="lg:col-span-5 flex flex-col items-center lg:items-end">
-          <div className="w-full max-w-md rounded-3xl bg-[#0B0F17]/95 border border-white/10 p-5 flex flex-col gap-4 backdrop-blur-3xl shadow-[0_25px_60px_rgba(0,0,0,0.6)]">
+          <div className="w-full max-w-sm rounded-2xl bg-[#0E121A]/95 border border-white/10 p-3 sm:p-3.5 flex flex-col gap-2 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             
             {/* Destination Category & Rating */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="text-[10px] px-3 py-1 rounded-full bg-white/[0.04] text-amber-300 border border-amber-400/20 font-bold tracking-wider uppercase font-sans-clean">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <span className="text-[9px] px-2.5 py-0.5 rounded-full bg-white/[0.04] text-amber-300 border border-amber-400/20 font-bold tracking-wider uppercase font-sans-clean">
                 {activeDest.tag}
               </span>
-              <span className="text-xs text-amber-300 font-bold tracking-tight font-sans-clean flex items-center gap-1">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+              <span className="text-[11px] text-amber-300 font-bold tracking-tight font-sans-clean flex items-center gap-1">
+                <Star className="w-3 h-3 fill-amber-400 text-amber-400" aria-hidden="true" />
                 <span>{activeDest.rating}</span>
               </span>
             </div>
 
             {/* Destination Spotlight Image with Authentic Badges */}
-            <div className="relative h-48 rounded-2xl overflow-hidden bg-slate-900 shadow-inner group">
+            <div className="relative h-28 sm:h-32 rounded-xl overflow-hidden bg-slate-900 shadow-inner group">
               <img
                 src={activeDest.image}
                 alt={activeDest.name}
                 className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-transparent to-transparent opacity-90" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#080A0F] via-transparent to-transparent opacity-90" />
               
               {/* Photo Caption & Official Rate Pill */}
-              <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
+              <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between gap-2">
                 <div>
-                  <h3 className="text-base font-bold text-white drop-shadow-md font-sans-clean">
+                  <h3 className="text-sm font-bold text-white drop-shadow-md font-sans-clean">
                     {activeDest.name}
                   </h3>
-                  <span className="text-[11px] text-amber-200/90 font-medium font-sans-clean flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-amber-400" />
+                  <span className="text-[10px] text-amber-200/90 font-medium font-sans-clean flex items-center gap-1">
+                    <MapPin className="w-2.5 h-2.5 text-amber-400" />
                     <span>{activeDest.district} • {activeDest.state}</span>
                   </span>
                 </div>
 
-                <span className={`px-2.5 py-1 rounded-full backdrop-blur-md border text-xs font-bold font-sans-clean flex-shrink-0 ${
+                <span className={`px-2 py-0.5 rounded-full backdrop-blur-md border text-[10px] font-bold font-sans-clean flex-shrink-0 ${
                   activeDest.isTicketed
                     ? 'bg-amber-500/20 border-amber-400/40 text-amber-300'
                     : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
@@ -511,83 +510,75 @@ export default function FluidLiquidDropHero({
               </div>
             </div>
 
-            {/* Curated Traveler Intel & Anti-Scam Advisory */}
-            <div className="flex flex-col gap-2.5 text-xs font-sans-clean">
+            {/* Curated Traveler Intel */}
+            <div className="flex flex-col gap-1.5 text-xs font-sans-clean">
               
               {/* What You'll Experience */}
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col gap-1">
-                <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5">
-                  <Compass className="w-3 h-3 text-amber-400" />
-                  <span>What You'll Experience</span>
+              <div className="p-2 rounded-lg bg-white/[0.02] border border-white/5 flex flex-col gap-0.5">
+                <span className="text-[9px] text-slate-400 font-semibold flex items-center gap-1">
+                  <Compass className="w-2.5 h-2.5 text-amber-400" />
+                  <span>Experience Highlights</span>
                 </span>
-                <span className="text-slate-200 text-xs leading-relaxed">
+                <span className="text-slate-200 text-[11px] leading-snug line-clamp-2">
                   {activeDest.highlights}
                 </span>
               </div>
 
-              {/* Best Time & Official Authority (No Text Cropping) */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-center">
-                  <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-amber-400" />
-                    <span>Best Time</span>
+              {/* Best Time & Official Authority */}
+              <div className="grid grid-cols-2 gap-1.5">
+                <div className="p-1.5 rounded-lg bg-white/[0.02] border border-white/5 flex flex-col justify-center">
+                  <span className="text-[9px] text-slate-400 font-medium flex items-center gap-1">
+                    <Clock className="w-2.5 h-2.5 text-amber-400" />
+                    <span>Best Hours</span>
                   </span>
-                  <span className="text-slate-200 font-semibold text-[11px] mt-0.5">
+                  <span className="text-slate-200 font-semibold text-[10px] mt-0.5 truncate">
                     {activeDest.bestHours}
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-center">
-                  <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                    <span>Official Authority</span>
+                <div className="p-1.5 rounded-lg bg-white/[0.02] border border-white/5 flex flex-col justify-center">
+                  <span className="text-[9px] text-slate-400 font-medium flex items-center gap-1">
+                    <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />
+                    <span>Authority</span>
                   </span>
-                  <span className="text-slate-200 font-semibold text-[11px] mt-0.5">
+                  <span className="text-slate-200 font-semibold text-[10px] mt-0.5 truncate">
                     {activeDest.authority}
                   </span>
                 </div>
               </div>
 
               {/* Official Tourist Anti-Scam Notice */}
-              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-400/20 flex items-start gap-2 text-[11px] text-amber-200/90 leading-tight">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span>{activeDest.advisory}</span>
+              <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-400/20 flex items-start gap-1.5 text-[10px] text-amber-200/90 leading-tight">
+                <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="line-clamp-2">{activeDest.advisory}</span>
               </div>
 
             </div>
 
-            {/* Tactile Destination Gallery Rail (All 5 Valid Photos) */}
-            <div className="pt-2 border-t border-white/10 flex flex-col gap-2">
-              <span className="text-[10px] text-slate-400 font-medium font-sans-clean">
-                Tap to preview featured destinations:
+            {/* Tactile Destination Gallery Rail */}
+            <div className="pt-1.5 border-t border-white/10 flex flex-col gap-1">
+              <span className="text-[9px] text-slate-400 font-medium font-sans-clean">
+                Featured spots:
               </span>
-              <div className="grid grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-5 gap-1">
                 {HERO_DESTINATIONS.map((d, idx) => {
                   const isSelected = activeIdx === idx;
                   return (
                     <button
                       key={d.id}
                       onClick={() => handleSelectDestination(idx)}
-                      aria-label={`Preview ${d.name}`}
-                      className={`p-1 rounded-xl border flex flex-col items-center gap-1 transition-colors duration-200 cursor-pointer ${
+                      className={`relative h-9 rounded-md overflow-hidden border transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-amber-500/15 border-amber-400/60 ring-1 ring-amber-400/40'
-                          : 'bg-white/[0.02] border-white/5 hover:border-white/20'
+                          ? 'border-amber-400 ring-1 ring-amber-400/50 scale-[1.03]'
+                          : 'border-white/10 opacity-60 hover:opacity-100'
                       }`}
+                      title={d.name}
                     >
-                      <div className="w-full h-10 rounded-lg overflow-hidden bg-slate-800">
-                        <img 
-                          src={d.image} 
-                          alt={d.name} 
-                          className="w-full h-full object-cover" 
-                        />
-                      </div>
-                      <span className="text-[9px] font-semibold text-slate-300 truncate w-full text-center">
-                        {d.name.split(' ')[0]}
-                      </span>
-                      <span className={`text-[8px] font-bold ${!d.isTicketed ? 'text-emerald-400' : 'text-amber-400'}`}>
-                        {!d.isTicketed ? 'Free' : `₹${d.groundRate}`}
-                      </span>
+                      <img
+                        src={d.image}
+                        alt={d.name}
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   );
                 })}
@@ -600,17 +591,17 @@ export default function FluidLiquidDropHero({
       </div>
 
       {/* Trust & Authority Footer Strip */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full pt-8 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400 border-t border-white/5 font-sans-clean">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+      <div className="relative z-10 max-w-7xl mx-auto w-full pt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 border-t border-white/5 font-sans-clean">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
           <span>Smart Tourism Gateway • 59 Districts of Andhra Pradesh & Telangana</span>
         </div>
-        <div className="flex items-center gap-6 text-slate-400">
-          <span className="flex items-center gap-1.5"><Landmark className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" /> Zero Ticket Markup Guarantee</span>
+        <div className="flex items-center gap-4 text-slate-400">
+          <span className="flex items-center gap-1"><Landmark className="w-3 h-3 text-amber-400" aria-hidden="true" /> Zero Ticket Markup Guarantee</span>
           <span aria-hidden="true">•</span>
-          <span className="flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" /> Direct QR Gate Entry</span>
+          <span className="flex items-center gap-1"><QrCode className="w-3 h-3 text-amber-400" aria-hidden="true" /> Direct QR Gate Entry</span>
           <span aria-hidden="true">•</span>
-          <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" /> Verified Anti-Scam Protection</span>
+          <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-emerald-400" aria-hidden="true" /> Verified Anti-Scam Protection</span>
         </div>
       </div>
 

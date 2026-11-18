@@ -158,30 +158,42 @@ export default function SettingsModal({
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-bold text-white truncate font-sans-clean">
-                      {currentUser?.fullName || 'Verified Explorer'}
+                      {currentUser?.fullName || 'Guest Explorer'}
                     </span>
                     <span className="text-xs text-slate-400 truncate font-mono">
-                      {currentUser?.email || currentUser?.phone || 'guest@globetrotter.in'}
+                      {currentUser?.email || currentUser?.phone || 'Local Device Session'}
                     </span>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      <span className="text-[10px] text-emerald-400 font-sans-clean font-medium">
+                      <span className={`w-1.5 h-1.5 rounded-full ${currentUser ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                      <span className={`text-[10px] font-sans-clean font-medium ${currentUser ? 'text-emerald-400' : 'text-amber-400'}`}>
                         {currentUser?.provider === 'google' 
                           ? 'Google OAuth Verified' 
-                          : currentUser?.provider === 'mobile' 
-                            ? 'Mobile OTP Verified' 
-                            : 'Active Session'}
+                          : currentUser?.provider === 'email'
+                            ? 'Email OTP Verified'
+                            : currentUser?.provider === 'mobile' 
+                              ? 'Mobile OTP Verified' 
+                              : 'Guest Mode • Stored Locally on this Device'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {currentUser && (
+                {currentUser ? (
                   <button
                     onClick={handleSignOut}
                     className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 text-xs font-semibold transition-colors cursor-pointer shrink-0 font-sans-clean"
                   >
                     Sign Out
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      window.dispatchEvent(new CustomEvent('open-auth-modal'));
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-all cursor-pointer shrink-0 font-sans-clean shadow-sm"
+                  >
+                    Sign In
                   </button>
                 )}
               </div>
@@ -335,10 +347,16 @@ export default function SettingsModal({
                   </div>
                 </div>
 
-                <span className="px-2.5 py-1 rounded-full bg-white/[0.04] text-slate-200 border border-white/10 text-[10px] font-mono font-medium shrink-0 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  <span>{currentUser?.email || 'explorer@globetrotter.in'}</span>
-                </span>
+                {currentUser?.email ? (
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono font-medium shrink-0 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    <span>{currentUser.email}</span>
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-full bg-white/[0.04] text-slate-400 border border-white/10 text-[10px] font-mono font-medium shrink-0">
+                    No Email Linked
+                  </span>
+                )}
               </div>
             </div>
 

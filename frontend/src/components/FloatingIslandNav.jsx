@@ -43,7 +43,12 @@ export default function FloatingIslandNav({
     };
 
     window.addEventListener('auth-change', handleAuthChange);
-    return () => window.removeEventListener('auth-change', handleAuthChange);
+    const handleOpenAuthModal = () => setAuthModalOpen(true);
+    window.addEventListener('open-auth-modal', handleOpenAuthModal);
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+      window.removeEventListener('open-auth-modal', handleOpenAuthModal);
+    };
   }, []);
 
   const handleSignOut = () => {
