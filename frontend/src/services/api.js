@@ -103,7 +103,7 @@ export const authService = {
     };
     sessionStorage.setItem('gt_mobile_otp_session', JSON.stringify(otpPayload));
     
-    // Dispatch real-time SMS & WhatsApp gateway event so UI surfaces the live SMS notification toast
+    // Dispatch real-time SMS gateway event so UI surfaces the live SMS notification toast
     window.dispatchEvent(new CustomEvent('gt-sms-gateway-dispatched', {
       detail: { phone: `+91 ${cleanPhone}`, otp: code }
     }));
@@ -292,7 +292,7 @@ export const authService = {
       id: existing?.id || `usr_${Date.now()}`,
       fullName: fullName || existing?.fullName || (identifier?.includes('@') ? identifier.split('@')[0] : `Tourist (${identifier ? identifier.slice(-4) : 'Guest'})`),
       email: provider === 'google' || provider === 'email' ? identifier : (existing?.email || null),
-      phone: provider === 'whatsapp' || provider === 'phone' ? identifier : (existing?.phone || null),
+      phone: provider === 'phone' ? identifier : (existing?.phone || null),
       role: existing?.role || 'ROLE_TOURIST',
       token,
       linkedAccounts
