@@ -1,0 +1,131 @@
+server:
+  port: ${PORT:8085}
+  error:
+    include-stacktrace: never
+    include-message: always
+  # Enable HTTP response compression — reduces JSON payload size by ~70%
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 1024
+
+spring:
+  application:
+    name: globetrotter-gateway
+
+  # ── Virtual Threads (Project Loom — Java 21) ──────────────────────────────
+  # Single config line: replaces traditional thread-per-request model.
+  # Handles thousands of concurrent I/O-bound requests with near-zero overhead.
+  threads:
+    virtual:
+      enabled: true
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:file:./data/globetrotter_dev;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.h2.Driver}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+
+    # ── HikariCP Connection Pool Tuning ────────────────────────────────────
+    # Prevents connection starvation under concurrent requests.
+    hikari:
+      maximum-pool-size: 20          # max DB connections (tune to DB server capacity)
+      minimum-idle: 5                # always keep 5 connections warm
+      connection-timeout: 3000       # fail fast if no connection in 3s
+      idle-timeout: 600000           # close idle connections after 10 min
+      max-lifetime: 1800000          # retire connections after 30 min (prevents stale)
+      pool-name: GlobetrotterHikariPool
+      leak-detection-threshold: 10000 # warn if connection held >10s (helps debug N+1)
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: true              # Ensures JPA session is active during HTTP JSON serialization
+    properties:
+      hibernate:
+        format_sql: false
+        # Batch inserts — critical for DataInitializer seeding performance
+        jdbc:
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  # ── Spring Cache (Caffeine in-memory) ──────────────────────────────────────
+  # Circuits and Places rarely change — cache them for 10 minutes.
+  # Eliminates repeated DB hits on every page load.
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=200,expireAfterWrite=600s
+
+  # ── Spring Mail (Gmail SMTP — change host for other providers) ────────────────
+  mail:
+    host: ${MAIL_SMTP_HOST:smtp.gmail.com}
+    port: ${MAIL_SMTP_PORT:587}
+    username: ${MAIL_SMTP_USER:your-gmail@gmail.com}
+    password: ${MAIL_SMTP_PASS:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        debug: false
+
+app:
+  jwt:
+    secret: ${APP_JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    expiration-ms: ${APP_JWT_EXPIRATION_MS:86400000} # 24 hours
+  qr:
+    hmac-secret: ${APP_QR_HMAC_SECRET:6A586E3272357538782F413F4428472B4B6250645367566B5970404E63526655}
+
+  # ── Razorpay Payment Gateway ───────────────────────────────────────────────
+  # Universal Key ID shared across realckon and globetrotter-gateway:
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:rzp_live_SXIllaIAEuc1mc}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+
+  # ── Email Notifications ────────────────────────────────────────────────────
+  mail:
+    from: ${MAIL_FROM:noreply@globetrotter.com}
+    from-name: Globetrotter Gateway
+
+  # ── Cloud AI Travel Assistant & Itinerary Planner ──────────────────────
+  # Multi-model intelligence cascade with 5-minute failure circuit breaker
+  ai:
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: ${GEMINI_MODEL:gemini-3.8-flash}
+      reasoning-model: ${GEMINI_REASONING_MODEL:gemini-4-hydrogen}
+      fallback-model: ${GEMINI_FALLBACK_MODEL:gemini-3.5-flash-lite}
+    groq:
+      api-key: ${GROQ_API_KEY:}
+      flagship-model: ${GROQ_FLAGSHIP_MODEL:openai/gpt-oss-120b}
+      fast-model: ${GROQ_FAST_MODEL:qwen/qwen3.8-27b}
+      whisper-model: ${GROQ_WHISPER_MODEL:whisper-large-v3-turbo}
+    nvidia:
+      api-key: ${NVIDIA_API_KEY:}
+      flagship-model: ${NVIDIA_FLAGSHIP_MODEL:nvidia/nemotron-4-340b-instruct}
+      ultra-model: ${NVIDIA_ULTRA_MODEL:nvidia/nemotron-3-ultra-550b-a55b}
+      reasoning-model: ${NVIDIA_REASONING_MODEL:nvidia/llama-3.1-nemotron-70b-instruct}
+      vision-model: ${NVIDIA_VISION_MODEL:meta/llama-3.2-90b-vision-instruct}
+
+# ── Spring Actuator (health & metrics endpoints) ─────────────────────────────
+management:
+  health:
+    mail:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,caches
+  endpoint:
+    health:
+      show-details: always
+

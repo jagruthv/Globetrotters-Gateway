@@ -1,0 +1,18 @@
+# robots.txt for Globetrotter Gateway Smart Tourism Portal
+# https://globetrottergateway.in/
+
+User-agent: *
+Allow: /
+Allow: /circuits
+Allow: /planner
+Allow: /offline-pass
+Allow: /scanner
+
+# Restrict sensitive administrative & backend endpoints
+Disallow: /admin
+Disallow: /api/admin/
+Disallow: /h2-console/
+Disallow: /actuator/
+
+# Search Engine Sitemap Location
+Sitemap: https://globetrottergateway.in/sitemap.xml

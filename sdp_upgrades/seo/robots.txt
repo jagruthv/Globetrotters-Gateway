@@ -1,0 +1,10 @@
+# Globetrotter Gateway — Robots.txt
+# Ground-Truth Smart Tourism Ecosystem across 59 Districts of Andhra Pradesh & Telangana
+
+User-agent: *
+Allow: /
+Disallow: /api/admin/
+Disallow: /api/internal/
+
+# Sitemaps
+Sitemap: https://globetrottergateway.in/sitemap.xml

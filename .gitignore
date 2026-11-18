@@ -1,0 +1,73 @@
+# Dependency Directories
+node_modules/
+frontend/node_modules/
+
+# Build & Output Artifacts
+target/
+backend/target/
+dist/
+frontend/dist/
+frontend/dist-ssr/
+build/
+output/
+
+# Wrangler & Edge Cache
+.wrangler/
+
+# Database & Runtime State
+data/
+backend/data/
+*.db
+*.mv.db
+*.trace.db
+
+# Environment & Secrets (Zero Client Secret Exposure)
+.env
+.env.local
+.env.*.local
+*.secret
+*.pem
+*.key
+*_token_cache.json
+*token*.json
+
+# Logs & Diagnostics
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Heavy Media & Temporary Scratch Files
+scratch/
+skills_taxonomy/
+*.tar.gz
+*.zip
+
+# Private Academic Reports, Proposals, and Presentation Slides
+reports/
+*.pdf
+*.docx
+*.pptx
+generate_capstone_*.py
+build_capstone_*.py
+backups/
+data_compiler/
+tools/aisoc/ledger/
+
+# Heavy Media Assets (Excluded from Git for Light / Fast Repo)
+frontend/public/images/
+*.jpg
+*.jpeg
+*.webp
+
+# IDE & OS Metadata
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db

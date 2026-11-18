@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "assertive" # Rigorous CodeRabbit audit mode
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+
+  path_filters:
+    - "!**/target/**"
+    - "!**/node_modules/**"
+    - "!**/dist/**"
+    - "!**/.system_generated/**"
+    - "!**/data/*.db*"
+
+  path_instructions:
+    - path: "backend/**"
+      instructions: |
+        1. Enforce Spring Boot 4 & Java 21+ Project Loom Virtual Threads compatibility.
+        2. Ensure all Spring Data JPA queries use @EntityGraph or JOIN FETCH to prevent N+1 query degradation.
+        3. Reject any hardcoded API keys, JWT secrets, or plaintext credentials (CWE-798).
+        4. Enforce atomic CAS operations (scan_status = 'CHECKED_IN' WHERE scan_status = 'PENDING') on turnstile gate redemptions to prevent race condition passback fraud.
+        5. Verify that all endpoints conform to REST standards and appropriate Spring Security authorization matchers.
+
+    - path: "frontend/**"
+      instructions: |
+        1. Enforce React 19 compiler compliance and purity (no impure Math.random or performance.now calls in render scopes).
+        2. Enforce Tailwind CSS v4 design tokens and Framer Motion spring physics (no linear transitions, no generic AI saturated purple palettes).
+        3. Enforce the Indian Tourist Hospitality Vocabulary Standard defined in FRONTEND_ARCHITECTURE_AND_VANGUARD_DESIGN_SPEC.md:
+           - Use 'Day-by-Day Tour Plan' / 'Trip Plan' (never 'Itinerary')
+           - Use 'Smart Tour Planner' (never 'Smart Itinerary Studio')
+           - Use 'Entry Gate' / 'Direct QR Gate Entry' (never 'Turnstile')
+           - Use 'Visitor Guide' / 'Place Details' (never 'Dossier')
+           - Use 'Tour Packages' (never 'Heritage Circuits' in consumer UI)
+           - Use 'Closing Time Advisory' (never 'Gate Curfew')
+        4. Validate that all Lucide icon and module imports are defined and actually rendered.
+
+    - path: "**"
+      instructions: |
+        1. Strict Sovereign Ground-Truth Standard: Exactly 59 Districts (26 Andhra Pradesh + 33 Telangana) and 646 authentic destinations.
+        2. Reject any stock photo placeholders or fabricated entry fee assertions.
+        3. Require documentation sync in architectural .md files whenever contracts or schemas are altered.
+
+chat:
+  auto_reply: true

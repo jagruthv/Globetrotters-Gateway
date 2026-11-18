@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: globetrotter-gateway-test
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: false
+  cache:
+    type: none
+
+app:
+  jwt:
+    secret: 9a61e7a637d7e792ac4b52479e000f01eb89efbb40d6c8b9db8d70e447b973c74eb730e2f5ffda4bf061e8884976c6bbd8b5a03eef0beae28882585ee5812975
+    expiration-ms: 86400000
+  qr:
+    hmac-secret: test-secret-salt-key-for-unit-and-integration-tests-2026
+  razorpay:
+    key-id: rzp_test_mock_gateway_key
+    key-secret: rzp_test_mock_secret_key
