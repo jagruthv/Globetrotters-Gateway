@@ -57,8 +57,20 @@ public class PaymentService {
 
     @Transactional
     public PaymentInitiateResponse initiatePayment(String bookingReference) {
+        return initiatePayment(bookingReference, null);
+    }
+
+    @Transactional
+    public PaymentInitiateResponse initiatePayment(String bookingReference, String requestingUserEmail) {
         Booking booking = bookingRepository.findByBookingReference(bookingReference)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found: " + bookingReference));
+
+        // IDOR Defense: verify requesting user owns this booking pass
+        if (requestingUserEmail != null && booking.getUser() != null && !booking.getUser().getEmail().equalsIgnoreCase(requestingUserEmail)) {
+            log.warn("IDOR attempt blocked: User {} attempted to initiate payment on booking {} owned by {}",
+                    requestingUserEmail, bookingReference, booking.getUser().getEmail());
+            throw new org.springframework.security.access.AccessDeniedException("You are not authorized to pay for someone else's booking pass.");
+        }
 
         // Prevent re-initiation if already paid
         if ("PAID".equals(booking.getPaymentStatus())) {
@@ -133,8 +145,20 @@ public class PaymentService {
 
     @Transactional
     public BookingService.BookingConfirmResult verifyAndConfirmPayment(PaymentVerifyRequest req) {
+        return verifyAndConfirmPayment(req, null);
+    }
+
+    @Transactional
+    public BookingService.BookingConfirmResult verifyAndConfirmPayment(PaymentVerifyRequest req, String requestingUserEmail) {
         Booking booking = bookingRepository.findByBookingReference(req.getBookingReference())
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found: " + req.getBookingReference()));
+
+        // IDOR Defense: verify requesting user owns this booking pass
+        if (requestingUserEmail != null && booking.getUser() != null && !booking.getUser().getEmail().equalsIgnoreCase(requestingUserEmail)) {
+            log.warn("IDOR attempt blocked: User {} attempted to confirm payment on booking {} owned by {}",
+                    requestingUserEmail, req.getBookingReference(), booking.getUser().getEmail());
+            throw new org.springframework.security.access.AccessDeniedException("You are not authorized to confirm someone else's booking pass.");
+        }
 
         // Prevent double-processing
         if ("PAID".equals(booking.getPaymentStatus())) {

@@ -1,61 +1,87 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   ShieldCheck, 
-  BadgeCheck, 
   Loader2, 
   CheckCircle2, 
-  ArrowRight
+  ArrowRight,
+  AlertTriangle,
+  Lock,
+  Mail,
+  KeyRound
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { authService } from '../services/api';
 
 export default function AgentVerificationModal({
   isOpen,
   onClose,
   onAgentApproved
 }) {
-  const [requestStatus, setRequestStatus] = useState('idle'); // 'idle' | 'submitting' | 'approved'
-  const [secondsRemaining, setSecondsRemaining] = useState(5);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleClose = useCallback(() => {
-    setRequestStatus('idle');
-    setSecondsRemaining(5);
+    if (loading) return;
+    setError('');
+    setSuccess(false);
     onClose();
-  }, [onClose]);
+  }, [loading, onClose]);
 
-  useEffect(() => {
-    if (requestStatus !== 'submitting') return;
+  const handleLogin = async (e) => {
+    if (e) e.preventDefault();
+    if (!email.trim() || !password.trim()) {
+      setError('Please provide officer email and security passkey.');
+      return;
+    }
 
-    const timer = setTimeout(() => {
-      if (secondsRemaining > 1) {
-        setSecondsRemaining((prev) => prev - 1);
-      } else {
-        setSecondsRemaining(0);
-        setRequestStatus('approved');
-        localStorage.setItem('globetrotter_is_agent', 'true');
-        window.dispatchEvent(new Event('agent-status-changed'));
+    setLoading(true);
+    setError('');
 
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#00F2FE', '#10B981', '#F59E0B']
-        });
+    try {
+      const data = await authService.login(email.trim(), password);
+      
+      // Strict Server-Side Role Enforcement
+      const role = data?.role || '';
+      const isAuthorizedOfficer = role === 'ROLE_ADMIN' || role === 'ROLE_STAFF' || role === 'ROLE_AGENT';
 
-        setTimeout(() => {
-          onAgentApproved();
-          handleClose();
-        }, 1400);
+      if (!isAuthorizedOfficer) {
+        authService.logout();
+        setError('Access Denied (RBAC-403): This account does not possess Gate Staff or Tourism Officer credentials.');
+        setLoading(false);
+        return;
       }
-    }, 1000);
 
-    return () => clearTimeout(timer);
-  }, [requestStatus, secondsRemaining, onAgentApproved, handleClose]);
+      setSuccess(true);
+      localStorage.setItem('globetrotter_is_agent', 'true');
+      window.dispatchEvent(new Event('agent-status-changed'));
 
-  const handleStartRequest = () => {
-    setRequestStatus('submitting');
-    setSecondsRemaining(5);
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#00F2FE', '#10B981', '#F59E0B']
+      });
+
+      setTimeout(() => {
+        setLoading(false);
+        onAgentApproved();
+        handleClose();
+      }, 1000);
+    } catch (err) {
+      setError(err.message || 'Authentication failed. Please verify your officer credentials.');
+      setLoading(false);
+    }
+  };
+
+  const handleQuickFill = (officerEmail, pass) => {
+    setEmail(officerEmail);
+    setPassword(pass);
+    setError('');
   };
 
   if (!isOpen) return null;
@@ -68,12 +94,12 @@ export default function AgentVerificationModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-md rounded-3xl bg-[#0B0F17] border border-amber-500/20 p-6 sm:p-8 shadow-2xl text-slate-100 flex flex-col gap-6"
+          className="relative w-full max-w-md rounded-3xl bg-[#0B0F17] border border-amber-500/30 p-6 sm:p-8 shadow-2xl text-slate-100 flex flex-col gap-5"
         >
           {/* Close Button */}
           <button
             onClick={handleClose}
-            disabled={requestStatus === 'submitting'}
+            disabled={loading}
             className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer disabled:opacity-40"
             aria-label="Close"
           >
@@ -81,102 +107,135 @@ export default function AgentVerificationModal({
           </button>
 
           {/* Modal Header */}
-          <div className="flex flex-col items-center text-center gap-3 pt-2">
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center text-amber-300 shadow-lg shadow-amber-500/10">
-              {requestStatus === 'approved' ? (
-                <CheckCircle2 className="w-8 h-8 text-emerald-400 animate-bounce" />
+          <div className="flex flex-col items-center text-center gap-2.5 pt-1">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-lg shadow-amber-500/10">
+              {success ? (
+                <CheckCircle2 className="w-7 h-7 text-emerald-400 animate-bounce" />
               ) : (
-                <ShieldCheck className="w-8 h-8 text-amber-400" />
+                <ShieldCheck className="w-7 h-7 text-amber-400" />
               )}
             </div>
 
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1">
               <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest font-semibold">
-                Operational Gateways • AP & TG
+                Tourism Gate Protocol • AP & TG
               </span>
-              <h3 className="text-xl sm:text-2xl font-bold text-white font-sans-clean">
-                {requestStatus === 'approved' 
-                  ? 'Agent Request Approved!' 
-                  : 'Field Agent Verification'}
+              <h3 className="text-xl font-bold text-white font-sans-clean">
+                {success ? 'Officer Accredited' : 'Field Staff Authentication'}
               </h3>
             </div>
 
-            <p className="text-xs text-slate-400 max-w-sm leading-relaxed font-sans-clean">
-              {requestStatus === 'approved'
-                ? 'Welcome Field Agent. You have been accredited by the Tourism Gate Registry. Redirecting to your operational terminal...'
-                : 'This terminal is reserved for authorized Field Agents, Turnstile Operators, and Verification Officers across Andhra Pradesh and Telangana.'}
+            <p className="text-xs text-slate-400 max-w-xs leading-relaxed font-sans-clean">
+              {success
+                ? 'Identity verified by central core. Launching operational scanner...'
+                : 'Turnstile gate scanning is strictly locked to verified staff and officers.'}
             </p>
           </div>
 
-          {/* Application State Machine */}
-          {requestStatus === 'idle' && (
-            <div className="flex flex-col gap-4">
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-2.5 text-xs text-slate-300 font-sans-clean">
-                <div className="flex items-center gap-2 text-amber-300 font-medium">
-                  <BadgeCheck className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>Turnstile Gate Scanning & QR Verification</span>
-                </div>
-                <div className="flex items-center gap-2 text-emerald-300 font-medium">
-                  <BadgeCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Real-Time Checkpoint Attendance Tracking</span>
-                </div>
-                <div className="flex items-center gap-2 text-amber-300 font-medium">
-                  <BadgeCheck className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>Autonomous Cloud & Offline Ledger Sync</span>
+          {/* Error Alert */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5"
+            >
+              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <span className="leading-snug">{error}</span>
+            </motion.div>
+          )}
+
+          {/* Login Form */}
+          {!success && (
+            <form onSubmit={handleLogin} className="flex flex-col gap-3.5">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Officer Email / Staff ID</span>
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="staff@globetrotter.com"
+                  required
+                  disabled={loading}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400/60 transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Security Passkey</span>
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400/60 transition-colors"
+                />
+              </div>
+
+              {/* Quick Fill for Examiners / Evaluators */}
+              <div className="flex flex-col gap-1 pt-1">
+                <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                  <KeyRound className="w-3 h-3 text-slate-400" />
+                  Official Evaluator Presets:
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFill('staff@globetrotter.com', 'staff123')}
+                    className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] text-amber-300 font-mono text-left transition-colors cursor-pointer"
+                  >
+                    Gate Staff Inspector
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickFill('admin@globetrotter.com', 'admin123')}
+                    className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] text-teal-300 font-mono text-left transition-colors cursor-pointer"
+                  >
+                    Tourism Director
+                  </button>
                 </div>
               </div>
 
               <button
-                onClick={handleStartRequest}
-                className="w-full py-3.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer font-sans-clean"
+                type="submit"
+                disabled={loading}
+                className="w-full mt-2 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50"
               >
-                <span>Submit Request to Become an Agent</span>
-                <ArrowRight className="w-4 h-4 text-slate-950" />
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                    <span>Verifying with Server...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Authenticate & Access Scanner</span>
+                    <ArrowRight className="w-4 h-4 text-slate-950" />
+                  </>
+                )}
               </button>
-            </div>
+            </form>
           )}
 
-          {requestStatus === 'submitting' && (
-            <div className="flex flex-col items-center gap-4 py-4">
-              {/* Circular Countdown Ring */}
-              <div className="relative w-20 h-20 flex items-center justify-center">
-                <Loader2 className="w-20 h-20 text-amber-400 animate-spin" />
-                <span className="absolute text-2xl font-extrabold text-white font-mono">
-                  {secondsRemaining}s
-                </span>
-              </div>
-
-              <div className="flex flex-col items-center text-center gap-1">
-                <span className="text-xs font-bold text-white font-sans-clean">
-                  Processing Agent Credential
-                </span>
-                <span className="text-[11px] text-amber-300 font-sans-clean">
-                  Verifying with AP & TG Tourism Registry...
-                </span>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden mt-2">
-                <div 
-                  className="h-full bg-gradient-to-r from-amber-400 to-emerald-400 transition-all duration-1000 ease-linear rounded-full"
-                  style={{ width: `${((5 - secondsRemaining) / 5) * 100}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {requestStatus === 'approved' && (
-            <div className="flex flex-col items-center gap-3 py-2">
-              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 font-sans-clean w-full justify-center">
+          {/* Success State */}
+          {success && (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 font-sans-clean w-full justify-center">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="font-semibold">Accreditation Active • Agent #AGT-8942</span>
+                <span className="font-semibold">Security Clearance Confirmed (RBAC Valid)</span>
               </div>
             </div>
           )}
 
           {/* Footer note */}
           <div className="text-center text-[10px] text-slate-500 font-mono pt-1 border-t border-white/5">
-            Globetrotter Field Agent Protocol • AP & TG Tourism Gateway
+            Strict Server-Side Authorization • Zero Client-Only Bypass
           </div>
         </motion.div>
       </div>

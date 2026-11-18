@@ -29,10 +29,28 @@ public class AiChatController {
         return ResponseEntity.ok(aiTravelAssistantService.processMessage(userEmail, request));
     }
 
+    private static final java.util.Set<String> ALLOWED_AUDIO_TYPES = java.util.Set.of(
+            "audio/webm", "audio/wav", "audio/mp3", "audio/mpeg", "audio/ogg", "audio/m4a", "audio/x-m4a", "audio/mp4"
+    );
+    private static final long MAX_AUDIO_BYTES = 10 * 1024 * 1024; // 10MB limit
+
     @PostMapping("/transcribe")
     public ResponseEntity<java.util.Map<String, String>> transcribeVoice(
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file
     ) {
+        if (file == null || file.isEmpty()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "No audio file provided"));
+        }
+
+        if (file.getSize() > MAX_AUDIO_BYTES) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Audio file exceeds maximum 10MB upload limit"));
+        }
+
+        String contentType = file.getContentType();
+        if (contentType != null && !ALLOWED_AUDIO_TYPES.contains(contentType.toLowerCase())) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", "Invalid file type. Only standard audio files (WebM, WAV, MP3, OGG, M4A) are allowed"));
+        }
+
         try {
             byte[] bytes = file.getBytes();
             String filename = file.getOriginalFilename() != null ? file.getOriginalFilename() : "voice.webm";

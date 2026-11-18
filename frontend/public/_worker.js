@@ -104,6 +104,28 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // ── Pre-Flight Edge Armor: Block sensitive dotfiles and system probing ──
+    const lowerPath = url.pathname.toLowerCase();
+    if (
+      lowerPath.startsWith('/.') ||
+      lowerPath.includes('/.env') ||
+      lowerPath.includes('/.git') ||
+      lowerPath.includes('/.aws') ||
+      lowerPath.includes('/wp-') ||
+      lowerPath.includes('/package.json')
+    ) {
+      return new Response(JSON.stringify({
+        error: 'Security Alert (OAT-004): Direct access to configuration or environment artifacts is strictly forbidden.',
+        path: url.pathname
+      }), {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Threat-Defense': 'Active-Defense-Quarantine'
+        }
+      });
+    }
+
     // ── 1. Plan Generation with Gemini 3.8 Flash (Fallback: Gemini 3.5 Flash Lite) ──
     if (url.pathname === '/api/trip/generate-ai-plan') {
       if (request.method === 'OPTIONS') {

@@ -54,7 +54,13 @@ export default function App() {
   const [isAgentPortalActive, setIsAgentPortalActive] = useState(() => {
     if (typeof window === 'undefined') return false;
     const raw = window.location.hash.replace('#/', '').replace('#', '').trim().toLowerCase();
-    return (raw === 'agent' || raw === 'scanner') && localStorage.getItem('globetrotter_is_agent') === 'true';
+    if (raw !== 'agent' && raw !== 'scanner') return false;
+    try {
+      const user = JSON.parse(localStorage.getItem('globetrotter_user') || '{}');
+      return Boolean(user && (user.role === 'ROLE_ADMIN' || user.role === 'ROLE_STAFF' || user.role === 'ROLE_AGENT'));
+    } catch {
+      return false;
+    }
   });
 
   // Ticket Checkout & Test Payment Gateway States
@@ -98,11 +104,16 @@ export default function App() {
   };
 
   const handleOpenAgentPortal = () => {
-    const isAgent = localStorage.getItem('globetrotter_is_agent') === 'true';
-    if (isAgent) {
-      setIsAgentPortalActive(true);
-      window.history.pushState(null, '', '#/agent');
-    } else {
+    try {
+      const user = JSON.parse(localStorage.getItem('globetrotter_user') || '{}');
+      const isOfficer = Boolean(user && (user.role === 'ROLE_ADMIN' || user.role === 'ROLE_STAFF' || user.role === 'ROLE_AGENT'));
+      if (isOfficer) {
+        setIsAgentPortalActive(true);
+        window.history.pushState(null, '', '#/agent');
+      } else {
+        setAgentVerificationOpen(true);
+      }
+    } catch {
       setAgentVerificationOpen(true);
     }
   };
@@ -117,10 +128,16 @@ export default function App() {
     const handleHashSync = () => {
       const raw = window.location.hash.replace('#/', '').replace('#', '').trim().toLowerCase();
       if (raw === 'agent' || raw === 'scanner') {
-        const isAgent = localStorage.getItem('globetrotter_is_agent') === 'true';
-        if (isAgent) {
-          setIsAgentPortalActive(true);
-        } else {
+        try {
+          const user = JSON.parse(localStorage.getItem('globetrotter_user') || '{}');
+          const isOfficer = Boolean(user && (user.role === 'ROLE_ADMIN' || user.role === 'ROLE_STAFF' || user.role === 'ROLE_AGENT'));
+          if (isOfficer) {
+            setIsAgentPortalActive(true);
+          } else {
+            setIsAgentPortalActive(false);
+            setAgentVerificationOpen(true);
+          }
+        } catch {
           setIsAgentPortalActive(false);
           setAgentVerificationOpen(true);
         }
@@ -161,21 +178,60 @@ export default function App() {
     setSelectedPlaces([]);
   };
 
+  // Central Checkout & Payment Flow
+  const handleInitiateBooking = (bookingData) => {
+    let user = null;
+    try {
+      user = authService.getCurrentUser();
+    } catch {
+      user = null;
+    }
+
+    if (!user) {
+      setPendingBooking(bookingData);
+      setAuthModalReason('Please sign in or continue as Guest to issue your entry pass.');
+      setAuthModalOpen(true);
+      return;
+    }
+
+    setActiveBookingForPayment({
+      ...bookingData,
+      touristName: user.fullName || user.email || 'Verified Explorer',
+      touristEmail: user.email || '',
+      touristPhone: user.phoneNumber || ''
+    });
+    setPaymentModalOpen(true);
+  };
+
+  const handleAuthSuccess = (userData) => {
+    setAuthModalOpen(false);
+    if (pendingBooking) {
+      const booking = pendingBooking;
+      setPendingBooking(null);
+      setActiveBookingForPayment({
+        ...booking,
+        touristName: userData?.fullName || userData?.email || 'Verified Explorer',
+        touristEmail: userData?.email || '',
+        touristPhone: userData?.phoneNumber || ''
+      });
+      setPaymentModalOpen(true);
+    }
+  };
+
+  const handlePaymentSuccess = (newPass) => {
+    setPaymentModalOpen(false);
+    setActiveBookingForPayment(null);
+    setIssuedPassData(newPass);
+    setActiveTab('passes');
+  };
+
   // Direct 1-click Fast-Pass booking from Hero
   const handleDirectBookPass = (passInfo) => {
-    const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-    setIssuedPassData({
-      reference: `GT-2026-${randomCode}`,
-      token: `GT_PASS:${passInfo.district.replace(/\s+/g, '')}:${Date.now()}:ed25519_sig_${randomCode}`,
-      touristName: 'Verified Visitor',
-      circuitName: `${passInfo.destination} Priority Pass`,
-      validFrom: new Date().toISOString().split('T')[0],
-      validUntil: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-      status: 'ACTIVE_AUTHENTICATED',
-      placesAllowed: [passInfo.destination],
-      gateFeeTotal: passInfo.price || '₹40'
+    handleInitiateBooking({
+      circuitName: `${passInfo.destination} Official Gate Pass`,
+      destinations: [passInfo.destination],
+      totalAmount: passInfo.price ? (parseFloat(String(passInfo.price).replace(/[^0-9.]/g, '')) || 40) : 40
     });
-    setActiveTab('passes');
   };
 
   // When a user chooses a circuit, populate its places into trip planner
@@ -194,19 +250,20 @@ export default function App() {
   };
 
   const handleBookCircuit = (circuit) => {
-    const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-    setIssuedPassData({
-      reference: `GT-2026-CIR-${randomCode}`,
-      token: `GT_PASS:CIRCUIT:${Date.now()}:hmac_sha256_${randomCode}`,
-      touristName: 'Verified Visitor',
-      circuitName: circuit.title,
-      validFrom: new Date().toISOString().split('T')[0],
-      validUntil: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-      status: 'ACTIVE_AUTHENTICATED',
-      placesAllowed: [circuit.standout, 'All Circuit Checkpoints'],
-      gateFeeTotal: `₹${circuit.passPrice} (Bundle Savings)`
+    handleInitiateBooking({
+      circuitName: circuit.title || 'Curated Heritage Circuit Pass',
+      destinations: circuit.places?.map(p => p.name) || [circuit.standout],
+      totalAmount: circuit.passPrice || 480
     });
-    setActiveTab('passes');
+  };
+
+  const handleBookCustomPlan = (customPlan) => {
+    const allStops = (customPlan.days || []).flatMap(d => (d.stops || []).map(s => s.name || s.placeName || s));
+    handleInitiateBooking({
+      circuitName: customPlan.title || 'Personalized Gemini Circuit Pass',
+      destinations: allStops.length > 0 ? allStops : selectedPlaces.map(p => p.name),
+      totalAmount: customPlan.packagePrice || 320
+    });
   };
 
   // DEDICATED SEPARATE FIELD AGENT INTERFACE
@@ -323,23 +380,8 @@ export default function App() {
                 onClearPlaces={handleClearPlaces}
                 onExploreMore={() => setActiveTab('explore')}
                 onProceedToPasses={() => setActiveTab('passes')}
-                onBookCustomPlan={(customPlan) => {
-                  const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-                  const allStops = (customPlan.days || []).flatMap(d => (d.stops || []).map(s => s.name || s.placeName || s));
-                  const passRef = `APTG-${randomCode}`;
-                  setIssuedPassData({
-                    reference: passRef,
-                    token: passRef,
-                    touristName: 'Verified Visitor',
-                    circuitName: customPlan.title || 'Personalized Gemini Circuit Pass',
-                    validFrom: new Date().toISOString().split('T')[0],
-                    validUntil: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-                    status: 'ACTIVE_AUTHENTICATED',
-                    placesAllowed: allStops.length > 0 ? allStops : selectedPlaces.map(p => p.name),
-                    gateFeeTotal: `₹${customPlan.packagePrice || 320} (Unified Pass)`
-                  });
-                  setActiveTab('passes');
-                }}
+                onInitiateBooking={handleInitiateBooking}
+                onBookCustomPlan={handleBookCustomPlan}
               />
             </motion.div>
           )}
@@ -443,6 +485,22 @@ export default function App() {
           setIsAgentPortalActive(true);
           window.history.pushState(null, '', '#/agent');
         }}
+      />
+
+      {/* Mandatory Checkout Authentication Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+        reason={authModalReason}
+      />
+
+      {/* 5-Second Interactive Test Payment Gateway Modal */}
+      <PaymentProcessingModal
+        isOpen={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        bookingDetails={activeBookingForPayment}
+        onPaymentSuccess={handlePaymentSuccess}
       />
 
       {/* Native Mobile Bottom Navigation Dock (iOS / Android Feel) */}

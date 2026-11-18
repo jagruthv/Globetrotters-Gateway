@@ -385,6 +385,51 @@ To guarantee high-reasoning output without draining local hardware resources on 
   - **Tier 4 (Backend)**: Maven test-compile **BUILD SUCCESS** in 26.3s.
 - Deployed live to Cloudflare Pages: `https://globetrotter-gateway.pages.dev`.
 
+---
+
+## 17. Interactive 5-Second Test Payment Gateway & Field Agent Scanner Overhaul
+
+> **Release Version**: v2.4.0 Production Release  
+> **Core Architectural Shifts**: Seamless Zero-Markup Ticketing Checkout • Mandatory Pre-Booking Authentication • Simulated 5-Second Payment Processing • Optical QR Camera Scanner with Zero Synthetic Mock Data.
+
+### 17.1 Interactive 5-Second Test Payment Gateway (`PaymentProcessingModal.jsx`)
+1. **Mandatory Authentication Check**:
+   - Before issuing an entry pass, the platform verifies whether an active tourist profile exists (`currentUser || authService.getCurrentUser()`).
+   - If unauthenticated, `AuthModal` automatically launches with a clear context banner: `"Please sign in or continue as Guest to issue your entry pass."`
+   - Once authenticated (via Google GIS, Email OTP, Mobile SMS OTP, or Guest mode), the session resumes without losing selected destinations.
+2. **5-Second Interactive Sandbox Gateway**:
+   - Displays clear legal disclosure: `"TEST PAYMENT GATEWAY • SANDBOX MODE (Zero real money charged)"`.
+   - Circular SVG progress ring tracks remaining time with a 1-second cadence (5s -> 4s -> 3s -> 2s -> 1s -> 0s).
+   - Real-time milestone status messages update every second:
+     - 5s: `"Connecting to secure payment simulator..."`
+     - 4s: `"Simulating UPI authorization (Sandbox)..."`
+     - 3s: `"Payment verified • Minting cryptographic gate pass..."`
+     - 2s: `"Enrolling ticket with AP & TG Tourism gate authority..."`
+     - 1s: `"Generating BookMyShow cinema-style QR ticket..."`
+     - 0s: `"Payment Complete! Issuing your official pass..."`
+   - Includes an `"Instant Complete"` button for evaluator convenience.
+   - On completion, fires celebratory haptic confetti (`canvas-confetti`) and generates authentic BookMyShow-style passes with real cryptographically-signed QR tokens (`GT-2026-XXXXX`).
+
+### 17.2 Direct Checkout in Multi-Day Tour Planner (`AiFluidTripStudio.jsx`)
+1. **Immediate Ticket Staging Bar**:
+   - As soon as destinations are added, a prominent consolidated entry pass card displays total calculated gate fees with a direct `"Buy Entry Pass • ₹XXX"` button.
+   - Tourists are never forced to navigate an AI chat drawer or click dummy buttons just to purchase passes.
+2. **Itinerary Action Hierarchy**:
+   - Primary Golden Action: `"Book Entry Pass • ₹XXX"`.
+   - Secondary Optional Action: `"Ask Gemini to Tweak Stops (Optional)"`.
+
+### 17.3 Field Agent Portal Overhaul (`AgentPortalView.jsx`)
+1. **Elimination of Synthetic Mock Data**:
+   - Completely removed all hardcoded metrics (`"142 Scans Today"`, `"97.9% Pass Rate"`, `"1.4s Avg Speed"`).
+   - Replaced with authentic shift telemetry starting at 0 (`Shift Scans: 0`, `Admitted: 0`, `Denied: 0`).
+   - Replaced fake scan logs ("Rajesh Sharma", "Pooja Reddy") with real verified check-ins stored locally per operational session. Added a `"Reset Shift"` button.
+2. **Live Optical Camera QR Scanner**:
+   - Integrated real-time camera scanning via `navigator.mediaDevices.getUserMedia` and `jsQR`.
+   - Displays a live video viewfinder with holographic corner brackets and an animated laser scanning line (`@keyframes scanLaser`).
+   - Automatically decodes ticket references and verification URLs, pauses camera scanning for 3.5s to display the admission verdict, and plays acoustic turnstile chimes.
+   - Includes a fallback manual input field, camera flip controls, and 1-click test buttons (`APTG-89421`, booked session ticket, invalid test pass).
+
+
 
 
 

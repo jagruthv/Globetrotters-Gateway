@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Scan, 
@@ -112,6 +112,7 @@ export default function AgentPortalView({
   const videoRef = useRef(null);
   const mediaStreamRef = useRef(null);
   const scanAnimationRef = useRef(null);
+  const handleScanPassRef = useRef(null);
 
   // Retrieve active booked pass from localStorage if available (for easy 1-click test)
   const activeBookedPass = (() => {
@@ -247,7 +248,7 @@ export default function AgentPortalView({
           }
 
           setTokenInput(extracted);
-          handleScanPass(extracted);
+          handleScanPassRef.current?.(extracted);
 
           // Pause camera scanning for 3.5s to clearly display verdict
           setCameraScanning(false);
@@ -318,7 +319,7 @@ export default function AgentPortalView({
     } catch {}
   };
 
-  const handleScanPass = async (overrideToken) => {
+  const handleScanPass = useCallback(async (overrideToken) => {
     const tokenToVerify = (typeof overrideToken === 'string' ? overrideToken : tokenInput).trim();
     if (!tokenToVerify || isScanning) return;
 
@@ -391,7 +392,11 @@ export default function AgentPortalView({
     } finally {
       setIsScanning(false);
     }
-  };
+  }, [tokenInput, isScanning, selectedPlaceId, isOnline]);
+
+  useEffect(() => {
+    handleScanPassRef.current = handleScanPass;
+  }, [handleScanPass]);
 
   const handleRevokeAgentStatus = () => {
     stopCamera();

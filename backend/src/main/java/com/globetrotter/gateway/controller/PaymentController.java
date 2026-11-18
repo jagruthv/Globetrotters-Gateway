@@ -51,7 +51,7 @@ public class PaymentController {
                     .body(Map.of("message", "Too many payment requests. Please wait a moment and try again."));
         }
 
-        PaymentInitiateResponse response = paymentService.initiatePayment(reference);
+        PaymentInitiateResponse response = paymentService.initiatePayment(reference, userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
 
@@ -71,7 +71,7 @@ public class PaymentController {
                     .body(Map.of("message", "Too many requests. Please wait a moment."));
         }
 
-        BookingService.BookingConfirmResult result = paymentService.verifyAndConfirmPayment(request);
+        BookingService.BookingConfirmResult result = paymentService.verifyAndConfirmPayment(request, userDetails.getUsername());
         return ResponseEntity.ok(bookingService.mapToResponse(result.getBooking()));
     }
 }
