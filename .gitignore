@@ -81,3 +81,10 @@ frontend/public/images/
 *.sw?
 .DS_Store
 Thumbs.db
+
+# Local Workspace Configuration & Internal Agent Metadata
+.agents/
+AGENTS.md
+MASTER_SKILLS_*.md
+OMNI_WEB_*.md
+

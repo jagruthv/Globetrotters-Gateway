@@ -264,7 +264,7 @@ export default function FluidLiquidDropHero({
             Your verified companion across all 59 districts and 646 destinations. Authentic local guides for free sights, instant QR passes for ticketed monuments, and scam alerts with zero markups.
           </p>
 
-          {/* Live Telemetry Metrics Row: Streamlined High-Density Pill Strip */}
+          {/* Overview Metrics */}
           <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 py-0.5 text-xs font-sans-clean">
             <div className="flex items-center gap-1.5">
               <span className="font-mono font-bold text-amber-400 text-xs sm:text-sm">59</span>
@@ -282,12 +282,12 @@ export default function FluidLiquidDropHero({
             </div>
             <span className="text-white/20 hidden sm:inline">•</span>
             <div className="flex items-center gap-1.5">
-              <span className="font-mono font-bold text-emerald-400 text-xs sm:text-sm">100%</span>
-              <span className="text-slate-400 text-[10px] sm:text-[11px]">Offline Capable</span>
+              <span className="font-mono font-bold text-emerald-400 text-xs sm:text-sm">₹0</span>
+              <span className="text-slate-400 text-[10px] sm:text-[11px]">Extra Markup</span>
             </div>
           </div>
 
-          {/* Modern Double-Bezel Floating Tourism Console */}
+          {/* Quick Booking Console */}
           <div className="w-full max-w-2xl rounded-2xl p-1 bg-white/[0.04] border border-white/10 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
             <div className="w-full rounded-xl bg-[#0B0F17]/95 border border-white/5 p-2.5 sm:p-3 flex flex-col gap-2">
               

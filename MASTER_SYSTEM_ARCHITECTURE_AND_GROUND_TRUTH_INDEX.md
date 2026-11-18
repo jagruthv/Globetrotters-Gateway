@@ -361,7 +361,6 @@ To guarantee high-reasoning output without draining local hardware resources on 
 - **SDP Upgrade Roadmap & Implementation Ledger**: [SDP_PROJECT_UPGRADE_VAULT.md](file:///d:/globetrotter's%20gateway/SDP_PROJECT_UPGRADE_VAULT.md)
 - **SDP Staged Components & Utilities**: Stored in `sdp_upgrades/` (`components/`, `utils/`, `seo/`, `tools/`)
 - **Video Prior Art & Technical Intelligence**: [REELS_PRIOR_ART_AND_TECH_VAULT.md](file:///d:/globetrotter's%20gateway/REELS_PRIOR_ART_AND_TECH_VAULT.md)
-- **Hierarchical Skills Directory**: [MASTER_SKILLS_DIRECTORY_AND_SUBTOPIC_ROUTER.md](file:///d:/globetrotter's%20gateway/MASTER_SKILLS_DIRECTORY_AND_SUBTOPIC_ROUTER.md)
 
 ---
 

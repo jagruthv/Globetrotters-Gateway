@@ -62,7 +62,7 @@ export default function AiFluidTripStudio({
 
   const recommendedDays = calculateRecommendedDays();
 
-  // Generate Plan using real backend AI or honest Local Heuristic Route Engine
+  // Generate plan using backend route planner or local route generator
   const handleGeneratePlan = async (overrideDays = null) => {
     if (selectedPlaces.length === 0) return;
     setIsGenerating(true);
@@ -399,7 +399,7 @@ export default function AiFluidTripStudio({
                 <div className="flex flex-col gap-1">
                   <h4 className="text-base font-bold text-white font-sans-clean">No destinations selected</h4>
                   <p className="text-xs text-slate-400 max-w-sm font-sans-clean">
-                    Add must-see spots from the 59 Districts Directory or Tour Packages to generate your tailored day-by-day tour plan.
+                    Add spots from the 59 Districts Directory or Tour Packages to create your day-by-day travel plan.
                   </p>
                 </div>
                 <button
@@ -456,20 +456,20 @@ export default function AiFluidTripStudio({
                 </span>
               </div>
 
-              {/* Dynamic AI Duration Orchestration (Powered by Google Gemini 3.5 Flash Lite) */}
+              {/* Smart Day Planning */}
               <div className="flex flex-col gap-2.5 p-4 rounded-2xl bg-white/[0.02] border border-white/10 font-sans-clean">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-amber-400" />
-                    <span className="text-slate-200 font-bold tracking-wide">Dynamic Day Sequencing</span>
+                    <span className="text-slate-200 font-bold tracking-wide">Smart Day Planning</span>
                   </div>
-                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/20 font-medium font-telemetry flex items-center gap-1">
-                    <span>Gemini 3.5 Flash Lite</span>
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/20 font-medium font-sans-clean flex items-center gap-1">
+                    <span>Auto-Schedule</span>
                   </span>
                 </div>
                 
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Automatic AI duration calculation: select your target destinations above and Gemini 3.5 Flash Lite automatically optimizes the itinerary length, stop timings, and daylight mountain transits to prevent rushed driving.
+                  We automatically organize your stops into balanced days with comfortable drive times, daylight mountain travel, and meal breaks.
                 </p>
 
                 <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px]">

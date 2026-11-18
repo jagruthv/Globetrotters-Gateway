@@ -38,7 +38,7 @@ const getStoredUser = () => {
   }
 };
 
-// Execute Agentic Account Actions (MCP Tool Operator)
+// Execute account actions (pass booking, saving trips)
 function runAgentTool(toolName, _params, planToUse, onBookPass, latestPlan, currentPlan) {
   const user = getStoredUser();
   const touristName = user?.fullName || 'Verified Explorer';
@@ -290,14 +290,14 @@ export default function GeminiPlanDrawer({
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-white font-sans-clean">
-                    Gemini Account Agent (MCP)
+                    Travel Assistant
                   </h3>
-                  <span className="text-[9px] px-2 py-0.2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold font-mono">
-                    3.8 Flash
+                  <span className="text-[9px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold font-sans-clean">
+                    Online Guide
                   </span>
                 </div>
                 <span className="text-[11px] text-slate-400 font-sans-clean">
-                  Operates directly on your account • Books passes & saves trips
+                  Customizes your route and books entry passes
                 </span>
               </div>
             </div>

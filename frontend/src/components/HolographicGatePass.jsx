@@ -170,14 +170,14 @@ export default function HolographicGatePass({
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
             <Ticket className="w-3.5 h-3.5 text-emerald-400" />
             <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-emerald-300 font-sans-clean">
-              Instant Digital Entry Ticket • BookMyShow Style
+              Digital Entry Pass • Instant Verification
             </span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white font-sans-clean">
             Curated Monument Entry Pass
           </h2>
           <p className="text-xs md:text-sm text-slate-400 max-w-lg leading-relaxed font-sans-clean">
-            Clean, digital cinema-style entry pass with fast-track QR scanner code. Present at the turnstile gate for queue-free access.
+            Official digital entry pass with fast-track QR gate code. Present at the entrance for quick access.
           </p>
         </div>
 
@@ -203,7 +203,7 @@ export default function HolographicGatePass({
               </div>
               <div className="flex flex-col">
                 <span className="text-[11px] font-bold text-white tracking-wider font-mono">
-                  GLOBETROTTER CINEMA & MONUMENT PASS
+                  GLOBETROTTER OFFICIAL MONUMENT PASS
                 </span>
                 <span className="text-[9px] text-amber-300/80 tracking-widest font-mono">
                   OFFICIAL AP & TG GATE TICKET
@@ -257,7 +257,7 @@ export default function HolographicGatePass({
               {/* Date */}
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-mono text-slate-400 flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-emerald-400" /> Show Date
+                  <Calendar className="w-3 h-3 text-emerald-400" /> Visit Date
                 </span>
                 <span className="text-xs font-bold text-white mt-1">
                   {activePass.validFrom}
@@ -333,10 +333,10 @@ export default function HolographicGatePass({
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-bold text-white font-sans-clean">
-                    Real Scannable Turnstile QR
+                    Entry QR Code
                   </span>
                   <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean max-w-xs">
-                    Works 100% offline. Scan with any phone camera or turnstile reader to verify.
+                    Show this QR code at the entrance gate for fast-track entry.
                   </p>
                   <span className="text-[10px] text-amber-300 font-mono font-semibold tracking-wider">
                     Ticket Code: {activePass.reference}

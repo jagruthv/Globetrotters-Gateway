@@ -19,7 +19,7 @@
 | **08** | `DTlBWdWDfby` | `@growwithkaran8` | Agency & Business | **8-Step Client Onboarding System** (SOW, Welcome, Invoice, Access, Kickoff, etc.) | **Cataloged** (Agency SOP) | Client consulting, enterprise onboarding |
 | **09** | `DT-nEMukkld` | `@techinsixty` (Ashutosh) | Motion Components | **VengeanceUI Library**: Tailwind + Framer Motion + GSAP animated components | **Cataloged** (`vengeanceui.com`) | Next.js & React premium dashboards |
 | **10** | `DUlEH4IgsAg` | `@ayzz.thedesigner` | Interactive Motion | **Top 5 Free Animation Tools**: Spline, Rive, Lottie, ShaderGradient, Icons8 | **Cataloged** (Interactive assets) | 3D web graphics, vector interactive UI |
-| **11** | `DTA4DlUEXDH` | `@ai.mowa` | AI Model Economy | **Zero-Cost Pro AI Stack**: LM Arena, OpenAlternative, OpenApps Pro | **Active** (`omni-web`, Local AI) | $0 infrastructure, LLM benchmark routing |
+| **11** | `DTA4DlUEXDH` | `@ai.mowa` | Model Economy | **Zero-Cost Intelligence Stack**: LM Arena, OpenAlternative, OpenApps Pro | **Active** (Local Models) | Zero-cost infrastructure, model benchmark routing |
 | **12** | `DV_Rs-hkgx_` | `@iron.coding` | Overlay Positioning | **Floating UI (Popper.js)**: Collision-aware anchor positioning for popovers & tooltips | **Cataloged** (`@floating-ui/dom`) | Context menus, district tooltips, modals |
 | **13** | `DXhEQ9JEWj_` | `@niki.webinns` | Animated Primitives | **React Bits (`reactbits.dev`)**: 85+ unstyled copy-paste animated React components | **Staged for SDP** (`sdp_upgrades/components/reactbits/`) | Rapid component prototyping, kinetic text |
 | **14** | `DbnfyHpzJo0` | `@lavin_creator` | Component Ecosystem | **Top 5 Modern UI Stacks**: Motion.dev, Kokonut UI Pro, Bklit UI, shadcn/ui, Vercel | **Cataloged** (UI Architecture) | SaaS dashboards, interactive telemetry |
@@ -29,7 +29,7 @@
 | **18** | `DegNfXENkMv` | `@sohail_systems` | SEO & Web Discovery | **Post-Launch Technical SEO & GSC Indexing Roadmap**: Sitemap, robots, OpenGraph | **Active** (`frontend/public/`) | Domain indexing, search crawler dominance |
 | **19** | `Degn07egVZe` | `@krishanu.builds` | Quality Assurance | **13-Point Pre-Flight Launch Quality Checklist**: Viewport, link, form, asset audit | **Active in Sentinel** (`tools/codeturtle/`) | Production release gate, client deployments |
 | **20** | `DfaTZHlh-k0` | `@piperbailey991` | Security & Auth | **BLA Anti-AI Build Shield + 20-Point Authentication Armor**: Adversarial REA defense | **Active** (Spring Boot + Vite Shield) | Enterprise IAM, zero-leak credential storage |
-| **21** | `DfH96xeqX-9` | `@waitwhatdidyoudo` | Agent Governance | **Karpathy Agent Blast-Radius Containment**: Prevention of 200-file PR disasters | **Active** (`AGENTS.md`) | Autonomous agent constraints, scoped PRs |
+| **21** | `DfH96xeqX-9` | `@waitwhatdidyoudo` | Code Governance | **Blast-Radius Containment**: Prevention of large unreviewed pull request diffs | **Active** (CI/CD Rules) | Scoped pull requests, bounded diffs |
 | **22** | `DfPoyBxqtej` | `@waitwhatdidyoudo` | Incident Response | **AiSOC Local Incident Telemetry Clustering**: Zero-cloud evidence ledger | **Active** (`tools/aisoc/`) | Telemetry clustering, tamper-evident audit |
 | **23** | `DcqdpuuILQ8` | `@tarakram.ai` | Frontend Aesthetics | **3 Anti-Slop Repositories**: `pbakaus/impeccable`, Taste Skill, Motion.dev | **Active** (`frontend/src/`) | Luxury frontend design, bespoke layouts |
 | **24** | `DfRrdeLNgGR` | `@developerlonely` | Web Intelligence | **Agent Reach**: Zero-token multi-platform social & technical feed extraction | **Active** (`agent-reach`, Local AI) | Real-time social intelligence, prior art |
@@ -51,7 +51,7 @@
 | **40** | `DfybnbITXu0` | `@muhammadalim_s` | Bespoke Micro-Worlds | **11 Creative Bespoke Kinetic Toggles**: Celestial orbit, Symbio fluid, Eclipse | **Active in Frontend** (`AtmosphereToggle`) | Stop-and-watch UI, luxury bespoke art |
 | **41** | `DfZPTbGy_4v` | `@gracebuilds.ai` | Vibe Hardening | **5 Vibe-Coding Security Defenses**: Zero client env secrets, IDOR validation | **Integrated in Sentinel** | Pre-deployment vulnerability shield |
 | **42** | `DfRuXh5NVZ4` | `@brealabs.dev` | Intrusion Prevention | **The 7 Burglar Doors of Vibe-Coded Web Apps**: Complete door-locking protocol | **Integrated in Full Stack** | Anti-intrusion, zero exposed env |
-| **43** | `Df0uanRpg_s` | `@imaginetechz` | Design Intelligence | **Figma Use Motion & Design Critique Skills**: Keyframe motion + UX critique | **Active in Master Skills** | Visual hierarchy, $10,000 agency design |
+| **43** | `Df0uanRpg_s` | `@imaginetechz` | Design Intelligence | **Figma Use Motion & Design Critique Skills**: Keyframe motion + UX critique | **Active in Design Guidelines** | Visual hierarchy, $10,000 agency design |
 
 ---
 
