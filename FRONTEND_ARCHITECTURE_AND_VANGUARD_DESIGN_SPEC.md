@@ -84,7 +84,7 @@ $$m \ddot{y} + c \dot{y} + k(y - y_{eq}) = 0$$
 - **Dynamic AI Duration Orchestration (Google Gemini 3.5 Flash Lite)**: Manual number of days selector removed in favor of automatic intelligent duration sequencing. Gemini 3.5 Flash Lite analyzes selected attraction dwell times, gate closing curfews, and OSRM road graph metrics to compute the ideal comfortable multi-day itinerary.
 - Autonomous Topographic Traveling Salesperson optimization (TD-TOPTW) with 100% attraction conservation.
 - Live Spring Boot backend connectivity with real OSRM road distance matrix (`/api/ai/planner/plan`).
-- Seamless client-side route fallback (`layaEdgeEngine.js`) if network or cloud AI circuit breaker trips.
+- Seamless client-side route fallback (`offlineRouteEngine.js`) if network or cloud AI circuit breaker trips.
 - Browser SpeechSynthesis voice briefing of the planned daily itinerary with regional culinary advice.
 
 ### 5. `HolographicGatePass.jsx`

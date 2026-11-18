@@ -1,6 +1,6 @@
 ---
 name: openserp-and-local-models
-description: Operational protocols and executable recipes for using local OpenSERP search (http://localhost:7000), local Python ML/AI models (PyTorch, Hugging Face transformers, sentence-transformers, Ultralytics YOLO, PyTesseract), Ollama, and browser Edge AI (ONNX Runtime Web, Laya Engine) for zero-cost, rate-limit-free search, vision, embeddings, and inference.
+description: Operational protocols and executable recipes for using local OpenSERP search (http://localhost:7000), local Python ML/AI models (PyTorch, Hugging Face transformers, sentence-transformers, Ultralytics YOLO, PyTesseract), Ollama, and browser Edge AI (ONNX Runtime Web, deterministic client algorithms) for zero-cost, rate-limit-free search, vision, embeddings, and inference.
 ---
 
 # OpenSERP & Local Open-Source Models Skill
@@ -13,7 +13,7 @@ This skill defines the operational directives, architectural guidelines, and exe
 ├──────────────────────────────────┬─────────────────────────────────┬─────────────────────────────┤
 │ 1. OPENSERP SEARCH (Port 7000)   │ 2. PYTHON LOCAL ML (PyTorch)    │ 3. EDGE & CLIENT RUNTIMES   │
 │ • Docker: karust/openserp        │ • sentence-transformers 5.2.0   │ • ONNX Runtime Web (ort-web)│
-│ • Bing, Google, DDG, MegaSearch  │ • transformers 4.49.0 / PyTorch │ • Laya Edge Decision Engine │
+│ • Bing, Google, DDG, MegaSearch  │ • transformers 4.49.0 / PyTorch │ • Deterministic Route Engine│
 │ • 0 token cost, 0 rate limits    │ • ultralytics 8.3 (YOLO Vision) │ • WebAssembly / WebGPU      │
 │ • Cached SERP JSON responses     │ • pytesseract 0.3.13 (OCR)      │ • Ollama (localhost:11434)  │
 └──────────────────────────────────┴─────────────────────────────────┴─────────────────────────────┘
@@ -172,9 +172,9 @@ When local LLM services are booted by the user:
 
 ---
 
-## 4. Edge & In-Browser Intelligence (Laya Edge Engine & ONNX Runtime Web)
+## 4. Edge & In-Browser Intelligence (Deterministic Client Engine & ONNX Runtime Web)
 
-### Laya Client-Side Engine (`frontend/src/utils/layaEdgeEngine.js`)
+### Deterministic Route Engine (`frontend/src/utils/offlineRouteEngine.js`)
 - Runs directly on the tourist's browser or mobile device via WebAssembly/JS.
 - **Latency**: `< 15ms` execution with **0% network dependency** in cellular dead-zones (forest valleys, cave depths, hilltops).
 - **Core Algorithms**:

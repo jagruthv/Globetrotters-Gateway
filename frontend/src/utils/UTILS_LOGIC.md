@@ -4,9 +4,9 @@ This document provides a factual, code-verified audit of the edge algorithms and
 
 ---
 
-## 1. Offline Deterministic Route Engine (`layaEdgeEngine.js` / `offlineRouteEngine.js`)
+## 1. Offline Deterministic Route Engine (`offlineRouteEngine.js`)
 
-**Architectural Reality**: Full AI itinerary synthesis and conversational plan redesign are powered by the **Spring Boot Multi-Model AI Router (Groq GPT-OSS 120B / Gemini)** on the backend. The client-side utility in `layaEdgeEngine.js` (re-exported by `offlineRouteEngine.js`) serves strictly as a **Zero-Connectivity Deterministic Fallback**:
+**Architectural Reality**: Full AI itinerary synthesis and conversational plan redesign are powered by the **Spring Boot Multi-Model AI Router (Groq GPT-OSS 120B / Gemini)** on the backend. The client-side utility in `offlineRouteEngine.js` serves strictly as a **Zero-Connectivity Deterministic Fallback**:
 1. **Low-Bandwidth / Zero-Bar Resilience**: Operates in deep valleys, dense forests, and caves where mobile connectivity is unavailable.
 2. **Deterministic Constraint Heuristics**: Sequences attractions using geodesic Great-Circle distances, terrain transit speed profiling, and operating hours when the backend AI is unreachable.
 3. **Corridor Detour Detection**: Solves "route touch avuthu unde places" (attractions within $\le 28\,\text{km}$ detour of the transit highway).

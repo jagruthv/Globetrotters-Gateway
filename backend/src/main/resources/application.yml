@@ -21,28 +21,24 @@ spring:
       enabled: true
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:h2:file:./data/globetrotter_dev;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE}
-    driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.h2.Driver}
-    username: ${SPRING_DATASOURCE_USERNAME:sa}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://globetrotter-db.cx2cek6kon94.ap-south-1.rds.amazonaws.com:5432/postgres}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.postgresql.Driver}
+    username: ${SPRING_DATASOURCE_USERNAME:gtadmin}
+    password: ${SPRING_DATASOURCE_PASSWORD:Globetrotter2026Pass!}
 
     # ── HikariCP Connection Pool Tuning ────────────────────────────────────
     # Prevents connection starvation under concurrent requests.
     hikari:
-      maximum-pool-size: 20          # max DB connections (tune to DB server capacity)
-      minimum-idle: 5                # always keep 5 connections warm
-      connection-timeout: 3000       # fail fast if no connection in 3s
+      maximum-pool-size: 10          # optimized for db.t4g.micro capacity
+      minimum-idle: 2                # keep 2 connections warm
+      connection-timeout: 5000       # wait up to 5s for cloud socket connection
       idle-timeout: 600000           # close idle connections after 10 min
       max-lifetime: 1800000          # retire connections after 30 min (prevents stale)
       pool-name: GlobetrotterHikariPool
       leak-detection-threshold: 10000 # warn if connection held >10s (helps debug N+1)
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     open-in-view: true              # Ensures JPA session is active during HTTP JSON serialization

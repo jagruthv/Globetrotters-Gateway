@@ -36,7 +36,7 @@ Modern regional travel corridors (e.g., Visakhapatnam–Araku, Warangal–Ramapp
 │                                                                                        │
 │   [ TOURIST CLIENT (PWA / Mobile Web) ]                                                │
 │   ├── Circuit Pass Wallet (Offline IndexedDB + Ed25519 Keys in Hardware TEE)           │
-│   ├── Offline Route Decision Engine (Heuristic Route & Sequence Optimizer in layaEdgeEngine.js) │
+│   ├── Offline Route Decision Engine (Heuristic Route & Sequence Optimizer in offlineRouteEngine.js) │
 │   └── Lamport Hash-Chain / HMAC-SHA256 Ticket Voucher Generator                        │
 │                                                                                        │
 │                                      ▲                                                 │

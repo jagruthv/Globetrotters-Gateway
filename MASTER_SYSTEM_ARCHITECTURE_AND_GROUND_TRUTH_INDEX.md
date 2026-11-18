@@ -202,7 +202,7 @@ $$d(i, j) = 2R \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta\phi}{2}\right) + \cos
 
 | Component / Subsystem | Primary Code File | Key Role & Interface |
 | :--- | :--- | :--- |
-| **Offline Route Decision Engine** | [`frontend/src/utils/layaEdgeEngine.js`](file:///d:/globetrotter's%20gateway/frontend/src/utils/layaEdgeEngine.js) | Computes client-side detour corridors, tourist education briefs, and multi-day TSP tours offline. |
+| **Offline Route Decision Engine** | [`frontend/src/utils/offlineRouteEngine.js`](file:///d:/globetrotter's%20gateway/frontend/src/utils/offlineRouteEngine.js) | Computes client-side detour corridors, tourist education briefs, and multi-day TSP tours offline. |
 | **Interactive Trip Planner UI** | [`frontend/src/pages/TripPlannerPage.jsx`](file:///d:/globetrotter's%20gateway/frontend/src/pages/TripPlannerPage.jsx) | 59-district picker, tourist education modal, route corridor drawer, and printable itinerary timeline. |
 | **Spring Boot Place Entity** | [`backend/src/main/java/com/globetrotter/gateway/model/Place.java`](file:///d:/globetrotter's%20gateway/backend/src/main/java/com/globetrotter/gateway/model/Place.java) | JPA Entity carrying all 15 ground-truth attributes matching `places` table schema. |
 | **H2 Database Seeder** | [`backend/src/main/java/com/globetrotter/gateway/config/AtlasDataSeeder.java`](file:///d:/globetrotter's%20gateway/backend/src/main/java/com/globetrotter/gateway/config/AtlasDataSeeder.java) | Reads `atlas_places.json` on startup and synchronizes all 646 spots into repository. |

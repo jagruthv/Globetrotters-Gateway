@@ -902,13 +902,11 @@ export const offlineRouteEngine = {
   keywordSpotSearch,
   semanticSpotSearch,
   fetchDistrictPlacesOffline,
-  fetchDistrictPlacesWithLaya: fetchDistrictPlacesOffline,
   getLocalAtlasFallback,
   deduplicateDistrictPlaces
 };
 
 // Aliases for seamless compatibility
 export const offlineRouteFallback = offlineRouteEngine;
-export const layaEdgeEngine = offlineRouteEngine;
 
 export default offlineRouteEngine;

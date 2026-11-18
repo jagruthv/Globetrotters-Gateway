@@ -37,10 +37,10 @@ These rules govern the autonomous discovery and usage of **OpenSERP** and local 
 
 ---
 
-## 3. Client & Edge AI Architecture (Laya Edge Engine & ONNX Runtime Web)
+## 3. Client & Edge Architecture (Deterministic Offline Engine & ONNX Runtime Web)
 
 1. **In-Browser Execution**:
-   - All high-frequency corridor calculations (15-point schema evaluation, geodesic perpendicular offsets, solar ephemeris calculations) must remain client-side in `frontend/src/utils/layaEdgeEngine.js` or via ONNX Runtime Web.
+   - All high-frequency corridor calculations (15-point schema evaluation, geodesic perpendicular offsets, solar ephemeris calculations) must remain client-side in `frontend/src/utils/offlineRouteEngine.js` or via ONNX Runtime Web.
    - Never introduce unnecessary remote network round-trips for calculations that can run deterministically on the client device in < 15ms.
 
 ---

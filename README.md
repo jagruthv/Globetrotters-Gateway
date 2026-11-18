@@ -9,10 +9,10 @@
 
 ```mermaid
 graph TD
-    Client["React + Vite Frontend PWA"] --> OfflineEngine["Offline 59-District Route Planner (layaEdgeEngine.js)"]
-    Client --> Scanner["Staff Gate Scanner (YOLOv8 + HMAC QR)"]
+    Client["React + Vite Frontend PWA"] --> OfflineEngine["Offline 59-District Route Planner (offlineRouteEngine.js)"]
+    Client --> Scanner["Staff Gate Scanner (Ed25519 + HMAC QR)"]
     Client --> API["Spring Boot REST Backend Engine"]
-    API --> H2DB["H2 / PostgreSQL Database (Pre-seeded 59 Districts)"]
+    API --> CloudDB["AWS RDS PostgreSQL Cloud Database (Pre-seeded 59 Districts)"]
     API --> MasterAtlas["MASTER_59_DISTRICT_ATLAS.json"]
     API --> Security["JWT + Role-Based Access Control (Tourist / Staff / Admin)"]
 ```
@@ -23,7 +23,7 @@ graph TD
 
 | Directory | Operational Purpose | Key Artifacts |
 | :--- | :--- | :--- |
-| **`frontend/`** | React 19 + Vite single-page web app with sub-second paint, offline route corridor planner, staff scanner, and paperless QR passes. | `src/pages/`, `src/components/`, `src/utils/layaEdgeEngine.js` |
+| **`frontend/`** | React 19 + Vite single-page web app with sub-second paint, offline route corridor planner, staff scanner, and paperless QR passes. | `src/pages/`, `src/components/`, `src/utils/offlineRouteEngine.js` |
 | **`backend/`** | Spring Boot 3 Java REST API powering authentication, circuit bookings, HMAC QR code signing, and gate turnstile verification. | `src/main/java/`, `pom.xml`, `data/globetrotter_dev.mv.db` |
 | **`data_compiler/`** | Single source of truth data pipeline consolidating all 59 districts of AP & Telangana. | `MASTER_59_DISTRICT_ATLAS.json`, `build_database_seed_json.py` |
 | **`scratch/`** | Official AP Tourism high-resolution photography vault scraped directly from `aptourism.gov.in`. | `scratch/ap_tourism_wallpapers/` (88 official photos) |

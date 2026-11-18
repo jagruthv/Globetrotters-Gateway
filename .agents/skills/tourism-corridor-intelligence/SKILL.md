@@ -12,7 +12,7 @@ This skill equips agents with domain-specific architecture, cryptographic standa
 - **Data Standard**: 15-Point Ground-Reality Dossier (Google Place IDs, Dynastic Origin, Elevation, Checkpost Curfews, Cellular Dead Zones, Sanitation, Last-Mile Transit, Dwell Times).
 - **Core Pillars**:
   1. Topographic Itinerary Optimization (TD-TOPTW with elevation & golden hours).
-  2. Laya Edge Decision Engine (Fast client-side corridor detour & tour recommendation).
+  2. Offline Deterministic Route Engine (Fast client-side corridor detour & tour recommendation via offlineRouteEngine.js).
   3. Provable Offline Gate Security (Cryptographic HMAC-SHA256 signature tokens + offline camera QR reconciliation with atomic CAS anti-passback).
   4. Dynamic Queue & Crowd Modeling (Inhomogeneous Poisson Process with Diurnal Gaussian Intensity).
 
@@ -22,7 +22,7 @@ This skill equips agents with domain-specific architecture, cryptographic standa
 - **Sovereign Tourism Atlas**: [`MASTER_59_DISTRICT_TOURISM_ATLAS.md`](file:///d:/globetrotter's%20gateway/MASTER_59_DISTRICT_TOURISM_ATLAS.md)
 - **Photo Verification Ledger**: [`SOVEREIGN_PHOTO_VERIFICATION_LEDGER.md`](file:///d:/globetrotter's%20gateway/SOVEREIGN_PHOTO_VERIFICATION_LEDGER.md)
 - **Backend Services**: `backend/src/main/java/com/globetrotter/gateway/service/`
-- **Frontend Core**: `frontend/src/utils/layaEdgeEngine.js`, `frontend/src/pages/TripPlannerPage.jsx`
+- **Frontend Core**: `frontend/src/utils/offlineRouteEngine.js`, `frontend/src/components/AiFluidTripStudio.jsx`
 
 ## 3. Engineering Guidelines
 - When modifying routing, prefer true road distance models (OSRM/Valhalla) over straight-line Haversine.
