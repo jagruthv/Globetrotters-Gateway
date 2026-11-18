@@ -196,7 +196,7 @@ export default function App() {
 
     setActiveBookingForPayment({
       ...bookingData,
-      touristName: user.fullName || user.email || 'Verified Explorer',
+      touristName: user.fullName || user.email || 'Guest Traveler',
       touristEmail: user.email || '',
       touristPhone: user.phoneNumber || ''
     });
@@ -210,7 +210,7 @@ export default function App() {
       setPendingBooking(null);
       setActiveBookingForPayment({
         ...booking,
-        touristName: userData?.fullName || userData?.email || 'Verified Explorer',
+        touristName: userData?.fullName || userData?.email || 'Guest Traveler',
         touristEmail: userData?.email || '',
         touristPhone: userData?.phoneNumber || ''
       });
@@ -430,13 +430,13 @@ export default function App() {
               className="pt-28 pb-16"
             >
               <div className="max-w-md mx-auto text-center p-8 bg-[#0D121F] rounded-3xl border border-white/10 flex flex-col items-center gap-4">
-                <h3 className="text-xl font-bold text-white">Gate Staff & Conductor Console</h3>
+                <h3 className="text-xl font-bold text-white">Agent Mode Console</h3>
                 <p className="text-xs text-slate-400">Scan and verify tickets at attraction entrance gates.</p>
                 <button
                   onClick={handleOpenAgentPortal}
                   className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs cursor-pointer"
                 >
-                  Open Gate Scanner
+                  Enter Agent Mode
                 </button>
               </div>
             </motion.div>

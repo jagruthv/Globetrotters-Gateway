@@ -41,7 +41,7 @@ const getStoredUser = () => {
 // Execute account actions (pass booking, saving trips)
 function runAgentTool(toolName, _params, planToUse, onBookPass, latestPlan, currentPlan) {
   const user = getStoredUser();
-  const touristName = user?.fullName || 'Verified Explorer';
+  const touristName = user?.fullName || (user?.email ? user.email.split('@')[0] : 'Traveler');
 
   if (toolName === 'book_pass') {
     const orderRef = `APTG-${Math.floor(10000 + Math.random() * 90000)}`;

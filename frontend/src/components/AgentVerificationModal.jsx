@@ -121,14 +121,14 @@ export default function AgentVerificationModal({
                 Tourism Gate Protocol • AP & TG
               </span>
               <h3 className="text-xl font-bold text-white font-sans-clean">
-                {success ? 'Officer Accredited' : 'Field Staff Authentication'}
+                {success ? 'Agent Mode Activated' : 'Agent Mode Verification'}
               </h3>
             </div>
 
             <p className="text-xs text-slate-400 max-w-xs leading-relaxed font-sans-clean">
               {success
                 ? 'Identity verified by central core. Launching operational scanner...'
-                : 'Turnstile gate scanning is strictly locked to verified staff and officers.'}
+                : 'Agent Mode is reserved for ticket conductors, gate officers, and staff.'}
             </p>
           </div>
 
@@ -215,7 +215,7 @@ export default function AgentVerificationModal({
                   </>
                 ) : (
                   <>
-                    <span>Authenticate & Access Scanner</span>
+                    <span>Enter Agent Mode</span>
                     <ArrowRight className="w-4 h-4 text-slate-950" />
                   </>
                 )}

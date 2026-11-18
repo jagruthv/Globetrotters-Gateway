@@ -62,13 +62,13 @@ function playScannerSound(isGranted) {
 }
 
 const CHECKPOINTS = [
-  { id: 1, name: 'Araku Tribal Museum (Alluri Sitharama Raju)', gate: 'Turnstile A1' },
-  { id: 2, name: 'Borra Caves Cave Entrance (Alluri Sitharama Raju)', gate: 'Turnstile B2' },
-  { id: 3, name: 'Belum Caves Main Gate (Nandyal)', gate: 'Turnstile C1' },
-  { id: 4, name: 'Coringa Mangrove Boardwalk (Kakinada)', gate: 'North Turnstile' },
-  { id: 5, name: 'Golconda Fort Main Gate (Hyderabad)', gate: 'Fateh Darwaza Turnstile' },
+  { id: 1, name: 'Araku Tribal Museum (Alluri Sitharama Raju)', gate: 'Gate A1' },
+  { id: 2, name: 'Borra Caves Cave Entrance (Alluri Sitharama Raju)', gate: 'Gate B2' },
+  { id: 3, name: 'Belum Caves Main Gate (Nandyal)', gate: 'Gate C1' },
+  { id: 4, name: 'Coringa Mangrove Boardwalk (Kakinada)', gate: 'North Gate' },
+  { id: 5, name: 'Golconda Fort Main Gate (Hyderabad)', gate: 'Fateh Darwaza Gate' },
   { id: 6, name: 'Ramappa Temple UNESCO Sanctum (Mulugu)', gate: 'Main Mandapa Gate' },
-  { id: 7, name: 'Gandikota Fort Gorge View (YSR Kadapa)', gate: 'Canyon Viewpoint Turnstile' }
+  { id: 7, name: 'Gandikota Fort Gorge View (YSR Kadapa)', gate: 'Canyon Viewpoint Gate' }
 ];
 
 export default function AgentPortalView({ 

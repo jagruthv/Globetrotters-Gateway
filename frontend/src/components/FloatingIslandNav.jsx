@@ -197,7 +197,7 @@ export default function FloatingIslandNav({
                         {currentUser.fullName ? currentUser.fullName[0].toUpperCase() : 'U'}
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-xs font-semibold text-white">{currentUser.fullName || 'Verified Explorer'}</span>
+                        <span className="text-xs font-semibold text-white">{currentUser.fullName || (currentUser.email ? currentUser.email.split('@')[0] : 'Traveler')}</span>
                         <span className="text-[10px] text-amber-300/80">{currentUser.email}</span>
                       </div>
                     </div>

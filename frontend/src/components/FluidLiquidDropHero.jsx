@@ -782,7 +782,7 @@ export default function FluidLiquidDropHero({
                   </div>
                 )}
 
-                {/* 3. Platform & Digital Turnstile Fee */}
+                {/* 3. Platform & E-Pass Service Fee */}
                 {platformFee > 0 && (
                   <div className="flex items-center justify-between py-2 border-b border-white/5">
                     <div className="flex flex-col">
