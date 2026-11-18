@@ -186,6 +186,22 @@ export default function App() {
                 onClearPlaces={handleClearPlaces}
                 onExploreMore={() => setActiveTab('explore')}
                 onProceedToPasses={() => setActiveTab('passes')}
+                onBookCustomPlan={(customPlan) => {
+                  const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+                  const allStops = (customPlan.days || []).flatMap(d => (d.stops || []).map(s => s.name || s.placeName || s));
+                  setIssuedPassData({
+                    reference: `GT-2026-AI-${randomCode}`,
+                    token: `GT_PASS:CUSTOM:${Date.now()}:ed25519_gemini_${randomCode}`,
+                    touristName: 'Verified Visitor',
+                    circuitName: customPlan.title || 'Personalized Gemini Circuit Pass',
+                    validFrom: new Date().toISOString().split('T')[0],
+                    validUntil: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+                    status: 'ACTIVE_AUTHENTICATED',
+                    placesAllowed: allStops.length > 0 ? allStops : selectedPlaces.map(p => p.name),
+                    gateFeeTotal: `₹${customPlan.packagePrice || 320} (Unified Pass)`
+                  });
+                  setActiveTab('passes');
+                }}
               />
             </motion.div>
           )}

@@ -20,6 +20,7 @@ import {
 import { tripService, chatService } from '../services/api';
 import { offlineRouteFallback, resolveSpotCoordinates } from '../utils/offlineRouteEngine';
 import LiveWeatherBadge from './LiveWeatherBadge';
+import GeminiPlanDrawer from './GeminiPlanDrawer';
 
 // Module-level utility functions to isolate side-effect timings from React Compiler render scope
 const getNowTime = () => performance.now();
@@ -31,13 +32,15 @@ export default function AiFluidTripStudio({
   onRemovePlace, 
   onClearPlaces, 
   onExploreMore,
-  onProceedToPasses 
+  onProceedToPasses,
+  onBookCustomPlan 
 }) {
   // 'AUTO' allows the AI to calculate the optimal days based on spots count & elevation fatigue
   const [selectedDuration, setSelectedDuration] = useState('AUTO');
   const [travelPace, setTravelPace] = useState('BALANCED');
   const [isGenerating, setIsGenerating] = useState(false);
   const [planResult, setPlanResult] = useState(null);
+  const [geminiDrawerOpen, setGeminiDrawerOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [generationError, setGenerationError] = useState(null);
   const [chatSessionId] = useState(() => 'trip_chat_' + Math.random().toString(36).substring(2, 9));
@@ -577,10 +580,18 @@ export default function AiFluidTripStudio({
                 </div>
 
                 {/* Audio Guide & Pass Issue Actions */}
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
+                  <button
+                    onClick={() => setGeminiDrawerOpen(true)}
+                    className="px-4 py-2.5 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer font-sans-clean"
+                  >
+                    <Sparkles className="w-4 h-4 text-cyan-200 animate-pulse" />
+                    <span>Chat with Gemini to Modify Plan</span>
+                  </button>
+
                   <button
                     onClick={toggleSpeech}
-                    className="px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-white flex items-center gap-2 transition-colors font-sans-clean"
+                    className="px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-white flex items-center gap-2 transition-colors font-sans-clean cursor-pointer"
                   >
                     {isSpeaking ? (
                       <>
@@ -596,8 +607,14 @@ export default function AiFluidTripStudio({
                   </button>
 
                   <button
-                    onClick={onProceedToPasses}
-                    className="px-5 py-2.5 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm font-sans-clean"
+                    onClick={() => {
+                      if (onBookCustomPlan) {
+                        onBookCustomPlan(planResult);
+                      } else if (onProceedToPasses) {
+                        onProceedToPasses();
+                      }
+                    }}
+                    className="px-5 py-2.5 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm font-sans-clean cursor-pointer"
                   >
                     <Ticket className="w-4 h-4" />
                     <span>Proceed to Gate Passes</span>
@@ -878,6 +895,21 @@ export default function AiFluidTripStudio({
             </div>
           </motion.div>
         )}
+
+        {/* Google Apps Style Gemini Assistant Slide-Over Popup */}
+        <GeminiPlanDrawer
+          isOpen={geminiDrawerOpen}
+          onClose={() => setGeminiDrawerOpen(false)}
+          currentPlan={planResult}
+          onUpdatePlan={(updated) => setPlanResult(updated)}
+          onBookPass={(plan) => {
+            if (onBookCustomPlan) {
+              onBookCustomPlan(plan);
+            } else if (onProceedToPasses) {
+              onProceedToPasses();
+            }
+          }}
+        />
 
       </div>
     </section>
