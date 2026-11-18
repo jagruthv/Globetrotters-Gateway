@@ -284,7 +284,7 @@ export default function AgentPortalView({
             {isOnline ? (
               <>
                 <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-300 text-[11px] font-medium">RDS Synced</span>
+                <span className="text-emerald-300 text-[11px] font-medium">Cloud Synced</span>
               </>
             ) : (
               <>

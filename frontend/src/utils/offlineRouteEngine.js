@@ -906,7 +906,7 @@ export const offlineRouteEngine = {
   deduplicateDistrictPlaces
 };
 
-// Aliases for seamless compatibility
+// Aliases for backward compatibility
 export const offlineRouteFallback = offlineRouteEngine;
 
 export default offlineRouteEngine;
