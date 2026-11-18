@@ -507,7 +507,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-3 left-3 flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/30 text-[10px] text-amber-300 font-sans-clean font-semibold">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   <span>Camera Active</span>
                 </div>
                 <div className="absolute bottom-3 right-3 text-[10px] text-slate-300 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm">
@@ -544,7 +544,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                   aria-label={isListening ? 'Pause Listening' : 'Start Live Session'}
                 >
                   {isListening ? (
-                    <Mic className="w-7 h-7 animate-pulse" />
+                    <Mic className="w-7 h-7" />
                   ) : (
                     <MicOff className="w-7 h-7" />
                   )}
@@ -601,9 +601,9 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
             {/* Live Streaming Speech Transcript (No Fake Canned Strings) */}
             {liveTranscript && (
               <div className="p-3 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-start gap-2.5">
-                <Mic className="w-4 h-4 text-amber-400 shrink-0 mt-0.5 animate-pulse" />
+                <Mic className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-mono tracking-wider text-amber-400">Live Speech:</span>
+                  <span className="text-[11px] font-sans-clean font-medium text-amber-400">Live speech:</span>
                   <p className="text-sm text-amber-100 font-sans-clean font-medium">
                     "{liveTranscript}"
                   </p>
@@ -624,7 +624,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col gap-2.5">
                 {lastUserPrompt && (
                   <div className="flex flex-col border-b border-white/5 pb-2">
-                    <span className="text-[10px] uppercase tracking-wider text-slate-500 font-mono">You Asked:</span>
+                    <span className="text-[11px] font-sans-clean font-medium text-slate-400">You asked:</span>
                     <p className="text-sm font-semibold text-slate-200 font-sans-clean">
                       "{lastUserPrompt}"
                     </p>
@@ -634,9 +634,9 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                 {aiResponse && (
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-mono flex items-center gap-1.5">
+                      <span className="text-[11px] font-sans-clean font-medium text-emerald-400 flex items-center gap-1.5">
                         <Sparkles className="w-3 h-3" />
-                        <span>Gemini 3.8 Flash Advice:</span>
+                        <span>Guidance:</span>
                       </span>
                       <button
                         onClick={() => speakResponse(aiResponse)}

@@ -51,8 +51,8 @@ export default function SmsGatewayToast() {
               <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
                 <MessageSquare className="w-4 h-4" />
               </div>
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-300">
-                SMS & WhatsApp Gateway
+              <span className="text-xs font-semibold text-emerald-300 font-sans-clean">
+                SMS & WhatsApp gateway
               </span>
             </div>
 

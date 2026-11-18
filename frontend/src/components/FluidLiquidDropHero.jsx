@@ -451,7 +451,7 @@ export default function FluidLiquidDropHero({
               
               {/* Destination Category & Rating */}
               <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
-                <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/[0.04] text-amber-300 border border-amber-400/20 font-bold tracking-wider uppercase font-sans-clean">
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-amber-300 border border-amber-400/20 font-medium font-sans-clean">
                   {activeDest.tag}
                 </span>
                 <span className="text-[10px] text-amber-300 font-bold font-sans-clean flex items-center gap-1">
@@ -612,7 +612,7 @@ export default function FluidLiquidDropHero({
 
               {/* Official Policy Statement */}
               <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-400/25 flex flex-col gap-1 text-xs text-emerald-200">
-                <span className="font-bold uppercase tracking-wider text-[10px]">Official Entry Policy</span>
+                <span className="font-semibold text-xs text-emerald-300 font-sans-clean">Official entry policy</span>
                 <p className="leading-relaxed">
                   {activeDest.policyNotice}
                 </p>

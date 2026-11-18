@@ -320,8 +320,8 @@ export default function App() {
               {/* Ready to Explore Corridor Callout */}
               <section className="py-16 px-4 md:px-12 bg-black/40 border-t border-white/5 text-center">
                 <div className="max-w-3xl mx-auto flex flex-col items-center gap-5">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[10px] font-mono uppercase tracking-widest">
-                    Unified Tourism Corridors • AP & TG
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-amber-300 text-xs font-sans-clean font-medium">
+                    Unified tourism corridors • AP & TG
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-extrabold text-white font-sans-clean">
                     Start Your Heritage Journey Across 59 Districts

@@ -299,8 +299,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
             <div className="flex flex-col gap-1.5 pt-1">
               <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 w-fit text-slate-300">
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-[10px] uppercase font-mono tracking-widest font-semibold">
-                  Secure Tourist Access
+                <span className="text-[11px] font-sans-clean font-medium text-slate-300">
+                  Secure tourist access
                 </span>
               </div>
               <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight font-sans-clean">
@@ -344,7 +344,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-white/10" />
               </div>
-              <div className="relative flex justify-center text-[10px] uppercase font-mono tracking-widest text-slate-500">
+              <div className="relative flex justify-center text-xs font-sans-clean text-slate-500">
                 <span className="bg-[#090D16] px-2.5">or sign in with</span>
               </div>
             </div>

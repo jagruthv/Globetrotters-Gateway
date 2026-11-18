@@ -317,7 +317,7 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-[10px] font-bold ${scan.success ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {scan.success ? 'Approved' : 'Denied'}</span>
+                    {scan.success ? 'Approved' : 'Denied'}
                   </span>
                   <span className="text-[10px] text-slate-500 font-mono">{scan.time}</span>
                 </div>

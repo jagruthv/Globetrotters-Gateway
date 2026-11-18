@@ -145,7 +145,7 @@ export default function SettingsModal({
 
             {/* SECTION 1: ACCOUNT PROFILE */}
             <div className="flex flex-col gap-3">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
+              <span className="text-xs font-semibold text-slate-400 font-sans-clean">
                 Account
               </span>
 
@@ -194,8 +194,8 @@ export default function SettingsModal({
             {/* SECTION 2: PASS DELIVERY */}
             <div className="flex flex-col gap-3 pt-2 border-t border-white/10">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
-                  Pass Delivery
+                <span className="text-xs font-semibold text-slate-400 font-sans-clean">
+                  Pass delivery
                 </span>
                 <span className="text-[10px] text-slate-400 font-sans-clean">
                   Where we send your tickets
@@ -354,8 +354,8 @@ export default function SettingsModal({
 
             {/* SECTION 3: AUDIO & SOUND */}
             <div className="flex flex-col gap-3 pt-2 border-t border-white/10">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
-                Sound Effects
+              <span className="text-xs font-semibold text-slate-400 font-sans-clean">
+                Sound effects
               </span>
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5">
