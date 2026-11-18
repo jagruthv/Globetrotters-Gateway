@@ -5,7 +5,6 @@ import {
   MapPin, 
   Calendar, 
   Users, 
-  Zap, 
   ChevronRight,
   ShieldCheck,
   Clock,
@@ -237,11 +236,11 @@ export default function FluidLiquidDropHero({
         </AnimatePresence>
 
         {/* Ethereal Vignettes & Volumetric Light */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#06080D] via-[#06080D]/80 to-[#06080D]/45" />
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-[#06080D]/60 to-[#06080D]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080A0F] via-[#080A0F]/80 to-[#080A0F]/45" />
+        <div className="absolute inset-0 bg-radial-gradient from-transparent via-[#080A0F]/60 to-[#080A0F]" />
         
-        <div className="absolute top-1/4 left-1/6 w-[450px] h-[450px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/6 w-[450px] h-[450px] bg-amber-500/10 rounded-full blur-[160px] pointer-events-none" />
+        <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-amber-600/10 rounded-full blur-[150px] pointer-events-none" />
       </div>
 
       {/* Main Content Grid: Balanced Typography + Luxury Destination Showcase */}
@@ -263,7 +262,7 @@ export default function FluidLiquidDropHero({
           {/* Majestic Hero Headline */}
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08] font-sans-clean max-w-2xl">
             Explore Andhra & Telangana.{' '}
-            <span className="text-emerald-400">
+            <span className="text-amber-400">
               Travel Authentically.
             </span>
           </h1>
@@ -282,7 +281,7 @@ export default function FluidLiquidDropHero({
           </div>
 
           {/* Modern Floating Tourism Dock (Apple & High-End Government Travel Portal) */}
-          <div className="w-full max-w-3xl rounded-2xl bg-[#0B0F17]/95 border border-white/10 p-4 sm:p-5 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="w-full max-w-3xl rounded-2xl bg-[#0E121A]/95 border border-white/10 p-4 sm:p-5 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             
             {/* Top Row: Destination, Date, Visitors */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pb-3.5 border-b border-white/10">
@@ -290,7 +289,7 @@ export default function FluidLiquidDropHero({
               {/* 1. Destination Selector */}
               <div className="flex flex-col px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
                 <label htmlFor="hero-dest-select" className="text-[10px] text-slate-400 font-medium flex items-center gap-1 font-sans-clean">
-                  <MapPin className="w-3 h-3 text-cyan-400" />
+                  <MapPin className="w-3 h-3 text-amber-400" />
                   <span>Destination</span>
                 </label>
                 <select
@@ -360,12 +359,12 @@ export default function FluidLiquidDropHero({
               {/* Ground Truth Status */}
               <div className="flex items-center gap-2.5">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  activeDest.isTicketed ? 'bg-cyan-500/20 text-cyan-300' : 'bg-emerald-500/20 text-emerald-300'
+                  activeDest.isTicketed ? 'bg-amber-500/15 text-amber-300' : 'bg-emerald-500/15 text-emerald-300'
                 }`}>
                   {activeDest.isTicketed ? <Ticket className="w-3.5 h-3.5" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                 </div>
                 <div className="flex flex-col">
-                  <span className={`font-bold text-xs ${activeDest.isTicketed ? 'text-cyan-300' : 'text-emerald-300'}`}>
+                  <span className={`font-bold text-xs ${activeDest.isTicketed ? 'text-amber-300' : 'text-emerald-300'}`}>
                     {activeDest.isTicketed 
                       ? `Official Entry Ticket: ₹${activeDest.groundRate} / Person (${activeDest.authority})` 
                       : 'Free Public Heritage • No Ticket or Pass Required'}
@@ -384,7 +383,7 @@ export default function FluidLiquidDropHero({
                   type="checkbox"
                   checked={addAudioTour}
                   onChange={(e) => setAddAudioTour(e.target.checked)}
-                  className="w-4 h-4 rounded text-cyan-400 bg-slate-900 border-white/20 focus:ring-0 cursor-pointer"
+                  className="w-4 h-4 rounded text-amber-400 bg-slate-900 border-white/20 focus:ring-0 cursor-pointer"
                 />
                 <div className="flex items-center gap-1.5 text-[11px] text-slate-200">
                   <Headphones className="w-3 h-3 text-amber-400" />
@@ -414,24 +413,25 @@ export default function FluidLiquidDropHero({
                 {!activeDest.isTicketed && !addAudioTour ? (
                   <button
                     onClick={() => setGuideModalOpen(true)}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.12] border border-white/15 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                   >
-                    <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                    <FileText className="w-3.5 h-3.5 text-amber-400" />
                     <span>View Free Visitor Guide & Map</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
                   <button
                     onClick={handlePrimaryAction}
-                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-sm"
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2.5 transition-all shadow-md active:scale-[0.98] cursor-pointer"
                   >
-                    <Zap className="w-3.5 h-3.5 fill-slate-950" />
                     <span>
                       {activeDest.isTicketed 
                         ? `Book Official e-Ticket • ₹${totalPayable}` 
-                        : `Get Verified Guide + Audio Tour • ₹${totalPayable}`}
+                        : `Get Verified Guide + Audio • ₹${totalPayable}`}
                     </span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <div className="w-5 h-5 rounded-full bg-black/10 flex items-center justify-center">
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-950" />
+                    </div>
                   </button>
                 )}
               </div>
@@ -444,9 +444,9 @@ export default function FluidLiquidDropHero({
           <div className="flex flex-wrap items-center gap-5 pt-1">
             <button
               onClick={onExploreDistricts}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-cyan-300 transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
             >
-              <Compass className="w-4 h-4 text-cyan-400" />
+              <Compass className="w-4 h-4 text-amber-400" />
               <span>Browse 59 Districts Directory</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -455,7 +455,7 @@ export default function FluidLiquidDropHero({
 
             <button
               onClick={onLaunchTripPlanner}
-              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-emerald-300 transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-emerald-300 transition-colors cursor-pointer"
             >
               <Sparkles className="w-4 h-4 text-emerald-400" />
               <span>Plan My Multi-Day Tour</span>
@@ -471,7 +471,7 @@ export default function FluidLiquidDropHero({
             
             {/* Destination Category & Rating */}
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="text-[10px] px-3 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/30 font-bold tracking-wider uppercase font-sans-clean">
+              <span className="text-[10px] px-3 py-1 rounded-full bg-white/[0.04] text-amber-300 border border-amber-400/20 font-bold tracking-wider uppercase font-sans-clean">
                 {activeDest.tag}
               </span>
               <span className="text-xs text-amber-300 font-bold tracking-tight font-sans-clean flex items-center gap-1">
@@ -495,15 +495,15 @@ export default function FluidLiquidDropHero({
                   <h3 className="text-base font-bold text-white drop-shadow-md font-sans-clean">
                     {activeDest.name}
                   </h3>
-                  <span className="text-[11px] text-cyan-300 font-medium font-sans-clean flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-cyan-400" />
+                  <span className="text-[11px] text-amber-200/90 font-medium font-sans-clean flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-amber-400" />
                     <span>{activeDest.district} • {activeDest.state}</span>
                   </span>
                 </div>
 
                 <span className={`px-2.5 py-1 rounded-full backdrop-blur-md border text-xs font-bold font-sans-clean flex-shrink-0 ${
                   activeDest.isTicketed
-                    ? 'bg-cyan-500/20 border-cyan-400/40 text-cyan-300'
+                    ? 'bg-amber-500/20 border-amber-400/40 text-amber-300'
                     : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
                 }`}>
                   {activeDest.rateBadge}
@@ -517,7 +517,7 @@ export default function FluidLiquidDropHero({
               {/* What You'll Experience */}
               <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col gap-1">
                 <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5">
-                  <Compass className="w-3 h-3 text-cyan-400" />
+                  <Compass className="w-3 h-3 text-amber-400" />
                   <span>What You'll Experience</span>
                 </span>
                 <span className="text-slate-200 text-xs leading-relaxed">
@@ -529,7 +529,7 @@ export default function FluidLiquidDropHero({
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col justify-center">
                   <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-cyan-400" />
+                    <Clock className="w-3 h-3 text-amber-400" />
                     <span>Best Time</span>
                   </span>
                   <span className="text-slate-200 font-semibold text-[11px] mt-0.5">
@@ -569,9 +569,9 @@ export default function FluidLiquidDropHero({
                       key={d.id}
                       onClick={() => handleSelectDestination(idx)}
                       aria-label={`Preview ${d.name}`}
-                      className={`p-1 rounded-xl border flex flex-col items-center gap-1 transition-colors duration-200 ${
+                      className={`p-1 rounded-xl border flex flex-col items-center gap-1 transition-colors duration-200 cursor-pointer ${
                         isSelected
-                          ? 'bg-cyan-500/20 border-cyan-400/60 ring-1 ring-cyan-400/50'
+                          ? 'bg-amber-500/15 border-amber-400/60 ring-1 ring-amber-400/40'
                           : 'bg-white/[0.02] border-white/5 hover:border-white/20'
                       }`}
                     >
@@ -585,7 +585,7 @@ export default function FluidLiquidDropHero({
                       <span className="text-[9px] font-semibold text-slate-300 truncate w-full text-center">
                         {d.name.split(' ')[0]}
                       </span>
-                      <span className={`text-[8px] font-bold ${!d.isTicketed ? 'text-emerald-400' : 'text-cyan-400'}`}>
+                      <span className={`text-[8px] font-bold ${!d.isTicketed ? 'text-emerald-400' : 'text-amber-400'}`}>
                         {!d.isTicketed ? 'Free' : `₹${d.groundRate}`}
                       </span>
                     </button>
@@ -606,11 +606,11 @@ export default function FluidLiquidDropHero({
           <span>Smart Tourism Gateway • 59 Districts of Andhra Pradesh & Telangana</span>
         </div>
         <div className="flex items-center gap-6 text-slate-400">
-          <span className="flex items-center gap-1.5"><Landmark className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" /> Zero Ticket Markup Guarantee</span>
+          <span className="flex items-center gap-1.5"><Landmark className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" /> Zero Ticket Markup Guarantee</span>
           <span aria-hidden="true">•</span>
-          <span className="flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5 text-cyan-400" aria-hidden="true" /> Direct QR Gate Entry</span>
+          <span className="flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" /> Direct QR Gate Entry</span>
           <span aria-hidden="true">•</span>
-          <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" /> Verified Anti-Scam Traveler Protection</span>
+          <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" /> Verified Anti-Scam Protection</span>
         </div>
       </div>
 
@@ -622,7 +622,7 @@ export default function FluidLiquidDropHero({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-2xl max-h-[85vh] bg-[#0B0F17] border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col gap-5 shadow-2xl overflow-y-auto"
+              className="relative w-full max-w-2xl max-h-[85vh] bg-[#0E121A] border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col gap-5 shadow-2xl overflow-y-auto"
             >
               {/* Modal Header */}
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -642,7 +642,7 @@ export default function FluidLiquidDropHero({
                 <button
                   onClick={() => setGuideModalOpen(false)}
                   aria-label="Close destination guide"
-                  className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-slate-300 transition-colors"
+                  className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-slate-300 transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -691,9 +691,9 @@ export default function FluidLiquidDropHero({
               </div>
 
               {/* Optional Audio Walk Upsell Card */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-500/10 to-amber-500/10 border border-cyan-400/30 flex items-center justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-emerald-500/10 border border-amber-400/20 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-cyan-400/20 flex items-center justify-center text-cyan-300 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-amber-400/20 flex items-center justify-center text-amber-300 flex-shrink-0">
                     <Headphones className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col text-xs">
@@ -709,7 +709,7 @@ export default function FluidLiquidDropHero({
                     setAddAudioTour(true);
                     setCheckoutModalOpen(true);
                   }}
-                  className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex-shrink-0 shadow-md"
+                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex-shrink-0 shadow-md cursor-pointer transition-colors"
                 >
                   Unlock • ₹{activeDest.audioTourPrice}
                 </button>
@@ -719,7 +719,7 @@ export default function FluidLiquidDropHero({
               <div className="flex justify-end pt-2">
                 <button
                   onClick={() => setGuideModalOpen(false)}
-                  className="px-6 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white text-xs font-semibold"
+                  className="px-6 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-white text-xs font-semibold cursor-pointer"
                 >
                   Close Visitor Guide
                 </button>
@@ -738,19 +738,19 @@ export default function FluidLiquidDropHero({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-[#0B0F17] border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col gap-6 shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-[#0E121A] border border-white/10 rounded-3xl p-6 sm:p-8 flex flex-col gap-6 shadow-2xl overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-cyan-400/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+                  <div className="w-10 h-10 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
                     <Ticket className="w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-white font-sans-clean">
                       Smart e-Services Checkout • Zero Markup Gateway
                     </h3>
-                    <span className="text-xs text-cyan-300 font-sans-clean">
+                    <span className="text-xs text-amber-300/90 font-sans-clean">
                       {activeDest.authority} Authorized Reservation
                     </span>
                   </div>
@@ -758,7 +758,7 @@ export default function FluidLiquidDropHero({
                 <button
                   onClick={() => setCheckoutModalOpen(false)}
                   aria-label="Close checkout modal"
-                  className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-slate-300 transition-colors"
+                  className="w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-slate-300 transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -775,7 +775,7 @@ export default function FluidLiquidDropHero({
                   <span className="text-sm font-bold text-white font-sans-clean">
                     {activeDest.name}
                   </span>
-                  <span className="text-xs text-cyan-300">
+                  <span className="text-xs text-amber-300">
                     {activeDest.district}, {activeDest.state}
                   </span>
                   <span className="text-[11px] text-slate-400 mt-1">
@@ -843,8 +843,8 @@ export default function FluidLiquidDropHero({
               </div>
 
               {/* Government Guarantee Notice */}
-              <div className="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-400/20 flex items-start gap-2.5 text-xs text-cyan-200 font-sans-clean">
-                <Info className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-400/20 flex items-start gap-2.5 text-xs text-amber-200 font-sans-clean">
+                <Info className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <span className="leading-relaxed text-[11px]">
                   <strong>Official Rate Parity Guarantee:</strong> You are paying the exact rate approved by state tourism departments. Your QR entry pass will be issued instantly for direct gate entry.
                 </span>
@@ -854,13 +854,13 @@ export default function FluidLiquidDropHero({
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setCheckoutModalOpen(false)}
-                  className="flex-1 py-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 text-xs font-semibold transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleConfirmOrder}
-                  className="flex-1 py-3 rounded-xl bg-cyan-400 text-slate-950 text-xs font-bold transition-colors hover:bg-cyan-300 flex items-center justify-center gap-2 shadow-sm"
+                  className="flex-1 py-3 rounded-xl bg-amber-400 text-slate-950 text-xs font-bold transition-colors hover:bg-amber-300 flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                 >
                   <Lock className="w-3.5 h-3.5" />
                   <span>Confirm & Get Entry Pass</span>

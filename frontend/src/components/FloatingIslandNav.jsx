@@ -71,11 +71,11 @@ export default function FloatingIslandNav({
           onClick={() => setActiveTab('home')}
           className="flex items-center gap-2.5 cursor-pointer group pl-2"
         >
-          <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center transition-transform group-hover:scale-105">
-            <span className="font-display font-bold text-sm text-cyan-300 tracking-wider">G</span>
+          <div className="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-400/30 flex items-center justify-center transition-transform group-hover:scale-105">
+            <span className="font-display font-bold text-sm text-amber-400 tracking-wider">G</span>
           </div>
           <div className="flex flex-col">
-            <span className="font-display font-bold tracking-wider text-sm text-white group-hover:text-cyan-300 transition-colors">
+            <span className="font-display font-bold tracking-wider text-sm text-white group-hover:text-amber-300 transition-colors">
               GLOBETROTTER
             </span>
             <span className="text-[9px] tracking-wide text-slate-400 font-medium font-sans-clean">
@@ -93,7 +93,7 @@ export default function FloatingIslandNav({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`relative px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors duration-200 flex items-center gap-2 ${
+                className={`relative px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors duration-200 flex items-center gap-2 cursor-pointer ${
                   isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -104,10 +104,10 @@ export default function FloatingIslandNav({
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
-                <Icon className={`w-3.5 h-3.5 relative z-10 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                <Icon className={`w-3.5 h-3.5 relative z-10 ${isActive ? 'text-amber-400' : 'text-slate-400'}`} />
                 <span className="relative z-10">{item.label}</span>
                 {item.badge && (
-                  <span className="relative z-10 px-1.5 py-0.2 rounded-full bg-cyan-400 text-slate-950 font-bold text-[10px] font-telemetry">
+                  <span className="relative z-10 px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 font-bold text-[10px] font-telemetry">
                     {item.badge}
                   </span>
                 )}
@@ -132,17 +132,17 @@ export default function FloatingIslandNav({
           {currentUser ? (
             <div className="flex items-center gap-1.5 pl-1">
               <div 
-                className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-xs text-cyan-200"
+                className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-xs text-amber-200"
                 title={`Signed in as ${currentUser.email}`}
               >
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
                 <span className="max-w-[100px] truncate text-[11px] font-semibold">
                   {currentUser.fullName || currentUser.email.split('@')[0]}
                 </span>
               </div>
               <button
                 onClick={handleSignOut}
-                className="w-7 h-7 rounded-full bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-slate-400 hover:text-rose-300 transition-colors"
+                className="w-7 h-7 rounded-full bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-slate-400 hover:text-rose-300 transition-colors cursor-pointer"
                 title="Sign Out"
                 aria-label="Sign Out"
               >
@@ -152,10 +152,10 @@ export default function FloatingIslandNav({
           ) : (
             <button
               onClick={() => setAuthModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-400/30 text-cyan-300 text-xs font-semibold transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-slate-100 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
               title="Tourist Account Sign In"
             >
-              <User className="w-3.5 h-3.5" />
+              <User className="w-3.5 h-3.5 text-amber-400" />
               <span>Sign In</span>
             </button>
           )}
@@ -188,17 +188,17 @@ export default function FloatingIslandNav({
                 {currentUser ? (
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 font-bold text-xs">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 font-bold text-xs">
                         {currentUser.fullName ? currentUser.fullName[0].toUpperCase() : 'U'}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-xs font-semibold text-white">{currentUser.fullName || 'Verified Explorer'}</span>
-                        <span className="text-[10px] text-cyan-300">{currentUser.email}</span>
+                        <span className="text-[10px] text-amber-300/80">{currentUser.email}</span>
                       </div>
                     </div>
                     <button
                       onClick={handleSignOut}
-                      className="px-3 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-medium"
+                      className="px-3 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-medium cursor-pointer"
                     >
                       Sign Out
                     </button>
@@ -214,7 +214,7 @@ export default function FloatingIslandNav({
                         setMobileMenuOpen(false);
                         setAuthModalOpen(true);
                       }}
-                      className="px-4 py-1.5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs flex items-center gap-1.5"
+                      className="px-4 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer hover:bg-amber-300 transition-colors"
                     >
                       <User className="w-3.5 h-3.5" />
                       <span>Sign In</span>
@@ -239,18 +239,18 @@ export default function FloatingIslandNav({
                       setActiveTab(item.id);
                       setMobileMenuOpen(false);
                     }}
-                    className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-colors ${
+                    className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between transition-colors cursor-pointer ${
                       isActive
-                        ? 'bg-cyan-500/15 border-cyan-400/40 text-cyan-300'
+                        ? 'bg-amber-500/10 border-amber-400/30 text-amber-300'
                         : 'bg-white/[0.02] border-white/5 text-slate-300'
                     }`}
                   >
                     <div className="flex items-center gap-3.5">
-                      <Icon className="w-5 h-5 text-cyan-400" />
+                      <Icon className="w-5 h-5 text-amber-400" />
                       <span className="font-semibold text-base">{item.label}</span>
                     </div>
                     {item.badge ? (
-                      <span className="px-2 py-0.5 rounded-full bg-cyan-400 text-slate-950 font-bold text-xs">
+                      <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-bold text-xs">
                         {item.badge}
                       </span>
                     ) : (
@@ -264,10 +264,10 @@ export default function FloatingIslandNav({
                   setMobileMenuOpen(false);
                   onOpenSettings();
                 }}
-                className="w-full p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-left flex items-center justify-between transition-colors text-slate-300"
+                className="w-full p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-left flex items-center justify-between transition-colors text-slate-300 cursor-pointer"
               >
                 <div className="flex items-center gap-3.5">
-                  <Settings className="w-5 h-5 text-cyan-400" />
+                  <Settings className="w-5 h-5 text-slate-400" />
                   <span className="font-semibold text-base">Settings & Preferences</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-500" />

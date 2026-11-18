@@ -236,9 +236,9 @@ export default function BentoDistrictExplorer({
         {/* Header & Spatial Telemetry Bar */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
           <div className="flex flex-col gap-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 w-max">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-cyan-300 font-sans-clean">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 w-max">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-amber-300 font-sans-clean">
                 Verified Regional Directory • Andhra Pradesh & Telangana
               </span>
             </div>
@@ -262,13 +262,13 @@ export default function BentoDistrictExplorer({
               placeholder="Search district, spot, temple..."
               autoComplete="off"
               spellCheck={false}
-              className="w-full h-11 pl-11 pr-4 rounded-full bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400/50 transition-colors"
+              className="w-full h-11 pl-11 pr-4 rounded-full bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400/50 transition-colors"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
                 aria-label="Clear search query"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -289,9 +289,9 @@ export default function BentoDistrictExplorer({
                   onClick={() => handleStateChange(s.id)}
                   aria-pressed={isSelected}
                   role="tab"
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors duration-200 font-sans-clean ${
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors duration-200 font-sans-clean cursor-pointer ${
                     isSelected
-                      ? 'bg-cyan-400 text-slate-950 font-bold'
+                      ? 'bg-amber-400 text-slate-950 font-bold'
                       : 'bg-white/[0.04] text-slate-300 border border-white/10 hover:border-white/20 hover:text-white'
                   }`}
                 >
@@ -312,9 +312,9 @@ export default function BentoDistrictExplorer({
                   onClick={() => setActiveZone(zone.id)}
                   aria-pressed={isSelected}
                   role="tab"
-                  className={`px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors duration-150 font-sans-clean ${
+                  className={`px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors duration-150 font-sans-clean cursor-pointer ${
                     isSelected
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/50'
+                      ? 'bg-amber-500/15 text-amber-300 border border-amber-400/30'
                       : 'bg-white/[0.02] text-slate-400 border border-white/5 hover:border-white/15 hover:text-slate-200'
                   }`}
                 >
@@ -336,9 +336,9 @@ export default function BentoDistrictExplorer({
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => setActiveTheme(theme.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
                     isSelected
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-sm'
+                      ? 'bg-amber-500/15 text-amber-300 border border-amber-400/30 shadow-sm'
                       : 'bg-white/[0.03] text-slate-400 hover:text-white hover:bg-white/[0.08] border border-white/5'
                   }`}
                 >
@@ -363,7 +363,7 @@ export default function BentoDistrictExplorer({
         {/* Zero Results Diagnostic Recovery */}
         {filteredDistricts.length === 0 ? (
           <div className="w-full py-16 px-6 rounded-3xl bg-white/[0.02] border border-white/10 flex flex-col items-center text-center gap-4 my-6">
-            <div className="w-14 h-14 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+            <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-400/20 flex items-center justify-center text-amber-400">
               <Compass className="w-7 h-7" />
             </div>
             <h3 className="text-xl font-bold text-white font-sans-clean">
@@ -375,7 +375,7 @@ export default function BentoDistrictExplorer({
             <button
               type="button"
               onClick={handleResetFilters}
-              className="mt-2 px-5 py-2.5 rounded-full bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-2 hover:bg-cyan-300 transition-colors font-sans-clean shadow-lg"
+              className="mt-2 px-6 py-2.5 rounded-full bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 hover:bg-amber-300 transition-colors font-sans-clean shadow-lg cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset All Filters</span>
@@ -419,7 +419,7 @@ export default function BentoDistrictExplorer({
 
                       {/* State & Spot Count Badge */}
                       <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                        <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-cyan-300 font-telemetry">
+                        <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-amber-300 font-telemetry">
                           {district.state === 'Andhra Pradesh' ? 'AP' : 'TG'} • HQ: {district.hq}
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -428,7 +428,7 @@ export default function BentoDistrictExplorer({
                               Flagship Hub
                             </span>
                           )}
-                          <span className="px-2.5 py-1 rounded-full bg-cyan-500/20 backdrop-blur-md border border-cyan-400/30 text-[10px] font-bold text-white font-telemetry">
+                          <span className="px-2.5 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/10 text-[10px] font-bold text-white font-telemetry">
                             {district.spots.length} Sights
                           </span>
                         </div>
@@ -437,7 +437,7 @@ export default function BentoDistrictExplorer({
                       {/* Landmark Name on Banner */}
                       <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
                         <div className="min-w-0">
-                          <span className="text-[10px] text-cyan-300 font-sans-clean font-semibold block">
+                          <span className="text-[10px] text-amber-300 font-sans-clean font-semibold block">
                             Key Attraction
                           </span>
                           <h4 className="text-base font-bold text-white truncate drop-shadow-md">
@@ -456,7 +456,7 @@ export default function BentoDistrictExplorer({
                     <div className="p-5 flex flex-col gap-3.5 flex-1 justify-between">
                       <div>
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors">
+                          <h3 className="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
                             {district.name.replace(' District', '')}
                           </h3>
                           {/* 1-Click Quick Add Top Spot Button */}
@@ -466,10 +466,10 @@ export default function BentoDistrictExplorer({
                               e.stopPropagation();
                               onSelectPlaceForTrip(firstSpot, district.name);
                             }}
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors flex-shrink-0 font-sans-clean ${
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors flex-shrink-0 font-sans-clean cursor-pointer ${
                               isFirstSelected
                                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
-                                : 'bg-white/[0.05] text-slate-300 hover:bg-cyan-400 hover:text-slate-950 border border-white/10'
+                                : 'bg-white/[0.05] text-slate-300 hover:bg-amber-400 hover:text-slate-950 border border-white/10'
                             }`}
                             title={isFirstSelected ? 'Already in tour plan' : `Add ${firstSpot.name} to plan`}
                           >
@@ -503,7 +503,7 @@ export default function BentoDistrictExplorer({
                           <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
                           <span className="truncate">{firstSpot.mandal || district.hq}</span>
                         </div>
-                        <div className="flex items-center gap-1 text-cyan-400 font-semibold group-hover:translate-x-1 transition-transform">
+                        <div className="flex items-center gap-1 text-amber-400 font-semibold group-hover:translate-x-1 transition-transform">
                           <span>Explore All {district.spots.length} Places</span>
                           <ChevronRight className="w-3.5 h-3.5" />
                         </div>
@@ -542,7 +542,7 @@ export default function BentoDistrictExplorer({
               <div className="p-5 md:p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02] flex-shrink-0">
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 font-telemetry font-bold">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/25 font-telemetry font-bold">
                       {activeDistrictModal.state}
                     </span>
                     <span className="text-xs text-slate-400 font-telemetry">
@@ -561,8 +561,8 @@ export default function BentoDistrictExplorer({
                       <button
                         type="button"
                         onClick={() => setModalFilterMode('all')}
-                        className={`px-2 py-1 rounded-md transition-colors ${
-                          modalFilterMode === 'all' ? 'bg-cyan-400 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                        className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
+                          modalFilterMode === 'all' ? 'bg-amber-400 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         All ({activeDistrictModal.spots.length})
@@ -570,8 +570,8 @@ export default function BentoDistrictExplorer({
                       <button
                         type="button"
                         onClick={() => setModalFilterMode('matching')}
-                        className={`px-2 py-1 rounded-md transition-colors ${
-                          modalFilterMode === 'matching' ? 'bg-cyan-400 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+                        className={`px-2 py-1 rounded-md transition-colors cursor-pointer ${
+                          modalFilterMode === 'matching' ? 'bg-amber-400 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         Filtered
@@ -582,7 +582,7 @@ export default function BentoDistrictExplorer({
                   <button
                     onClick={() => setActiveDistrictModal(null)}
                     aria-label="Close District Guide"
-                    className="w-9 h-9 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-slate-300 transition-colors"
+                    className="w-9 h-9 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-slate-300 transition-colors cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -667,7 +667,7 @@ export default function BentoDistrictExplorer({
                                   {spot.name}
                                 </h4>
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] text-cyan-300 font-telemetry">
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] text-amber-300 font-telemetry">
                                     {spot.category || 'Heritage'}
                                   </span>
                                   {spot.physicalDifficulty === 'EASY' && (
@@ -699,7 +699,7 @@ export default function BentoDistrictExplorer({
                               </div>
                               <div>
                                 <span className="text-slate-500 block">Mobile Coverage</span>
-                                <span className="text-cyan-400 block truncate">{cellCoverage ? 'Verified' : 'Active 4G'}</span>
+                                <span className="text-emerald-400 block truncate">{cellCoverage ? 'Verified' : 'Active 4G'}</span>
                               </div>
                             </div>
 
@@ -716,10 +716,10 @@ export default function BentoDistrictExplorer({
 
                             {/* Honest Scam Alert & Traveler Tips */}
                             {(scamAlert || rulesHazards) && (
-                              <div className="p-2.5 rounded-xl bg-cyan-500/5 border border-cyan-500/15 flex items-start gap-2 text-[11px] text-cyan-200/90 leading-tight">
-                                <AlertTriangle className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0 mt-0.5" />
+                              <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-start gap-2 text-[11px] text-slate-300 leading-tight">
+                                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
                                 <div>
-                                  <span className="font-semibold text-cyan-300">Ground Reality Advisory: </span>
+                                  <span className="font-semibold text-amber-300">Ground Reality Advisory: </span>
                                   <span>{scamAlert || rulesHazards}</span>
                                 </div>
                               </div>
@@ -732,7 +732,7 @@ export default function BentoDistrictExplorer({
                                   href={spot.googleMapsUri}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-[11px] text-cyan-400 hover:text-cyan-300 transition-colors font-medium"
+                                  className="inline-flex items-center gap-1.5 text-[11px] text-amber-400 hover:text-amber-300 transition-colors font-medium"
                                 >
                                   <Navigation className="w-3.5 h-3.5" />
                                   <span>Open in Google Maps</span>
@@ -743,10 +743,10 @@ export default function BentoDistrictExplorer({
                               <button
                                 type="button"
                                 onClick={() => onSelectPlaceForTrip(spot, activeDistrictModal.name)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 font-sans-clean ${
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 font-sans-clean cursor-pointer active:scale-[0.98] ${
                                   selected
                                     ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
-                                    : 'bg-cyan-400 text-slate-950 hover:bg-cyan-300'
+                                    : 'bg-amber-400 text-slate-950 hover:bg-amber-300'
                                 }`}
                               >
                                 {selected ? (

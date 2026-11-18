@@ -116,14 +116,14 @@ export default function HolographicGatePass({
   // EMPTY STATE: User hasn't bought any pass yet
   if (!activePass) {
     return (
-      <section className="relative w-full py-20 px-4 md:px-12 bg-[#06080D] text-slate-200">
-        <div className="max-w-2xl mx-auto flex flex-col items-center text-center gap-6 p-8 sm:p-12 rounded-3xl bg-[#0D121F] border border-white/10 shadow-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+      <section className="relative w-full py-20 px-4 md:px-12 bg-[#080A0F] text-slate-200">
+        <div className="max-w-2xl mx-auto flex flex-col items-center text-center gap-6 p-8 sm:p-12 rounded-[2rem] bg-[#0E121A] border border-white/10 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
             <Ticket className="w-8 h-8" />
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-widest font-semibold">
+            <span className="text-[11px] font-mono text-amber-400 uppercase tracking-widest font-semibold">
               Entry Passes & Digital Tickets
             </span>
             <h3 className="text-2xl sm:text-3xl font-bold text-white font-sans-clean">
@@ -138,7 +138,7 @@ export default function HolographicGatePass({
             {onExplorePackages && (
               <button
                 onClick={onExplorePackages}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2 hover:opacity-95 transition-opacity shadow-md cursor-pointer font-sans-clean"
+                className="px-6 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md cursor-pointer font-sans-clean active:scale-[0.98] transition-all"
               >
                 <Compass className="w-4 h-4 text-slate-950" />
                 <span>Explore Tour Packages</span>
@@ -148,10 +148,10 @@ export default function HolographicGatePass({
             {onPlanTrip && (
               <button
                 onClick={onPlanTrip}
-                className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-white font-semibold text-xs flex items-center gap-2 transition-colors cursor-pointer font-sans-clean"
+                className="px-6 py-3 rounded-full bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-white font-semibold text-xs flex items-center gap-2 transition-colors cursor-pointer font-sans-clean active:scale-[0.98]"
               >
                 <span>Plan Custom Trip with AI</span>
-                <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
+                <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
               </button>
             )}
           </div>
@@ -162,7 +162,7 @@ export default function HolographicGatePass({
 
   // ACTIVE TICKET VIEW: Renders full movie-ticket style pass with real QR
   return (
-    <section className="relative w-full py-20 px-4 md:px-12 bg-[#06080D] text-slate-200">
+    <section className="relative w-full py-20 px-4 md:px-12 bg-[#080A0F] text-slate-200">
       <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
         
         {/* Pass Header */}
@@ -193,26 +193,26 @@ export default function HolographicGatePass({
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative w-full max-w-2xl bg-[#0D121F] border border-white/10 rounded-3xl shadow-2xl overflow-hidden text-slate-100"
+          className="relative w-full max-w-2xl bg-[#0E121A] border border-white/10 rounded-3xl shadow-2xl overflow-hidden text-slate-100"
         >
           {/* Top Cinema Header Bar */}
-          <div className="px-6 py-4 bg-gradient-to-r from-blue-900/40 via-cyan-900/30 to-emerald-900/40 border-b border-white/10 flex items-center justify-between">
+          <div className="px-6 py-4 bg-gradient-to-r from-amber-950/40 via-stone-900/60 to-stone-950 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-cyan-400/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+              <div className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
                 <Ticket className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
                 <span className="text-[11px] font-bold text-white tracking-wider font-mono">
                   GLOBETROTTER CINEMA & MONUMENT PASS
                 </span>
-                <span className="text-[9px] text-cyan-300 tracking-widest font-mono">
+                <span className="text-[9px] text-amber-300/80 tracking-widest font-mono">
                   OFFICIAL AP & TG GATE TICKET
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
               <span className="text-[11px] font-bold text-emerald-400 font-mono">
                 CONFIRMED & ACTIVE
               </span>
@@ -223,16 +223,16 @@ export default function HolographicGatePass({
           <div className="p-6 sm:p-8 flex flex-col gap-6 relative">
 
             {/* Left & Right Circular Ticket Punch Notches */}
-            <div className="hidden sm:block absolute -left-4 top-[58%] -translate-y-1/2 w-8 h-8 rounded-full bg-[#06080D] border-r border-white/15 pointer-events-none" />
-            <div className="hidden sm:block absolute -right-4 top-[58%] -translate-y-1/2 w-8 h-8 rounded-full bg-[#06080D] border-l border-white/15 pointer-events-none" />
+            <div className="hidden sm:block absolute -left-4 top-[58%] -translate-y-1/2 w-8 h-8 rounded-full bg-[#080A0F] border-r border-white/15 pointer-events-none" />
+            <div className="hidden sm:block absolute -right-4 top-[58%] -translate-y-1/2 w-8 h-8 rounded-full bg-[#080A0F] border-l border-white/15 pointer-events-none" />
 
             {/* Hero Circuit Title & Badges */}
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold font-mono uppercase">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-white/[0.05] text-slate-200 border border-white/10 font-semibold font-mono uppercase">
                   Fast-Track Gate Access
                 </span>
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold font-mono">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold font-mono">
                   Order ID: {activePass.reference}
                 </span>
               </div>
@@ -246,7 +246,7 @@ export default function HolographicGatePass({
               {/* Traveler */}
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-mono text-slate-400 flex items-center gap-1">
-                  <User className="w-3 h-3 text-cyan-400" /> Admit
+                  <User className="w-3 h-3 text-amber-400" /> Admit
                 </span>
                 <span className="text-xs font-bold text-white mt-1 truncate">
                   {activePass.touristName}
@@ -270,7 +270,7 @@ export default function HolographicGatePass({
                 <span className="text-[10px] uppercase font-mono text-slate-400 flex items-center gap-1">
                   <MapPin className="w-3 h-3 text-amber-400" /> Gate Checkpoint
                 </span>
-                <span className="text-xs font-bold text-cyan-300 mt-1">
+                <span className="text-xs font-bold text-amber-300 mt-1">
                   Gate 01 • Fast-Track
                 </span>
                 <span className="text-[10px] text-slate-500">Auto-Turnstile</span>
@@ -279,7 +279,7 @@ export default function HolographicGatePass({
               {/* Rate */}
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-mono text-slate-400 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-purple-400" /> Official Fare
+                  <Clock className="w-3 h-3 text-emerald-400" /> Official Fare
                 </span>
                 <span className="text-xs font-bold text-emerald-400 mt-1">
                   {activePass.gateFeeTotal}
@@ -300,7 +300,7 @@ export default function HolographicGatePass({
                       key={p}
                       className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] text-slate-300 font-sans-clean flex items-center gap-1.5"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                       <span>{p}</span>
                     </span>
                   ))}
@@ -311,7 +311,7 @@ export default function HolographicGatePass({
             {/* PERFORATED TEAR-OFF LINE */}
             <div className="relative py-2">
               <div className="w-full border-b-2 border-dashed border-white/20" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0D121F] px-3 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0E121A] px-3 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
                 Entry Stub • Scan Below
               </div>
             </div>
@@ -338,7 +338,7 @@ export default function HolographicGatePass({
                   <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean max-w-xs">
                     Works 100% offline. Scan with any phone camera or turnstile reader to verify.
                   </p>
-                  <span className="text-[10px] text-cyan-300 font-mono font-semibold tracking-wider">
+                  <span className="text-[10px] text-amber-300 font-mono font-semibold tracking-wider">
                     Ticket Code: {activePass.reference}
                   </span>
                 </div>
@@ -362,17 +362,17 @@ export default function HolographicGatePass({
             </div>
 
             {/* Monument Audio Tour Bar Unlocked on Ticket */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-emerald-950/20 to-slate-900/40 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-stone-900 via-[#151a24] to-stone-900 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-cyan-400/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0">
-                  <Headphones className="w-4 h-4 text-cyan-300" />
+                <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
+                  <Headphones className="w-4 h-4 text-amber-300" />
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold uppercase tracking-wider font-mono">
                       Unlocked with Ticket
                     </span>
-                    <span className="text-[10px] text-slate-400">English • తెలుగు • हिन्दी</span>
+                    <span className="text-[10px] text-slate-400">English • Telugu • Hindi</span>
                   </div>
                   <h4 className="text-xs font-bold text-white font-sans-clean mt-0.5">
                     Audio Guide Player Included
@@ -382,7 +382,7 @@ export default function HolographicGatePass({
 
               <button
                 onClick={onOpenAudioGuide}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 hover:opacity-95 transition-opacity shadow-sm cursor-pointer shrink-0 font-sans-clean"
+                className="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer shrink-0 font-sans-clean active:scale-[0.98]"
               >
                 <Headphones className="w-3.5 h-3.5 text-slate-950" />
                 <span>Play Audio Guide</span>
@@ -416,7 +416,7 @@ export default function HolographicGatePass({
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCelebrate}
-                  className="px-3.5 py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold text-xs hover:bg-cyan-300 transition-colors flex items-center gap-1.5 shadow-md cursor-pointer font-sans-clean"
+                  className="px-3.5 py-2 rounded-xl bg-amber-400 text-slate-950 font-bold text-xs hover:bg-amber-300 transition-colors flex items-center gap-1.5 shadow-md cursor-pointer font-sans-clean"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Official Stamp</span>

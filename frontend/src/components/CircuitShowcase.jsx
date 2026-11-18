@@ -105,9 +105,9 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
           <div className="flex flex-col gap-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 w-max">
-              <Layers className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-cyan-300 font-sans-clean">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 w-max">
+              <Layers className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-amber-300 font-sans-clean">
                 Curated Regional Tours
               </span>
             </div>
@@ -136,7 +136,7 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
               transition={{ duration: 0.5, delay: idx * 0.1 }}
               className="group h-full"
             >
-              <div className="flex flex-col justify-between h-full bg-slate-900/60 backdrop-blur-xl rounded-[24px] border border-white/10 group-hover:border-white/20 transition-all duration-300 p-0 overflow-hidden">
+              <div className="flex flex-col justify-between h-full bg-[#0E121A] rounded-[24px] border border-white/10 group-hover:border-amber-400/30 transition-all duration-300 p-0 overflow-hidden shadow-xl">
                 
                 {/* Visual Banner */}
                 <div className="relative h-56 w-full overflow-hidden bg-slate-900 rounded-t-[22px]">
@@ -146,11 +146,11 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-[#0B0F17]/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0E121A] via-[#0E121A]/40 to-transparent" />
 
                   {/* Badges */}
                   <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-cyan-300 font-telemetry">
+                    <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-amber-300 font-telemetry">
                       {circuit.states}
                     </span>
                     <span className="px-3 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-400/40 text-[10px] font-bold text-emerald-300 font-telemetry">
@@ -192,14 +192,14 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
                   <div className="flex items-center gap-3 pt-2">
                     <button
                       onClick={() => onBookCircuit(circuit)}
-                      className="flex-1 py-3 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors shadow-sm font-sans-clean"
+                      className="flex-1 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md font-sans-clean cursor-pointer active:scale-[0.98]"
                     >
                       <Ticket className="w-3.5 h-3.5" />
                       <span>Get Tour Pass</span>
                     </button>
                     <button
                       onClick={() => onSelectCircuit(circuit)}
-                      className="px-4 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 font-semibold text-xs transition-colors font-sans-clean"
+                      className="px-4 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 font-semibold text-xs transition-colors font-sans-clean cursor-pointer"
                     >
                       Plan This Tour
                     </button>

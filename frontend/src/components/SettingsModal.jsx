@@ -123,7 +123,7 @@ export default function SettingsModal({
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-400">
+                <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-amber-400">
                   <Settings className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
@@ -153,8 +153,8 @@ export default function SettingsModal({
 
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-emerald-500 flex items-center justify-center text-slate-950 font-bold text-lg shadow-md shrink-0">
-                    <User className="w-6 h-6 text-slate-950" />
+                  <div className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 font-bold text-lg shadow-md shrink-0">
+                    <User className="w-6 h-6 text-amber-300" />
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-bold text-white truncate font-sans-clean">
@@ -308,7 +308,7 @@ export default function SettingsModal({
                         <div className="text-[11px] text-slate-400 flex items-center justify-between">
                           <span>Resend in {resendTimer}s</span>
                           {resendTimer === 0 && (
-                            <button onClick={handleSendLinkOtp} className="text-cyan-400 hover:underline flex items-center gap-1">
+                            <button onClick={handleSendLinkOtp} className="text-amber-400 hover:underline flex items-center gap-1 cursor-pointer">
                               <RotateCcw className="w-3 h-3" /> Resend
                             </button>
                           )}
@@ -322,7 +322,7 @@ export default function SettingsModal({
               {/* Channel 2: Email Address */}
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-400/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
                     <Mail className="w-4 h-4" />
                   </div>
                   <div className="flex flex-col">
@@ -335,8 +335,8 @@ export default function SettingsModal({
                   </div>
                 </div>
 
-                <span className="px-2.5 py-1 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/25 text-[10px] font-mono font-medium shrink-0 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-cyan-400" />
+                <span className="px-2.5 py-1 rounded-full bg-white/[0.04] text-slate-200 border border-white/10 text-[10px] font-mono font-medium shrink-0 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                   <span>{currentUser?.email || 'explorer@globetrotter.in'}</span>
                 </span>
               </div>
@@ -367,7 +367,7 @@ export default function SettingsModal({
                 <button
                   onClick={handleSoundToggle}
                   className={`w-11 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-                    soundEnabled ? 'bg-cyan-500' : 'bg-slate-700'
+                    soundEnabled ? 'bg-emerald-500' : 'bg-slate-700'
                   }`}
                   aria-label="Toggle sound"
                 >
@@ -389,7 +389,7 @@ export default function SettingsModal({
                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-medium ${
                   isAgent 
                     ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' 
-                    : 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20'
+                    : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
                 }`}>
                   {isAgent ? 'Accredited Agent' : 'Field Agent Access'}
                 </span>
@@ -397,7 +397,7 @@ export default function SettingsModal({
 
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-400/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
                     <Shield className="w-4 h-4" />
                   </div>
                   <div className="flex flex-col gap-0.5">
@@ -417,7 +417,7 @@ export default function SettingsModal({
                     onClose();
                     if (onOpenAgentPortal) onOpenAgentPortal();
                   }}
-                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 hover:opacity-95 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer font-sans-clean active:scale-[0.98]"
+                  className="w-full py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer font-sans-clean active:scale-[0.98]"
                 >
                   <span>{isAgent ? 'Open Field Agent Terminal' : 'Apply for Agent Accreditation (5s)'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -427,7 +427,7 @@ export default function SettingsModal({
 
             {/* Footer */}
             <div className="text-center text-[10px] text-slate-500 pt-1 border-t border-white/5 font-mono">
-              Globetrotter Gateway • Version 3.2 • Unified AP & TG
+              Globetrotter Gateway • Unified Andhra Pradesh & Telangana
             </div>
 
           </div>

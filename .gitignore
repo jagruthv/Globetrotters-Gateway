@@ -56,6 +56,12 @@ backups/
 data_compiler/
 tools/aisoc/ledger/
 
+# Tools & Automation artifacts
+tools/__pycache__/
+tools/*.png
+tools/meta_screen.png
+tools/meta_status.json
+
 # Heavy Media Assets (Excluded from Git for Light / Fast Repo)
 frontend/public/images/
 *.jpg

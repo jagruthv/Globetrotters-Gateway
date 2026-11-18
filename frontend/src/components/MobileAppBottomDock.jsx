@@ -32,11 +32,11 @@ export default function MobileAppBottomDock({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab('passes')}
-                className="relative -top-4 w-13 h-13 rounded-full bg-cyan-500/20 border border-cyan-400/40 p-[1.5px] shadow-sm active:scale-[0.97] transition-transform duration-100 cursor-pointer"
+                className="relative -top-4 w-13 h-13 rounded-full bg-amber-500/20 border border-amber-400/40 p-[1.5px] shadow-sm active:scale-[0.97] transition-transform duration-100 cursor-pointer"
                 aria-label="Fast Pass Ticket"
               >
-                <div className="w-full h-full rounded-full bg-[#06080D] flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-cyan-300" />
+                <div className="w-full h-full rounded-full bg-[#080A0F] flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-amber-400" />
                 </div>
               </button>
             );
@@ -47,13 +47,13 @@ export default function MobileAppBottomDock({
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`relative flex flex-col items-center gap-1 py-1 px-2 transition-colors duration-150 cursor-pointer ${
-                isActive ? 'text-cyan-300' : 'text-slate-400'
+                isActive ? 'text-amber-400' : 'text-slate-400'
               }`}
             >
               <div className="relative">
-                <Icon className={`w-5 h-5 ${isActive ? 'text-cyan-400' : 'text-slate-400'}`} />
+                <Icon className={`w-5 h-5 ${isActive ? 'text-amber-400' : 'text-slate-400'}`} />
                 {tab.badge && (
-                  <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-cyan-400 text-slate-950 font-bold text-[9px] flex items-center justify-center font-telemetry">
+                  <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-bold text-[9px] flex items-center justify-center font-telemetry">
                     {tab.badge}
                   </span>
                 )}
