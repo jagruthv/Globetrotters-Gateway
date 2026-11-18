@@ -87,6 +87,25 @@ app:
     key-id: ${RAZORPAY_KEY_ID:rzp_live_SXIllaIAEuc1mc}
     key-secret: ${RAZORPAY_KEY_SECRET:}
 
+  # ── External Free OTP Gateways & Identity ──────────────────────────────────
+  auth:
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:}
+    fast2sms:
+      api-key: ${FAST2SMS_API_KEY:}
+    twilio:
+      account-sid: ${TWILIO_ACCOUNT_SID:}
+      auth-token: ${TWILIO_AUTH_TOKEN:}
+      from-number: ${TWILIO_FROM_NUMBER:}
+    telegram:
+      bot-token: ${TELEGRAM_BOT_TOKEN:}
+      chat-id: ${TELEGRAM_CHAT_ID:}
+    webhook:
+      otp-url: ${OTP_WEBHOOK_URL:}
+    sms:
+      gateway-url: ${SMS_GATEWAY_URL:}
+      auth-key: ${SMS_GATEWAY_AUTH_KEY:}
+
   # ── Email Notifications ────────────────────────────────────────────────────
   mail:
     from: ${MAIL_FROM:noreply@globetrotter.com}

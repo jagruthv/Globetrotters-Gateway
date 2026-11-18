@@ -5,10 +5,16 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,11 +26,37 @@ public class OtpService {
     private final MailService mailService;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    @Value("${app.auth.sms.auth-key:}")
+    // 1. Generic SMS Gateway Config
+    @Value("${app.auth.sms.auth-key:${SMS_GATEWAY_AUTH_KEY:}}")
     private String smsAuthKey;
 
-    @Value("${app.auth.sms.gateway-url:}")
+    @Value("${app.auth.sms.gateway-url:${SMS_GATEWAY_URL:}}")
     private String smsGatewayUrl;
+
+    // 2. Fast2SMS Quick OTP Gateway (Free Trial India)
+    @Value("${app.auth.fast2sms.api-key:${FAST2SMS_API_KEY:}}")
+    private String fast2smsApiKey;
+
+    // 3. Twilio SMS Gateway (Free Trial Global)
+    @Value("${app.auth.twilio.account-sid:${TWILIO_ACCOUNT_SID:}}")
+    private String twilioAccountSid;
+
+    @Value("${app.auth.twilio.auth-token:${TWILIO_AUTH_TOKEN:}}")
+    private String twilioAuthToken;
+
+    @Value("${app.auth.twilio.from-number:${TWILIO_FROM_NUMBER:}}")
+    private String twilioFromNumber;
+
+    // 4. Free Telegram Bot Dispatch (Instant Zero-Cost Mobile Alerts)
+    @Value("${app.auth.telegram.bot-token:${TELEGRAM_BOT_TOKEN:}}")
+    private String telegramBotToken;
+
+    @Value("${app.auth.telegram.chat-id:${TELEGRAM_CHAT_ID:}}")
+    private String telegramChatId;
+
+    // 5. Generic Webhook (e.g. n8n / Zapier / Make / WhatsApp Webhook)
+    @Value("${app.auth.webhook.otp-url:${OTP_WEBHOOK_URL:}}")
+    private String otpWebhookUrl;
 
     @Data
     @AllArgsConstructor
@@ -35,7 +67,6 @@ public class OtpService {
         private int attempts;
     }
 
-    // In-memory cache for OTP tracking
     private final Map<String, OtpRecord> phoneOtpStore = new ConcurrentHashMap<>();
     private final Map<String, OtpRecord> emailOtpStore = new ConcurrentHashMap<>();
 
@@ -60,17 +91,18 @@ public class OtpService {
 
         phoneOtpStore.put(cleanPhone, new OtpRecord(code, expiresAt, now, 0));
 
-        // Transmit via SMS Gateway or fallback to secure log dispatch
-        boolean gatewaySent = dispatchToSmsGateway(cleanPhone, code);
+        // Transmit via configured external gateways
+        String gatewayProvider = dispatchToExternalGateways(cleanPhone, code);
 
-        log.info("[OTP DISPATCH] Destination: +91 {} | Code: {} | Gateway Transmitted: {}", cleanPhone, code, gatewaySent);
+        log.info("[OTP DISPATCH] Destination: +91 {} | Code: {} | Active Gateway: {}", cleanPhone, code, gatewayProvider);
 
         return Map.of(
                 "success", true,
                 "phone", "+91 " + cleanPhone,
                 "expiresInSeconds", 300,
-                "message", gatewaySent ? "OTP sent to +91 " + cleanPhone : "Verification code dispatched (check console in development mode)",
-                "devCode", code // Surface code for effortless local testing
+                "provider", gatewayProvider,
+                "message", "Verification code dispatched via " + gatewayProvider,
+                "devCode", code // Surface code for effortless developer testing
         );
     }
 
@@ -100,7 +132,6 @@ public class OtpService {
             return false;
         }
 
-        // Successfully verified
         phoneOtpStore.remove(cleanPhone);
         return true;
     }
@@ -125,7 +156,6 @@ public class OtpService {
 
         emailOtpStore.put(cleanEmail, new OtpRecord(code, expiresAt, now, 0));
 
-        // Dispatch via MailService
         mailService.sendOtpEmail(cleanEmail, code);
 
         log.info("[EMAIL OTP DISPATCH] Destination: {} | Code: {}", cleanEmail, code);
@@ -169,18 +199,106 @@ public class OtpService {
         return true;
     }
 
-    private boolean dispatchToSmsGateway(String cleanPhone, String code) {
-        if (smsAuthKey == null || smsAuthKey.isBlank() || smsGatewayUrl == null || smsGatewayUrl.isBlank()) {
-            return false;
+    /**
+     * Cascading External Gateway Dispatcher:
+     * Attempts real external transmission in priority order:
+     * 1. Fast2SMS (Indian carrier OTP)
+     * 2. Twilio (Global SMS API)
+     * 3. Telegram Bot (Free instantaneous mobile push)
+     * 4. Webhook (WhatsApp / n8n workflow)
+     * 5. Local Safe Fallback (Live Toast & Server Console)
+     */
+    private String dispatchToExternalGateways(String cleanPhone, String code) {
+        RestClient restClient = RestClient.create();
+
+        // 1. Fast2SMS Quick OTP
+        if (fast2smsApiKey != null && !fast2smsApiKey.isBlank()) {
+            try {
+                restClient.get()
+                        .uri("https://www.fast2sms.com/dev/bulkV2?authorization={key}&variables_values={code}&route=otp&numbers={phone}",
+                                fast2smsApiKey.trim(), code, cleanPhone)
+                        .retrieve()
+                        .toBodilessEntity();
+                return "Fast2SMS (Carrier SMS)";
+            } catch (Exception e) {
+                log.warn("Fast2SMS dispatch error: {}", e.getMessage());
+            }
         }
-        try {
-            // Production SMS Gateway hook (e.g. Fast2SMS / MSG91 / Twilio)
-            log.info("Sending HTTP request to configured SMS Gateway at {} for +91 {}", smsGatewayUrl, cleanPhone);
-            return true;
-        } catch (Exception e) {
-            log.warn("Failed to transmit via SMS Gateway: {}", e.getMessage());
-            return false;
+
+        // 2. Twilio SMS
+        if (twilioAccountSid != null && !twilioAccountSid.isBlank() &&
+            twilioAuthToken != null && !twilioAuthToken.isBlank() &&
+            twilioFromNumber != null && !twilioFromNumber.isBlank()) {
+            try {
+                String authHeader = "Basic " + Base64.getEncoder().encodeToString(
+                        (twilioAccountSid.trim() + ":" + twilioAuthToken.trim()).getBytes());
+
+                MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+                formData.add("To", "+91" + cleanPhone);
+                formData.add("From", twilioFromNumber.trim());
+                formData.add("Body", "Your Globetrotter Gateway verification code is: " + code + ". Valid for 5 minutes.");
+
+                restClient.post()
+                        .uri("https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json", twilioAccountSid.trim())
+                        .header(HttpHeaders.AUTHORIZATION, authHeader)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .body(formData)
+                        .retrieve()
+                        .toBodilessEntity();
+                return "Twilio SMS";
+            } catch (Exception e) {
+                log.warn("Twilio dispatch error: {}", e.getMessage());
+            }
         }
+
+        // 3. Telegram Bot (Free Instant Mobile Alerts)
+        if (telegramBotToken != null && !telegramBotToken.isBlank() &&
+            telegramChatId != null && !telegramChatId.isBlank()) {
+            try {
+                String text = "🔑 *Globetrotter Gateway OTP*\n\nTarget Mobile: `+91 " + cleanPhone + "`\nVerification Code: `*" + code + "*`\nExpires in: 5 minutes";
+                restClient.get()
+                        .uri("https://api.telegram.org/bot{token}/sendMessage?chat_id={chatId}&text={text}&parse_mode=Markdown",
+                                telegramBotToken.trim(), telegramChatId.trim(), text)
+                        .retrieve()
+                        .toBodilessEntity();
+                return "Telegram Mobile Bot";
+            } catch (Exception e) {
+                log.warn("Telegram bot dispatch error: {}", e.getMessage());
+            }
+        }
+
+        // 4. Custom SMS / WhatsApp Webhook
+        if (otpWebhookUrl != null && !otpWebhookUrl.isBlank()) {
+            try {
+                restClient.post()
+                        .uri(otpWebhookUrl.trim())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(Map.of("phone", "+91 " + cleanPhone, "code", code, "appName", "Globetrotter Gateway"))
+                        .retrieve()
+                        .toBodilessEntity();
+                return "External Webhook Gateway";
+            } catch (Exception e) {
+                log.warn("Webhook dispatch error: {}", e.getMessage());
+            }
+        }
+
+        // 5. Generic SMS Gateway URL
+        if (smsGatewayUrl != null && !smsGatewayUrl.isBlank() && smsAuthKey != null && !smsAuthKey.isBlank()) {
+            try {
+                restClient.post()
+                        .uri(smsGatewayUrl.trim())
+                        .header(HttpHeaders.AUTHORIZATION, smsAuthKey.trim())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(Map.of("number", cleanPhone, "otp", code))
+                        .retrieve()
+                        .toBodilessEntity();
+                return "Custom SMS Gateway";
+            } catch (Exception e) {
+                log.warn("Generic gateway error: {}", e.getMessage());
+            }
+        }
+
+        return "Developer Console / Live Toast Stream";
     }
 
     private String sanitizePhone(String phone) {
