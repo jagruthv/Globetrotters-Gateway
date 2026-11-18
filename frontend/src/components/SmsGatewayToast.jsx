@@ -52,7 +52,7 @@ export default function SmsGatewayToast() {
                 <MessageSquare className="w-4 h-4" />
               </div>
               <span className="text-xs font-semibold text-emerald-300 font-sans-clean">
-                SMS & WhatsApp gateway
+                Instant SMS Gateway
               </span>
             </div>
 
