@@ -82,12 +82,12 @@ export default function HolographicGatePass({
   const handleCopyShareLink = () => {
     if (!activePass) return;
     const shareUrl = window.location.origin;
-    const shareText = `🎫 My Official Entry Pass for ${activePass.circuitName}!\nBooking ID: ${activePass.reference}\nBook queue-free tickets at: ${shareUrl}`;
+    const shareText = `Official Entry Pass for ${activePass.circuitName}\nBooking ID: ${activePass.reference}\nBook passes at: ${shareUrl}`;
     
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareText);
       setIsCopied(true);
-      setShareToast('Ticket details & share link copied to clipboard!');
+      setShareToast('Pass details and link copied to clipboard.');
       setTimeout(() => {
         setIsCopied(false);
         setShareToast(null);
@@ -99,7 +99,7 @@ export default function HolographicGatePass({
     if (!activePass) return;
     const shareUrl = window.location.origin;
     const shareText = encodeURIComponent(
-      `🎫 *I just booked my All-Access Entry Ticket on Globetrotter Gateway!*\n\n🏛️ *Tour:* ${activePass.circuitName}\n👤 *Traveler:* ${activePass.touristName}\n🎟️ *Booking ID:* ${activePass.reference}\n\n⚡ Skip all ticketing queues with digital QR passes across Andhra Pradesh & Telangana!\n👉 Book yours here: ${shareUrl}`
+      `*Official Entry Pass - Globetrotter Gateway*\n\nTour: ${activePass.circuitName}\nTraveler: ${activePass.touristName}\nBooking ID: ${activePass.reference}\n\nDigital QR pass verification across Andhra Pradesh and Telangana.\nView details: ${shareUrl}`
     );
     window.open(`https://api.whatsapp.com/send?text=${shareText}`, '_blank');
   };
@@ -123,8 +123,8 @@ export default function HolographicGatePass({
           </div>
 
           <div className="flex flex-col gap-2">
-            <span className="text-[11px] font-mono text-amber-400 uppercase tracking-widest font-semibold">
-              Entry Passes & Digital Tickets
+            <span className="text-[11px] text-amber-400 font-sans-clean font-semibold">
+              Entry passes & digital tickets
             </span>
             <h3 className="text-2xl sm:text-3xl font-bold text-white font-sans-clean">
               No Active Pass Yet
@@ -291,8 +291,8 @@ export default function HolographicGatePass({
             {/* Included Attractions List */}
             {activePass.placesAllowed && activePass.placesAllowed.length > 0 && (
               <div className="flex flex-col gap-1.5 font-sans-clean">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
-                  Attractions Covered Under This Pass
+                <span className="text-[11px] font-semibold text-slate-400 font-sans-clean">
+                  Attractions covered under this pass
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {activePass.placesAllowed.map((p) => (
@@ -311,8 +311,8 @@ export default function HolographicGatePass({
             {/* PERFORATED TEAR-OFF LINE */}
             <div className="relative py-2">
               <div className="w-full border-b-2 border-dashed border-white/20" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0E121A] px-3 text-[10px] font-mono text-slate-500 uppercase tracking-widest">
-                Entry Stub • Scan Below
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0E121A] px-3 text-[10px] font-mono text-slate-400">
+                Entry stub • Scan below
               </div>
             </div>
 
@@ -328,7 +328,7 @@ export default function HolographicGatePass({
                       className="w-full h-full object-contain"
                     />
                   ) : (
-                    <div className="w-full h-full bg-slate-200 animate-pulse rounded-lg" />
+                    <div className="w-full h-full bg-slate-200 rounded-lg" />
                   )}
                 </div>
                 <div className="flex flex-col gap-1">
@@ -355,7 +355,7 @@ export default function HolographicGatePass({
                     />
                   ))}
                 </div>
-                <span className="text-[9px] text-slate-400 font-mono tracking-widest uppercase">
+                <span className="text-[9px] text-slate-400 font-mono tracking-wider">
                   {activePass.reference}
                 </span>
               </div>
@@ -369,7 +369,7 @@ export default function HolographicGatePass({
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold uppercase tracking-wider font-mono">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-medium font-sans-clean">
                       Unlocked with Ticket
                     </span>
                     <span className="text-[10px] text-slate-400">English • Telugu • Hindi</span>

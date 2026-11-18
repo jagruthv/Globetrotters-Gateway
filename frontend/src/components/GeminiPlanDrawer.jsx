@@ -18,12 +18,12 @@ import {
 import confetti from 'canvas-confetti';
 
 const QUICK_PROMPTS = [
-  { label: '🎟️ Book Pass for Me', prompt: 'Please book this curated pass directly under my tourist account.' },
-  { label: '💾 Save Trip to My Profile', prompt: 'Save this itinerary into my saved trips profile.' },
-  { label: '🎫 Show My Tickets', prompt: 'Show me all my active booked passes and tickets.' },
-  { label: '🌅 Prioritize Sunset Views', prompt: 'Adjust the plan so we reach the best viewpoints or beaches right at sunset for golden-hour photography.' },
-  { label: '👨‍👩‍👧 Family-Friendly Pace', prompt: 'Make the daily pace more relaxed for a family with kids/elders. Remove strenuous climbs and start days at 10 AM.' },
-  { label: '🍛 Authentic Local Food', prompt: 'Add dedicated regional lunch stops featuring famous local Andhra & Telangana culinary specialties.' }
+  { label: 'Book pass for me', prompt: 'Please book this curated pass directly under my tourist account.' },
+  { label: 'Save trip to profile', prompt: 'Save this itinerary into my saved trips profile.' },
+  { label: 'Show active passes', prompt: 'Show me all my active booked passes and tickets.' },
+  { label: 'Sunset viewpoints', prompt: 'Adjust the plan so we reach the best viewpoints or beaches right at sunset for golden-hour photography.' },
+  { label: 'Relaxed family pace', prompt: 'Make the daily pace more relaxed for a family with kids/elders. Remove strenuous climbs and start days at 10 AM.' },
+  { label: 'Regional cuisine stops', prompt: 'Add dedicated regional lunch stops featuring famous local Andhra & Telangana culinary specialties.' }
 ];
 
 const createMsgId = (prefix) => `${prefix}-${performance.now()}`;
@@ -406,8 +406,8 @@ export default function GeminiPlanDrawer({
                   <div className="w-full mt-3 p-4 rounded-2xl bg-white/[0.02] border border-amber-500/20 shadow-inner flex flex-col gap-3">
                     <div className="flex items-center justify-between border-b border-white/10 pb-2">
                       <div className="flex flex-col">
-                        <span className="text-[10px] text-amber-400 font-mono uppercase tracking-wider font-semibold">
-                          Customized Itinerary
+                        <span className="text-[11px] text-amber-400 font-sans-clean font-semibold">
+                          Customized itinerary
                         </span>
                         <h4 className="text-sm font-bold text-white font-sans-clean mt-0.5">
                           {msg.plan.title || `${msg.plan.days?.length || 2}-Day Curated Tour`}
@@ -464,8 +464,8 @@ export default function GeminiPlanDrawer({
                     <div className="p-3.5 rounded-xl bg-gradient-to-r from-amber-950/40 via-stone-900/50 to-slate-900/60 border border-amber-500/30 flex flex-col gap-2.5 mt-1">
                       <div className="flex items-center justify-between">
                         <div className="flex flex-col">
-                          <span className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">
-                            Official All-Access Circuit Pass
+                          <span className="text-[11px] text-emerald-300 font-semibold font-sans-clean">
+                            Official all-access circuit pass
                           </span>
                           <span className="text-xs text-slate-300 font-medium font-sans-clean">
                             Direct Queue-Free Entry + Multilingual Audio Guide
@@ -510,9 +510,9 @@ export default function GeminiPlanDrawer({
 
             {isThinking && (
               <div className="flex items-center gap-2 p-3 rounded-2xl bg-white/[0.03] border border-white/5 max-w-[70%]">
-                <div className="w-4 h-4 rounded-full bg-amber-400 animate-ping" />
+                <div className="w-2 h-2 rounded-full bg-amber-400" />
                 <span className="text-xs text-slate-300 font-sans-clean">
-                  Gemini 3.8 Flash is executing your request...
+                  Processing itinerary adjustment...
                 </span>
               </div>
             )}

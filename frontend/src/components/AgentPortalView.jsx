@@ -413,20 +413,20 @@ export default function AgentPortalView({
         
         {/* Left: Agent Brand & Operational Badge */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 flex items-center justify-center text-slate-950 font-bold shadow-md shadow-amber-500/20">
-            <Scan className="w-5 h-5 text-slate-950" />
+          <div className="w-9 h-9 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-300 font-bold">
+            <Scan className="w-5 h-5 text-amber-300" />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="font-display font-extrabold tracking-wider text-sm sm:text-base text-white">
-                GLOBETROTTER FIELD AGENT
+              <span className="font-sans-clean font-bold text-sm sm:text-base text-white">
+                Field Operations Gate Portal
               </span>
-              <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-semibold uppercase tracking-wider border border-amber-500/30">
-                Gate Terminal 01
+              <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-amber-300 font-sans-clean border border-white/10">
+                Gate terminal 01
               </span>
             </div>
             <span className="text-[10px] text-slate-400 font-sans-clean flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               <span>AP & TG Tourism Authority • Operations Portal</span>
             </span>
           </div>
@@ -490,9 +490,9 @@ export default function AgentPortalView({
         {/* AUTHENTIC SHIFT COUNTERS (STARTS AT 0 • ZERO FAKE DATA) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
-            <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider flex items-center gap-1.5">
+            <span className="text-xs text-slate-400 font-sans-clean flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-amber-400" />
-              Shift Scans
+              Shift scans
             </span>
             <span className="text-2xl font-extrabold text-white font-mono">
               {scanStats.total}
@@ -501,7 +501,7 @@ export default function AgentPortalView({
           </div>
 
           <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
-            <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider flex items-center gap-1.5">
+            <span className="text-xs text-slate-400 font-sans-clean flex items-center gap-1.5">
               <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
               Admitted
             </span>
@@ -512,7 +512,7 @@ export default function AgentPortalView({
           </div>
 
           <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
-            <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider flex items-center gap-1.5">
+            <span className="text-xs text-slate-400 font-sans-clean flex items-center gap-1.5">
               <XCircle className="w-3.5 h-3.5 text-rose-400" />
               Denied / Flagged
             </span>
@@ -524,9 +524,9 @@ export default function AgentPortalView({
 
           <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col justify-between gap-1 shadow-md">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider flex items-center gap-1.5">
+              <span className="text-xs text-slate-400 font-sans-clean flex items-center gap-1.5">
                 <Scan className="w-3.5 h-3.5 text-amber-400" />
-                Shift Reset
+                Shift reset
               </span>
             </div>
             <button
@@ -549,16 +549,16 @@ export default function AgentPortalView({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className={`p-6 sm:p-8 rounded-3xl border-2 flex flex-col items-center justify-center text-center gap-3 shadow-2xl ${
+              className={`p-6 sm:p-8 rounded-3xl border-2 flex flex-col items-center justify-center text-center gap-3 shadow-xl ${
                 verdict.success
-                  ? 'bg-emerald-950/90 border-emerald-400 text-emerald-100 shadow-emerald-500/20'
-                  : 'bg-rose-950/90 border-rose-400 text-rose-100 shadow-rose-500/20'
+                  ? 'bg-emerald-950/90 border-emerald-400 text-emerald-100'
+                  : 'bg-rose-950/90 border-rose-400 text-rose-100'
               }`}
             >
               {verdict.success ? (
-                <CheckCircle className="w-20 h-20 text-emerald-400 animate-bounce" />
+                <CheckCircle className="w-16 h-16 text-emerald-400" />
               ) : (
-                <XCircle className="w-20 h-20 text-rose-400" />
+                <XCircle className="w-16 h-16 text-rose-400" />
               )}
 
               <div className="flex flex-col gap-1">
@@ -600,9 +600,9 @@ export default function AgentPortalView({
 
           {/* Checkpoint Dropdown */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-amber-400" />
-              <span>Assigned Monument Gate</span>
+              <span>Assigned monument gate</span>
             </label>
             <select
               value={selectedPlaceId}
@@ -620,9 +620,9 @@ export default function AgentPortalView({
           {/* LIVE CAMERA SCANNER VIEWPORT */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-300 font-sans-clean flex items-center gap-2">
                 <Camera className="w-4 h-4 text-amber-400" />
-                <span>Live Optical Camera Scanner</span>
+                <span>Live optical camera scanner</span>
               </span>
 
               {isCameraActive && (
@@ -703,9 +703,9 @@ export default function AgentPortalView({
 
           {/* MANUAL TICKET REFERENCE INPUT (ALWAYS ACCESSIBLE FALLBACK) */}
           <div className="flex flex-col gap-1.5 pt-2 border-t border-white/5">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">
-              <span>Manual Ticket Reference / Barcode Input</span>
-              <span className="text-[10px] text-amber-400 font-mono">enter code if camera is busy</span>
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-300 font-sans-clean">
+              <span>Manual ticket reference or barcode</span>
+              <span className="text-[10px] text-amber-400 font-mono">backup input</span>
             </div>
             <div className="relative">
               <input
@@ -787,11 +787,11 @@ export default function AgentPortalView({
         {/* AUTHENTIC RECENT SCAN ACTIVITY LOG (NO FAKE NAMES) */}
         <div className="p-6 rounded-3xl bg-[#0E121A] border border-white/10 flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">
-              Live Gate Scanner Feed
+            <span className="text-xs font-semibold text-slate-300 font-sans-clean">
+              Live gate scanner feed
             </span>
             <span className="text-[10px] text-amber-400 font-mono">
-              {recentScans.length} Verified in Current Shift
+              {recentScans.length} verified in current shift
             </span>
           </div>
 
@@ -813,7 +813,7 @@ export default function AgentPortalView({
                   className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs font-sans-clean hover:bg-white/[0.04] transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`w-2.5 h-2.5 rounded-full ${scan.success ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
+                    <span className={`w-2 h-2 rounded-full ${scan.success ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                     <div className="flex flex-col">
                       <span className="font-semibold text-white">{scan.name}</span>
                       <span className="text-[10px] text-slate-400 font-mono">{scan.code} • {scan.checkpoint}</span>
@@ -821,10 +821,10 @@ export default function AgentPortalView({
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md font-mono ${
-                      scan.success ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md font-sans-clean ${
+                      scan.success ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border border-rose-500/20'
                     }`}>
-                      {scan.success ? 'ADMITTED' : 'DENIED'}
+                      {scan.success ? 'Admitted' : 'Denied'}
                     </span>
                     <span className="text-[10px] text-slate-500 font-mono">{scan.time}</span>
                   </div>

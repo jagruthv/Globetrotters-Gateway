@@ -49,7 +49,7 @@ const HERITAGE_STORIES = [
     languages: {
       en: {
         title: 'Charminar and the Whispering Laad Bazaar',
-        narrative: "Standing proudly in the heart of Hyderabad, Charminar was commissioned in 1591 by Muhammad Quli Qutb Shah, the fifth sultan of the Qutb Shahi dynasty, to commemorate the end of a catastrophic plague epidemic that devastated the city. Constructed of granite, lime, mortar, and pulverized marble, its four majestic minarets rise 48.7 meters into the sky. Legend has it that a secret underground tunnel runs 9 kilometers connecting Charminar directly to Golconda Fort."
+        narrative: "Standing proudly in the heart of Hyderabad, Charminar was commissioned in 1591 by Muhammad Quli Qutb Shah, the fifth sultan of the Qutb Shahi dynasty, to commemorate the end of a catastrophic plague epidemic that devastated the city. Constructed of granite, lime, mortar, and pulverized marble, its four grand minarets rise 48.7 meters into the sky. Legend has it that a secret underground tunnel runs 9 kilometers connecting Charminar directly to Golconda Fort."
       },
       te: {
         title: 'చార్మినార్: మహమ్మారి ముగింపుకు చిహ్నం',

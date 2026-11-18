@@ -227,7 +227,7 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
               }`}
             >
               {verdict.success ? (
-                <CheckCircle className="w-20 h-20 text-emerald-400 animate-bounce" />
+                <CheckCircle className="w-16 h-16 text-emerald-400" />
               ) : (
                 <XCircle className="w-20 h-20 text-rose-400" />
               )}
@@ -252,8 +252,8 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
           
           {/* Checkpoint Dropdown */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">
-              Gate Checkpoint
+            <label className="text-xs font-semibold text-slate-300 font-sans-clean">
+              Gate checkpoint
             </label>
             <select
               value={selectedPlaceId}
@@ -270,8 +270,8 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
 
           {/* QR Token Input / Simulation Area */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono flex items-center justify-between">
-              <span>Scanned Ticket Token</span>
+            <label className="text-xs font-semibold text-slate-300 font-sans-clean flex items-center justify-between">
+              <span>Scanned ticket token</span>
               <span className="text-[10px] text-amber-400 font-normal">Ready for optical reader or camera</span>
             </label>
             <input
@@ -290,11 +290,11 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
             className="w-full py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-base flex items-center justify-center gap-2.5 transition-all shadow-md cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.99]"
           >
             {isScanning ? (
-              <span>Verifying Ticket...</span>
+              <span>Verifying ticket...</span>
             ) : (
               <>
                 <Scan className="w-5 h-5 text-slate-950" />
-                <span>Verify Ticket & Check In</span>
+                <span>Verify ticket & check in</span>
               </>
             )}
           </button>
@@ -302,8 +302,8 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
 
         {/* RECENT SCAN ACTIVITY (SIMPLE GREEN / RED LOG) */}
         <div className="p-4 rounded-2xl bg-[#0B0F17] border border-white/5 flex flex-col gap-2.5">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
-            Recent Gate Scans
+          <span className="text-[11px] font-semibold text-slate-400 font-sans-clean">
+            Recent gate scans
           </span>
           <div className="flex flex-col gap-1.5">
             {recentScans.map((scan) => (
@@ -317,7 +317,7 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-[10px] font-bold ${scan.success ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {scan.success ? 'APPROVED' : 'DENIED'}
+                    {scan.success ? 'Approved' : 'Denied'}</span>
                   </span>
                   <span className="text-[10px] text-slate-500 font-mono">{scan.time}</span>
                 </div>

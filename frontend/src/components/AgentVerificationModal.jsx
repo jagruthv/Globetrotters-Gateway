@@ -108,17 +108,17 @@ export default function AgentVerificationModal({
 
           {/* Modal Header */}
           <div className="flex flex-col items-center text-center gap-2.5 pt-1">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-lg shadow-amber-500/10">
+            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-400/40 flex items-center justify-center text-amber-300 shadow-sm">
               {success ? (
-                <CheckCircle2 className="w-7 h-7 text-emerald-400 animate-bounce" />
+                <CheckCircle2 className="w-7 h-7 text-emerald-400" />
               ) : (
                 <ShieldCheck className="w-7 h-7 text-amber-400" />
               )}
             </div>
 
             <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest font-semibold">
-                Tourism Gate Protocol • AP & TG
+              <span className="text-[11px] text-amber-400 font-sans-clean font-semibold">
+                Tourism gate protocol • AP & TG
               </span>
               <h3 className="text-xl font-bold text-white font-sans-clean">
                 {success ? 'Agent Mode Activated' : 'Agent Mode Verification'}

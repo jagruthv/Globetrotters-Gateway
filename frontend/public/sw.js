@@ -4,7 +4,7 @@
  * Provides:
  * 1. 100% Offline App Shell Loading (Airplane Mode & 0% cellular deadzones)
  * 2. Stale-While-Revalidate caching for scripts, styles, and typography
- * 3. Offline turnstile asset persistence for Borra Caves / Belum Caves turnstiles
+ * 3. Offline gate pass caching for remote entrance checkpoints
  */
 
 const CACHE_NAME = 'globetrotter-v1.0.0';
