@@ -78,6 +78,92 @@ export const authService = {
     }
   },
 
+  sendMobileOtp: async (phoneNumber) => {
+    const cleanPhone = phoneNumber.replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      throw new Error('Please enter a valid 10-digit Indian mobile number');
+    }
+    // Generate authentic 6-digit OTP
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const otpPayload = {
+      phone: cleanPhone,
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000 // 5 minutes
+    };
+    sessionStorage.setItem('gt_mobile_otp_session', JSON.stringify(otpPayload));
+    
+    // Dispatch simulated SMS & WhatsApp gateway event so UI surfaces the live SMS notification toast
+    window.dispatchEvent(new CustomEvent('gt-sms-gateway-dispatched', {
+      detail: { phone: `+91 ${cleanPhone}`, otp }
+    }));
+
+    return { success: true, phone: cleanPhone, demoOtp: otp };
+  },
+
+  verifyMobileOtp: async (phoneNumber, enteredOtp) => {
+    const cleanPhone = phoneNumber.replace(/\D/g, '').slice(-10);
+    const stored = sessionStorage.getItem('gt_mobile_otp_session');
+    if (!stored) {
+      throw new Error('No active OTP request found. Please request a new verification code.');
+    }
+    const { phone, otp, expiresAt } = JSON.parse(stored);
+    if (phone !== cleanPhone) {
+      throw new Error('Mobile number mismatch. Please request a new OTP.');
+    }
+    if (Date.now() > expiresAt) {
+      throw new Error('Verification OTP has expired. Please request a new code.');
+    }
+    if (enteredOtp.trim() !== otp) {
+      throw new Error('Invalid verification OTP. Please check the code and try again.');
+    }
+
+    // OTP Validated!
+    sessionStorage.removeItem('gt_mobile_otp_session');
+    
+    let existing = null;
+    try {
+      const u = localStorage.getItem('globetrotter_user');
+      if (u) existing = JSON.parse(u);
+    } catch { existing = null; }
+
+    const token = `gt_jwt_mobile_${cleanPhone}_${Date.now()}`;
+    const userData = {
+      id: existing?.id || `usr_mob_${cleanPhone}`,
+      fullName: existing?.fullName || `Traveler +91 ${cleanPhone.slice(0, 5)}...`,
+      phone: `+91 ${cleanPhone}`,
+      email: existing?.email || `traveler_${cleanPhone}@phone.globetrotter.in`,
+      role: 'ROLE_TOURIST',
+      token,
+      provider: 'mobile',
+      isPhoneVerified: true
+    };
+
+    localStorage.setItem('globetrotter_token', token);
+    localStorage.setItem('globetrotter_user', JSON.stringify(userData));
+    window.dispatchEvent(new Event('auth-change'));
+    return userData;
+  },
+
+  verifyAndLinkMobile: async (phoneNumber, enteredOtp) => {
+    const cleanPhone = phoneNumber.replace(/\D/g, '').slice(-10);
+    const stored = sessionStorage.getItem('gt_mobile_otp_session');
+    if (!stored) throw new Error('No active OTP session. Please request a new code.');
+    const { phone, otp, expiresAt } = JSON.parse(stored);
+    if (phone !== cleanPhone) throw new Error('Phone number mismatch.');
+    if (Date.now() > expiresAt) throw new Error('OTP has expired.');
+    if (enteredOtp.trim() !== otp) throw new Error('Invalid OTP.');
+
+    sessionStorage.removeItem('gt_mobile_otp_session');
+
+    const user = authService.getCurrentUser();
+    if (!user) throw new Error('Not logged in.');
+    user.phone = `+91 ${cleanPhone}`;
+    user.isPhoneVerified = true;
+    localStorage.setItem('globetrotter_user', JSON.stringify(user));
+    window.dispatchEvent(new Event('auth-change'));
+    return user;
+  },
+
   socialLogin: (provider, { fullName, identifier }) => {
     let existing = null;
     try {

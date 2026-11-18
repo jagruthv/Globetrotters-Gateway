@@ -13,6 +13,7 @@ import VoiceConciergeModal from './components/VoiceConciergeModal';
 import WhatsAppConcierge from './components/WhatsAppConcierge';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import SettingsModal from './components/SettingsModal';
+import SmsGatewayToast from './components/SmsGatewayToast';
 import { Heart, ArrowRight } from 'lucide-react';
 
 const HASH_MAP = {
@@ -492,6 +493,9 @@ export default function App() {
 
         </div>
       </footer>
+
+      {/* Real-Time SMS & WhatsApp Simulated Gateway Alert Toast */}
+      <SmsGatewayToast />
 
       {/* Official 24/7 WhatsApp Tourist Support Concierge */}
       <WhatsAppConcierge />

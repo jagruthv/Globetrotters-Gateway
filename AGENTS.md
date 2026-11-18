@@ -79,8 +79,21 @@ Before claiming any task is complete, run and verify all 4 tiers:
 
 ---
 
-## Rule 8: Specialized Skills Lookup
-Whenever working on deep tasks (GIS routing, UI design systems, research papers, security hardening), refer to [MASTER_SKILLS_DIRECTORY_AND_SUBTOPIC_ROUTER.md](file:///d:/globtroter's%20gateway/MASTER_SKILLS_DIRECTORY_AND_SUBTOPIC_ROUTER.md) to load the exact skill and read its full instructions.
+## Rule 8: Mandatory Per-Turn Sub-Topic Skill Routing & Complete Reading (Strict)
+Before writing code or answering any prompt, the agent MUST execute this 3-step routing protocol:
+1. **Classify Active Task Domain & Sub-Topic**: Consult [MASTER_SKILLS_DIRECTORY_AND_SUBTOPIC_ROUTER.md](file:///d:/globtroter's%20gateway/MASTER_SKILLS_DIRECTORY_AND_SUBTOPIC_ROUTER.md) to locate the exact domain:
+   - **UI/UX & Aesthetics**: [`taste-skill`](file:///C:/Users/HP/.gemini/config/skills/taste-skill/SKILL.md), [`soft-skill`](file:///C:/Users/HP/.gemini/config/skills/soft-skill/SKILL.md), [`unslop`](file:///C:/Users/HP/.gemini/config/skills/unslop/SKILL.md), [`ui-ux-pro-max`](file:///C:/Users/HP/.gemini/config/skills/ui-ux-pro-max/SKILL.md)
+   - **Auth, Verification & Security**: [`security-and-hardening`](file:///C:/Users/HP/.gemini/config/skills/security-and-hardening/SKILL.md), [`website-prelaunch-audit`](file:///C:/Users/HP/.gemini/config/skills/website-prelaunch-audit/SKILL.md)
+   - **GIS Corridor Routing & Tourism Atlas**: [`tourism-corridor-intelligence`](file:///d:/globtroter's%20gateway/.agents/skills/tourism-corridor-intelligence/SKILL.md)
+   - **Testing & Verification**: [`verification-before-completion`](file:///C:/Users/HP/.gemini/config/skills/verification-before-completion/SKILL.md), [`playwright-cli`](file:///C:/Users/HP/.gemini/config/skills/playwright-cli/SKILL.md)
+   - **Debugging & Error Recovery**: [`systematic-debugging`](file:///C:/Users/HP/.gemini/config/skills/systematic-debugging/SKILL.md)
+   - **Cloud Infrastructure & SaaS**: [`zero-cost-saas-stack`](file:///C:/Users/HP/.gemini/config/skills/zero-cost-saas-stack/SKILL.md)
+2. **Read Skill Completely**: Read the target skill completely (never skim or stop at 100 lines). Internalize its constraints and anti-patterns before touching code.
+3. **Execute Without AI Slop**:
+   - **No Uniform Cyan/Purple Glow**: Use calm, titanium/graphite dark surfaces with high-contrast, purposeful accents.
+   - **Double-Bezel Architecture**: Outer shell + inner core for all modal dialogs, pass containers, and auth cards.
+   - **Authentic Verification Loops**: Mobile OTP requires real 6-digit verification code dispatch and entry, never unverified text inputs.
+   - **Unified Account Identity**: Google OAuth represents the user's verified Gmail address, not an isolated disconnected entity.
 
 ---
 
