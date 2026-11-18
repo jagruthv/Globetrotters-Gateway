@@ -30,8 +30,12 @@ public class JwtUtils {
                 ? userPrincipal.getAuthorities().iterator().next().getAuthority()
                 : "ROLE_USER";
 
+        return generateTokenFromUsername(userPrincipal.getUsername(), role);
+    }
+
+    public String generateTokenFromUsername(String username, String role) {
         return Jwts.builder()
-                .subject(userPrincipal.getUsername())
+                .subject(username)
                 .claim("role", role)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))

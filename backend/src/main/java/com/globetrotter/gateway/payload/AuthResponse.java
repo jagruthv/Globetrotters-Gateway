@@ -16,5 +16,10 @@ public class AuthResponse {
     private Long id;
     private String email;
     private String fullName;
+    private String phoneNumber;
     private String role;
+    private Boolean isEmailVerified;
+    private Boolean isPhoneVerified;
+    private String avatarUrl;
+    private String googleSub;
 }

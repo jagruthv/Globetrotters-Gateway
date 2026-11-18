@@ -4,7 +4,9 @@ import com.globetrotter.gateway.payload.AuthRequest;
 import com.globetrotter.gateway.payload.AuthResponse;
 import com.globetrotter.gateway.payload.RegisterRequest;
 import com.globetrotter.gateway.security.TokenBlacklistService;
+import com.globetrotter.gateway.security.UserDetailsImpl;
 import com.globetrotter.gateway.service.AuthService;
+import com.globetrotter.gateway.service.OtpService;
 import com.globetrotter.gateway.service.RateLimitingService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -23,6 +25,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final OtpService otpService;
     private final RateLimitingService rateLimitingService;
     private final TokenBlacklistService tokenBlacklistService;
 
@@ -31,7 +34,6 @@ public class AuthController {
         String clientIp = getClientIp(httpRequest);
         String accountKey = request.getEmail() != null ? request.getEmail().toLowerCase().trim() : "anonymous";
 
-        // Dual-Key Rate Limiting: Blocks both single-IP password spraying AND distributed botnet brute-forcing
         if (!rateLimitingService.tryConsumeAuth("login_ip_" + clientIp)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                     .body(Map.of("error", "Too many login attempts from this network. Please wait 1 minute before trying again."));
@@ -54,6 +56,143 @@ public class AuthController {
         return ResponseEntity.ok(authService.register(request));
     }
 
+    /**
+     * Google Sign-In Endpoint.
+     * Verifies the Google Identity Services JWT ID token and logs the user in.
+     */
+    @PostMapping("/google")
+    public ResponseEntity<?> googleLogin(@RequestBody Map<String, String> payload, HttpServletRequest httpRequest) {
+        String clientIp = getClientIp(httpRequest);
+        if (!rateLimitingService.tryConsumeAuth("google_auth_ip_" + clientIp)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(Map.of("error", "Too many authentication attempts. Please wait 1 minute."));
+        }
+
+        String idToken = payload.get("idToken");
+        if (idToken == null || idToken.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Google idToken is required"));
+        }
+
+        try {
+            AuthResponse response = authService.authenticateGoogle(idToken);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Dispatches an OTP to a mobile phone number.
+     */
+    @PostMapping("/otp/send-phone")
+    public ResponseEntity<?> sendPhoneOtp(@RequestBody Map<String, String> payload, HttpServletRequest httpRequest) {
+        String clientIp = getClientIp(httpRequest);
+        if (!rateLimitingService.tryConsumeAuth("otp_send_ip_" + clientIp)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(Map.of("error", "Too many OTP requests. Please wait a minute."));
+        }
+
+        String phone = payload.get("phoneNumber");
+        try {
+            Map<String, Object> result = otpService.sendPhoneOtp(phone);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Verifies phone OTP and returns authenticated session token.
+     */
+    @PostMapping("/otp/verify-phone")
+    public ResponseEntity<?> verifyPhoneOtp(@RequestBody Map<String, String> payload) {
+        String phone = payload.get("phoneNumber");
+        String otp = payload.get("otp");
+
+        try {
+            AuthResponse response = authService.authenticateMobileOtp(phone, otp);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Dispatches an OTP to an email address.
+     */
+    @PostMapping("/otp/send-email")
+    public ResponseEntity<?> sendEmailOtp(@RequestBody Map<String, String> payload, HttpServletRequest httpRequest) {
+        String clientIp = getClientIp(httpRequest);
+        if (!rateLimitingService.tryConsumeAuth("email_otp_ip_" + clientIp)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(Map.of("error", "Too many verification requests. Please wait a minute."));
+        }
+
+        String email = payload.get("email");
+        try {
+            Map<String, Object> result = otpService.sendEmailOtp(email);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Verifies email OTP and returns authenticated session token.
+     */
+    @PostMapping("/otp/verify-email")
+    public ResponseEntity<?> verifyEmailOtp(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String otp = payload.get("otp");
+
+        try {
+            AuthResponse response = authService.authenticateEmailOtp(email, otp);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Link verified mobile number to authenticated user profile.
+     */
+    @PostMapping("/link/phone")
+    public ResponseEntity<?> linkPhone(@RequestBody Map<String, String> payload, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
+        String phone = payload.get("phoneNumber");
+        String otp = payload.get("otp");
+
+        try {
+            AuthResponse response = authService.linkPhone(principal.getId(), phone, otp);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Link verified email address to authenticated user profile.
+     */
+    @PostMapping("/link/email")
+    public ResponseEntity<?> linkEmail(@RequestBody Map<String, String> payload, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Authentication required"));
+        }
+        UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
+        String email = payload.get("email");
+        String otp = payload.get("otp");
+
+        try {
+            AuthResponse response = authService.linkEmail(principal.getId(), email, otp);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
         if (authentication == null) {
@@ -62,10 +201,6 @@ public class AuthController {
         return ResponseEntity.ok(authentication.getPrincipal());
     }
 
-    /**
-     * Session Termination & Revocation Endpoint.
-     * Enforces Rule 11 (Session Revocation on Logout) from 20-Point Authentication Armor.
-     */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
@@ -81,7 +216,6 @@ public class AuthController {
         String xf = request.getHeader("X-Forwarded-For");
         if (xf != null && !xf.isBlank()) {
             String candidate = xf.split(",")[0].trim();
-            // Basic sanity check: reject CRLF or suspicious strings
             if (candidate.matches("^[0-9a-fA-F:.]+$")) {
                 return candidate;
             }

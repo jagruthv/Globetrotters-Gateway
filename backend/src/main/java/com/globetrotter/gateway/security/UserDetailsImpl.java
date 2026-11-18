@@ -19,22 +19,37 @@ public class UserDetailsImpl implements UserDetails {
     private Long id;
     private String email;
     private String fullName;
+    private String phoneNumber;
+    private Boolean isEmailVerified;
+    private Boolean isPhoneVerified;
+    private String avatarUrl;
 
     @JsonIgnore
     private String password;
 
     private Collection<? extends GrantedAuthority> authorities;
 
+    public UserDetailsImpl(Long id, String email, String fullName, String password, Collection<? extends GrantedAuthority> authorities) {
+        this(id, email, fullName, null, false, false, null, password, authorities);
+    }
+
     public static UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = Collections.singletonList(
                 new SimpleGrantedAuthority(user.getRole().name())
         );
 
+        String username = user.getEmail() != null ? user.getEmail() :
+                (user.getPhoneNumber() != null ? user.getPhoneNumber() : "user_" + user.getId());
+
         return new UserDetailsImpl(
                 user.getId(),
-                user.getEmail(),
+                username,
                 user.getFullName(),
-                user.getPassword(),
+                user.getPhoneNumber(),
+                user.getIsEmailVerified(),
+                user.getIsPhoneVerified(),
+                user.getAvatarUrl(),
+                user.getPassword() != null ? user.getPassword() : "",
                 authorities
         );
     }

@@ -72,6 +72,44 @@ public class MailService {
         }
     }
 
+    /**
+     * Sends a 6-digit authentication verification code to the user's email.
+     */
+    @Async
+    public void sendOtpEmail(String toEmail, String code) {
+        JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
+        if (mailSender == null) {
+            log.info("[EMAIL SIMULATION] SMTP not configured. OTP for {}: {}", toEmail, code);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+
+            helper.setFrom(fromAddress, fromName);
+            helper.setTo(toEmail);
+            helper.setSubject("🔑 Your Globetrotter Verification Code: " + code);
+
+            String html = """
+                <div style="font-family:'Segoe UI',sans-serif;max-width:480px;margin:20px auto;background:#0f172a;color:#f8fafc;padding:32px;border-radius:12px;border:1px solid #334155;">
+                  <h2 style="color:#2dd4bf;margin-top:0;">Globetrotter Gateway</h2>
+                  <p style="color:#94a3b8;font-size:14px;">Here is your verification code. It is valid for 10 minutes:</p>
+                  <div style="background:#1e293b;border:1px solid #2dd4bf;border-radius:8px;padding:16px;text-align:center;margin:24px 0;">
+                    <span style="font-size:32px;font-weight:900;letter-spacing:6px;color:#38bdf8;font-family:monospace;">%s</span>
+                  </div>
+                  <p style="color:#64748b;font-size:12px;">If you did not request this code, you can safely ignore this email.</p>
+                </div>
+                """.formatted(code);
+
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.info("Verification code email dispatched to: {}", toEmail);
+        } catch (Exception e) {
+            log.warn("Failed to send OTP email to {}: {}", toEmail, e.getMessage());
+        }
+    }
+
     private String buildConfirmationHtml(Booking booking) {
         return """
             <!DOCTYPE html>

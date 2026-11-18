@@ -95,16 +95,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   };
 
   // 2. GOOGLE ONE-CLICK OAUTH
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setLoading(true);
     setError(null);
-    setTimeout(() => {
-      const googleUser = authService.socialLogin('google', {
-        fullName: 'Google Verified Explorer',
-        identifier: 'explorer@gmail.com'
-      });
-      handleFinishAuth(googleUser, 'Signed in via Google One-Tap!');
-    }, 400);
+    try {
+      const googleUser = await authService.loginWithGoogle('demo_gis_google_token_sample');
+      handleFinishAuth(googleUser, 'Signed in via Google!');
+    } catch (err) {
+      setError(err.message || 'Google sign-in could not be completed.');
+      setLoading(false);
+    }
   };
 
   // 3. EMAIL & PASSWORD (SPRING BOOT AWS RDS)
