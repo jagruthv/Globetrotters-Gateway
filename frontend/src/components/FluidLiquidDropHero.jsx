@@ -6,6 +6,7 @@ import {
   Calendar, 
   Users, 
   ChevronRight,
+  ChevronLeft,
   ShieldCheck,
   Clock,
   Ticket,
@@ -15,7 +16,6 @@ import {
   Headphones,
   AlertTriangle,
   FileText,
-  Star,
   Landmark,
   QrCode,
   Sparkles
@@ -36,11 +36,11 @@ const HERO_DESTINATIONS = [
     groundRate: 0,
     rateBadge: 'Free Entry (No Ticket Required)',
     authority: 'Telangana Tourism & ASI Heritage',
-    highlights: '1591 AD Minarets, Laad Bazaar Lac Bangles, Nimrah Irani Chai',
-    bestHours: '05:00 PM - 10:30 PM (Evening Lights)',
+    highlights: '1591 AD Qutb Shahi Minarets, Laad Bazaar Lac Bangles, Nimrah Irani Chai',
+    bestHours: '05:00 PM – 10:30 PM (Evening Illumination)',
     audioTourPrice: 29,
-    rating: '4.8 (272,000+ reviews)',
-    advisory: 'STREET SCAM ALERT: Hawkers outside selling "Real Basra Pearls" for ₹300 are selling plastic beads. Purchase genuine pearls only from certified jewelers (Mangatrai, Jagdamba).',
+    rating: 'ASI Protected Monument',
+    advisory: 'STREET ADVISORY: Purchase pearls and bangles from certified jewelers inside the bazaar to ensure authentic hallmarks.',
     foodTip: 'Iconic Irani Chai with hot Osmania biscuits at Nimrah Cafe right beside Charminar (₹20). Handcrafted pure lac bangles in Laad Bazaar (₹250 - ₹1,500).',
     tagline: '16th-century Qutb Shahi monument of four minarets framing the vibrant bazaars of Old Hyderabad.',
     policyNotice: 'Free Public Access: Open pedestrian heritage piazza. No entry ticket, gate pass, or booking is required to visit Charminar or Laad Bazaar.'
@@ -59,10 +59,10 @@ const HERO_DESTINATIONS = [
     rateBadge: '₹25 Official ASI Gate Ticket',
     authority: 'Archaeological Survey of India (ASI)',
     highlights: 'Fateh Darwaza Acoustic Clapping Arch, Royal Domes, Sound & Light Show',
-    bestHours: '09:00 AM - 05:30 PM (Daily)',
+    bestHours: '09:00 AM – 05:30 PM (Daily Gate Timings)',
     audioTourPrice: 39,
-    rating: '4.7 (110,000+ reviews)',
-    advisory: 'OFFICIAL GATE ACCESS: Official entry ticket of ₹25 required at the gate. Evening Sound & Light show (06:30 PM) requires a separate ₹60 ticket.',
+    rating: 'ASI National Citadel',
+    advisory: 'GATE NOTICE: Official ₹25 entry ticket required at the gate. Sound & light evening show requires a separate ₹60 counter ticket.',
     foodTip: 'Traditional Hyderabadi mutton biryani and spiced charcoal corn available at historic eateries near the outer citadel gate.',
     tagline: 'Diamond-capital medieval citadel featuring world-famous acoustic engineering where a hand clap echoes at the hilltop summit.',
     policyNotice: 'Ticketed Monument: Exact ASI gate rate is ₹25 / Person. Book online to get your QR gate pass and skip ticket counter lines.'
@@ -80,11 +80,11 @@ const HERO_DESTINATIONS = [
     groundRate: 40,
     rateBadge: '₹40 Official APTDC Gate Ticket',
     authority: 'Andhra Pradesh Tourism (APTDC)',
-    highlights: 'Million-Year Stalactites, Gosthani River Caverns, Araku Organic Coffee',
-    bestHours: '10:00 AM - 04:30 PM (Cavern Lighting)',
+    highlights: 'Million-Year Stalactite Formations, Gosthani River Gorge, Araku Coffee Stalls',
+    bestHours: '10:00 AM – 04:30 PM (Cavern Floodlights)',
     audioTourPrice: 39,
-    rating: '4.7 (18,400+ reviews)',
-    advisory: 'CAVE SAFETY ADVISORY: Cave interior floor is moist limestone; wear sturdy footwear with grip. Still camera fee is ₹100 collected separately at gate.',
+    rating: 'APTDC Geo-Heritage Caverns',
+    advisory: 'CAVERN NOTICE: Interior pathway is damp limestone; wear non-slip shoes. Gate ticket is ₹40 per visitor.',
     foodTip: 'Famous Araku Bamboo Chicken cooked inside green bamboo shoots over wood embers (₹200 - ₹250), hot Araku Arabica coffee at mountain ridge stalls.',
     tagline: 'Deep limestone caves descending 80 meters into the scenic Eastern Ghats mountains.',
     policyNotice: 'Ticketed Attraction: Official APTDC entry ticket is ₹40 / Person. Digital entry pass gives direct access through the gate scanner.'
@@ -103,10 +103,10 @@ const HERO_DESTINATIONS = [
     rateBadge: 'Free Entry (No Ticket Required)',
     authority: 'AP Tourism & Historic Fort',
     highlights: '300ft Penna River Sandstone Gorge, Fort Ramparts, Raghunatha Temple',
-    bestHours: '05:30 AM - 08:30 AM (Sunrise Mist)',
+    bestHours: '05:30 AM – 08:30 AM (Sunrise Viewpoint)',
     audioTourPrice: 29,
-    rating: '4.8 (34,000+ reviews)',
-    advisory: 'CLIFF EDGE CAUTION: The natural canyon viewpoint has no guard rails on steep sheer drops. Maintain safe distance from edge rock formations.',
+    rating: 'Penna River Sandstone Gorge',
+    advisory: 'CANYON CAUTION: Natural gorge viewpoints have sheer 300ft drops with no railings. Maintain safe distance from cliff edges.',
     foodTip: 'Authentic Rayalaseema Karam Dosa (₹40 - ₹60) and hot Ragi Mudda with Natukodi Pulusu served at local village homestays and dhabas.',
     tagline: 'The Grand Canyon of India carved over millions of years through rugged red quartz granite by the Penna River.',
     policyNotice: 'Free Public Access: Open natural canyon viewpoint and fort complex. No entry ticket or pass is required to visit.'
@@ -124,11 +124,11 @@ const HERO_DESTINATIONS = [
     groundRate: 0,
     rateBadge: 'Free Entry (No Ticket Required)',
     authority: 'UNESCO & Archaeological Survey of India',
-    highlights: 'Floating Lightweight Bricks, Intricate Black Basalt Sculptures, Ramappa Lake',
-    bestHours: '06:00 AM - 11:30 AM (Morning Darshan)',
+    highlights: 'Kakatiya Sandbox Foundations, Floating Brick Shikhara, Basalt Sculptures',
+    bestHours: '06:00 AM – 11:30 AM (Morning Darshan & Architecture)',
     audioTourPrice: 29,
-    rating: '4.8 (12,800+ reviews)',
-    advisory: 'TEMPLE COURTESY: Traditional dress recommended. Free footwear keeping stall available at the entrance portico. Photography permitted outside inner sanctum.',
+    rating: 'UNESCO World Heritage • 1213 AD',
+    advisory: 'TEMPLE COURTESY: Traditional attire recommended for the sanctum. Footwear deposit stall available at the outer gate.',
     foodTip: 'Telangana Sarva Pindi and hot Jowar Rotis with spicy country chutney available at local family stalls outside the temple gateway.',
     tagline: '800-year-old Kakatiya engineering triumph built with floating bricks and earthquake-resistant sandbox foundations.',
     policyNotice: 'Free Public Access: Temple darshan and architectural viewing are 100% free. No ticket or pass is required.'
@@ -289,15 +289,15 @@ export default function FluidLiquidDropHero({
 
           {/* Quick Booking Console */}
           <div className="w-full max-w-2xl rounded-2xl p-1 bg-white/[0.04] border border-white/10 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-            <div className="w-full rounded-xl bg-[#06080D]/75 backdrop-blur-xl border border-white/10 p-2.5 sm:p-3 flex flex-col gap-2">
+            <div className="w-full rounded-xl bg-[#06080D]/80 backdrop-blur-xl border border-white/10 p-2.5 sm:p-3.5 flex flex-col gap-2.5">
               
-              {/* Row 1: Destination, Date, Visitors */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-2 border-b border-white/10">
+              {/* Row 1: Destination (6 cols / 50%), Date (3 cols / 25%), Travelers (3 cols / 25%) */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 pb-2.5 border-b border-white/10">
                 
-                {/* 1. Destination Selector */}
-                <div className="flex flex-col px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
+                {/* 1. Destination Selector - 6 cols so destination name never truncates */}
+                <div className="sm:col-span-6 flex flex-col px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
                   <label htmlFor="hero-dest-select" className="text-[10px] text-slate-400 font-medium flex items-center gap-1 font-sans-clean">
-                    <MapPin className="w-3 h-3 text-amber-400" />
+                    <MapPin className="w-3 h-3 text-amber-400 flex-shrink-0" />
                     <span>Destination</span>
                   </label>
                   <select
@@ -308,7 +308,7 @@ export default function FluidLiquidDropHero({
                       const foundIdx = HERO_DESTINATIONS.findIndex(d => d.id === e.target.value);
                       if (foundIdx !== -1) handleSelectDestination(foundIdx);
                     }}
-                    className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-0.5 truncate"
+                    className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-0.5"
                   >
                     {HERO_DESTINATIONS.map((d) => (
                       <option key={d.id} value={d.id} className="bg-[#0B0F17] text-white">
@@ -318,10 +318,10 @@ export default function FluidLiquidDropHero({
                   </select>
                 </div>
 
-                {/* 2. Date Selector */}
-                <div className="flex flex-col px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
+                {/* 2. Date Selector - 3 cols */}
+                <div className="sm:col-span-3 flex flex-col px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
                   <label htmlFor="hero-date-select" className="text-[10px] text-slate-400 font-medium flex items-center gap-1 font-sans-clean">
-                    <Calendar className="w-3 h-3 text-emerald-400" />
+                    <Calendar className="w-3 h-3 text-emerald-400 flex-shrink-0" />
                     <span>Date of Visit</span>
                   </label>
                   <select
@@ -338,10 +338,10 @@ export default function FluidLiquidDropHero({
                   </select>
                 </div>
 
-                {/* 3. Guests Selector */}
-                <div className="flex flex-col px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
+                {/* 3. Guests Selector - 3 cols */}
+                <div className="sm:col-span-3 flex flex-col px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
                   <label htmlFor="hero-guests-select" className="text-[10px] text-slate-400 font-medium flex items-center gap-1 font-sans-clean">
-                    <Users className="w-3 h-3 text-amber-400" />
+                    <Users className="w-3 h-3 text-amber-400 flex-shrink-0" />
                     <span>Travelers</span>
                   </label>
                   <select
@@ -362,7 +362,7 @@ export default function FluidLiquidDropHero({
               </div>
 
               {/* Row 2: Status, Audio Add-on, Total & Unified CTA */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-0.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5">
                 
                 {/* Verification Status & Audio Add-On */}
                 <div className="flex items-center gap-2 flex-wrap">
@@ -447,44 +447,44 @@ export default function FluidLiquidDropHero({
 
         </div>
 
-        {/* Right Column: Luxury Travel Editorial Spotlight */}
-        <div className="lg:col-span-5 flex flex-col items-center lg:items-end">
-          <div className="w-full max-w-sm rounded-2xl p-1 bg-white/[0.04] border border-white/10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-            <div className="w-full rounded-xl bg-[#06080D]/75 backdrop-blur-xl border border-white/10 p-2.5 sm:p-3 flex flex-col gap-2">
+        {/* Right Column: Institutional Heritage Spotlight Card */}
+        <div className="lg:col-span-5 flex flex-col items-center lg:items-end w-full">
+          <div className="w-full max-w-md xl:max-w-lg rounded-2xl p-1 bg-white/[0.05] border border-white/12 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+            <div className="w-full rounded-xl bg-[#06080D]/85 backdrop-blur-xl border border-white/10 p-3 sm:p-4 flex flex-col gap-2.5">
               
-              {/* Destination Category & Rating */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-amber-300 border border-amber-400/20 font-medium font-sans-clean">
+              {/* Destination Category & Authority Badge */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-white/[0.04] text-amber-300 border border-amber-400/20 font-medium font-sans-clean">
                   {activeDest.tag}
                 </span>
-                <span className="text-[10px] text-amber-300 font-bold font-sans-clean flex items-center gap-1">
-                  <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+                <span className="text-[10px] text-amber-300 font-semibold font-sans-clean flex items-center gap-1">
+                  <Landmark className="w-3 h-3 text-amber-400 flex-shrink-0" aria-hidden="true" />
                   <span>{activeDest.rating}</span>
                 </span>
               </div>
 
               {/* Destination Spotlight Image with Authentic Badges */}
-              <div className="relative h-24 sm:h-28 rounded-lg overflow-hidden bg-slate-900 shadow-inner group">
+              <div className="relative h-32 sm:h-36 rounded-lg overflow-hidden bg-slate-900 shadow-inner group">
                 <img
                   src={activeDest.image}
                   alt={activeDest.name}
                   className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#080A0F] via-transparent to-transparent opacity-90" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#080A0F]/90 via-transparent to-transparent" />
                 
                 {/* Photo Caption & Official Rate Pill */}
-                <div className="absolute bottom-1.5 left-2 right-2 flex items-end justify-between gap-1.5">
-                  <div className="truncate">
-                    <h3 className="text-xs sm:text-sm font-bold text-white drop-shadow truncate font-sans-clean">
+                <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between gap-2">
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-bold text-white drop-shadow font-sans-clean leading-snug">
                       {activeDest.name}
                     </h3>
-                    <span className="text-[9px] sm:text-[10px] text-amber-200/90 font-medium font-sans-clean flex items-center gap-0.5 truncate">
-                      <MapPin className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
+                    <span className="text-[10px] text-amber-200/95 font-medium font-sans-clean flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3 h-3 text-amber-400 flex-shrink-0" />
                       <span>{activeDest.district} • {activeDest.state}</span>
                     </span>
                   </div>
 
-                  <span className={`px-1.5 py-0.5 rounded-full backdrop-blur-md border text-[9px] font-bold font-sans-clean flex-shrink-0 ${
+                  <span className={`px-2 py-0.5 rounded-full backdrop-blur-md border text-[9.5px] font-bold font-sans-clean flex-shrink-0 ${
                     activeDest.isTicketed
                       ? 'bg-amber-500/20 border-amber-400/40 text-amber-300'
                       : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
@@ -494,67 +494,69 @@ export default function FluidLiquidDropHero({
                 </div>
               </div>
 
-              {/* Curated Traveler Intel: 2-Column Compact Grid */}
-              <div className="grid grid-cols-2 gap-1.5 text-xs font-sans-clean">
-                <div className="p-1.5 rounded-md bg-white/[0.02] border border-white/5 flex flex-col justify-center">
-                  <span className="text-[8.5px] text-slate-400 font-semibold flex items-center gap-1">
-                    <Compass className="w-2 h-2 text-amber-400" />
+              {/* Curated Traveler Intel: 2 Columns without text truncation */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-sans-clean">
+                <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5 flex flex-col justify-center">
+                  <span className="text-[9px] text-slate-400 font-semibold flex items-center gap-1">
+                    <Compass className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
                     <span>Highlights</span>
                   </span>
-                  <span className="text-slate-200 text-[9.5px] leading-tight truncate mt-0.5" title={activeDest.highlights}>
+                  <span className="text-slate-200 text-[10px] leading-snug mt-1">
                     {activeDest.highlights}
                   </span>
                 </div>
 
-                <div className="p-1.5 rounded-md bg-white/[0.02] border border-white/5 flex flex-col justify-center">
-                  <span className="text-[8.5px] text-slate-400 font-semibold flex items-center gap-1">
-                    <Clock className="w-2 h-2 text-amber-400" />
-                    <span>Best Hours</span>
+                <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5 flex flex-col justify-center">
+                  <span className="text-[9px] text-slate-400 font-semibold flex items-center gap-1">
+                    <Clock className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
+                    <span>Visiting Timings</span>
                   </span>
-                  <span className="text-slate-200 font-semibold text-[9.5px] truncate mt-0.5">
+                  <span className="text-slate-200 font-semibold text-[10px] leading-snug mt-1">
                     {activeDest.bestHours}
                   </span>
                 </div>
               </div>
 
-              {/* Official Tourist Anti-Scam Notice */}
-              <div className="p-1.5 rounded-md bg-amber-500/10 border border-amber-400/20 flex items-start gap-1.5 text-[9.5px] text-amber-200/90 leading-tight">
-                <AlertTriangle className="w-3 h-3 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span className="line-clamp-2">{activeDest.advisory}</span>
+              {/* Official Tourist Anti-Scam Notice: Complete sentence, no truncation */}
+              <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-400/20 flex items-start gap-2 text-[10px] text-amber-200/90 leading-snug">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span>{activeDest.advisory}</span>
               </div>
 
-              {/* Tactile Destination Gallery Rail */}
-              <div className="pt-1 border-t border-white/10 flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] text-slate-400 font-medium font-sans-clean">
-                    Switch Featured Spot:
-                  </span>
-                  <span className="text-[9px] text-amber-400/80 font-mono">
-                    {activeIdx + 1}/5
+              {/* Tactile Spotlight Carousel Navigation */}
+              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] text-slate-400 font-medium font-sans-clean">
+                    Spotlight {activeIdx + 1} of {HERO_DESTINATIONS.length}
                   </span>
                 </div>
-                <div className="grid grid-cols-5 gap-1">
-                  {HERO_DESTINATIONS.map((d, idx) => {
-                    const isSelected = activeIdx === idx;
-                    return (
-                      <button
-                        key={d.id}
-                        onClick={() => handleSelectDestination(idx)}
-                        className={`relative h-7 sm:h-8 rounded overflow-hidden border transition-all cursor-pointer ${
-                          isSelected
-                            ? 'border-amber-400 ring-1 ring-amber-400/60 scale-[1.03]'
-                            : 'border-white/10 opacity-60 hover:opacity-100'
-                        }`}
-                        title={`${d.name} (${d.district})`}
-                      >
-                        <img
-                          src={d.image}
-                          alt={d.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    );
-                  })}
+                <div className="flex items-center gap-1.5">
+                  {HERO_DESTINATIONS.map((d, idx) => (
+                    <button
+                      key={d.id}
+                      onClick={() => handleSelectDestination(idx)}
+                      aria-label={`Switch to ${d.name}`}
+                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                        activeIdx === idx ? 'w-5 bg-amber-400' : 'w-2 bg-white/20 hover:bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleSelectDestination((activeIdx - 1 + HERO_DESTINATIONS.length) % HERO_DESTINATIONS.length)}
+                    aria-label="Previous destination"
+                    className="p-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-slate-300 transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleSelectDestination((activeIdx + 1) % HERO_DESTINATIONS.length)}
+                    aria-label="Next destination"
+                    className="p-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-slate-300 transition-colors cursor-pointer"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
 
