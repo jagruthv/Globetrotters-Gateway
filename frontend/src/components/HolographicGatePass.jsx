@@ -1,58 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  QrCode, 
   Sparkles, 
   CheckCircle, 
-  Share2,
-  Printer,
-  Headphones,
-  Calendar,
-  Clock,
-  Ticket,
-  MapPin,
-  User,
-  ArrowUpRight
+  Share2, 
+  Printer, 
+  Headphones, 
+  Calendar, 
+  Clock, 
+  Ticket, 
+  MapPin, 
+  User, 
+  ArrowUpRight,
+  Compass,
+  ArrowRight
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import QRCode from 'qrcode';
 
 export default function HolographicGatePass({ 
   passData = null,
-  onOpenAudioGuide
+  onOpenAudioGuide,
+  onExplorePackages,
+  onPlanTrip
 }) {
   const [isCopied, setIsCopied] = useState(false);
   const [shareToast, setShareToast] = useState(null);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
 
-  // Retrieve current logged in user if available
-  const savedUser = (() => {
+  // Retrieve booked pass from prop or localStorage
+  const activePass = (() => {
+    if (passData) return passData;
     try {
-      const stored = localStorage.getItem('globetrotter_user');
-      return stored ? JSON.parse(stored) : null;
+      const stored = localStorage.getItem('globetrotter_passes');
+      if (stored) {
+        const list = JSON.parse(stored);
+        if (Array.isArray(list) && list.length > 0) {
+          return list[0];
+        }
+      }
+      return null;
     } catch {
       return null;
     }
   })();
 
-  // Default demo pass if no custom booking exists
-  const activePass = passData || {
-    reference: 'BMS-GT-89421',
-    token: 'GT_PASS:89421-AP-TG:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-    touristName: savedUser?.fullName || 'Verified Explorer',
-    circuitName: 'Grand Godavari & Eastern Ghats Arc',
-    validFrom: '19 Nov 2026',
-    validUntil: '25 Nov 2026',
-    status: 'ACTIVE_AUTHENTICATED',
-    placesAllowed: [
-      'Borra Caves Subterranean Gate',
-      'Araku Tribal Museum',
-      'Coringa Mangrove Boardwalk',
-      'Bhavani Island',
-      'Amaravati Buddhist Mahastupa'
-    ],
-    gateFeeTotal: '₹340 (All-Access Pre-Paid)'
-  };
+  // Real Dynamic QR Code Generator
+  useEffect(() => {
+    if (activePass?.token) {
+      QRCode.toDataURL(activePass.token, {
+        width: 300,
+        margin: 1,
+        color: {
+          dark: '#06080D',
+          light: '#FFFFFF'
+        }
+      })
+      .then((url) => setQrCodeDataUrl(url))
+      .catch((err) => console.error('QR Generator Error:', err));
+    }
+  }, [activePass?.token]);
 
   const handleCopyShareLink = () => {
+    if (!activePass) return;
     const shareUrl = window.location.origin;
     const shareText = `🎫 My Official Entry Pass for ${activePass.circuitName}!\nBooking ID: ${activePass.reference}\nBook queue-free tickets at: ${shareUrl}`;
     
@@ -68,6 +78,7 @@ export default function HolographicGatePass({
   };
 
   const handleShareWhatsApp = () => {
+    if (!activePass) return;
     const shareUrl = window.location.origin;
     const shareText = encodeURIComponent(
       `🎫 *I just booked my All-Access Entry Ticket on Globetrotter Gateway!*\n\n🏛️ *Tour:* ${activePass.circuitName}\n👤 *Traveler:* ${activePass.touristName}\n🎟️ *Booking ID:* ${activePass.reference}\n\n⚡ Skip all ticketing queues with digital QR passes across Andhra Pradesh & Telangana!\n👉 Book yours here: ${shareUrl}`
@@ -84,6 +95,54 @@ export default function HolographicGatePass({
     });
   };
 
+  // EMPTY STATE: User hasn't bought any pass yet
+  if (!activePass) {
+    return (
+      <section className="relative w-full py-20 px-4 md:px-12 bg-[#06080D] text-slate-200">
+        <div className="max-w-2xl mx-auto flex flex-col items-center text-center gap-6 p-8 sm:p-12 rounded-3xl bg-[#0D121F] border border-white/10 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+            <Ticket className="w-8 h-8" />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-widest font-semibold">
+              Entry Passes & Digital Tickets
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-bold text-white font-sans-clean">
+              No Active Pass Yet
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed font-sans-clean">
+              You haven't booked an entry pass yet. Pick a curated tour package or plan your custom trip to generate your official gate pass with a scannable QR code.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            {onExplorePackages && (
+              <button
+                onClick={onExplorePackages}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2 hover:opacity-95 transition-opacity shadow-md cursor-pointer font-sans-clean"
+              >
+                <Compass className="w-4 h-4 text-slate-950" />
+                <span>Explore Tour Packages</span>
+              </button>
+            )}
+
+            {onPlanTrip && (
+              <button
+                onClick={onPlanTrip}
+                className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-white font-semibold text-xs flex items-center gap-2 transition-colors cursor-pointer font-sans-clean"
+              >
+                <span>Plan Custom Trip with AI</span>
+                <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ACTIVE TICKET VIEW: Renders full movie-ticket style pass with real QR
   return (
     <section className="relative w-full py-20 px-4 md:px-12 bg-[#06080D] text-slate-200">
       <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
@@ -212,22 +271,24 @@ export default function HolographicGatePass({
             </div>
 
             {/* Included Attractions List */}
-            <div className="flex flex-col gap-1.5 font-sans-clean">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
-                Attractions Covered Under This Pass
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {activePass.placesAllowed.map((p) => (
-                  <span
-                    key={p}
-                    className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] text-slate-300 font-sans-clean flex items-center gap-1.5"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                    <span>{p}</span>
-                  </span>
-                ))}
+            {activePass.placesAllowed && activePass.placesAllowed.length > 0 && (
+              <div className="flex flex-col gap-1.5 font-sans-clean">
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
+                  Attractions Covered Under This Pass
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {activePass.placesAllowed.map((p) => (
+                    <span
+                      key={p}
+                      className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] text-slate-300 font-sans-clean flex items-center gap-1.5"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                      <span>{p}</span>
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* PERFORATED TEAR-OFF LINE */}
             <div className="relative py-2">
@@ -237,19 +298,27 @@ export default function HolographicGatePass({
               </div>
             </div>
 
-            {/* STUB / QR & BARCODE SECTION */}
+            {/* STUB / DYNAMIC REAL QR & BARCODE SECTION */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-4 rounded-2xl bg-black/50 border border-white/5">
-              {/* QR Box */}
+              {/* Real Dynamic QR Box */}
               <div className="flex items-center gap-4">
-                <div className="w-24 h-24 bg-white p-1.5 rounded-xl flex items-center justify-center shrink-0 shadow-lg">
-                  <QrCode className="w-20 h-20 text-slate-950" />
+                <div className="w-24 h-24 bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-lg overflow-hidden">
+                  {qrCodeDataUrl ? (
+                    <img 
+                      src={qrCodeDataUrl} 
+                      alt="Scannable Pass QR Code" 
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-slate-200 animate-pulse rounded-lg" />
+                  )}
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-bold text-white font-sans-clean">
-                    Show QR at Gate Conductor / Turnstile
+                    Real Scannable Turnstile QR
                   </span>
                   <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean max-w-xs">
-                    Works 100% offline. The optical sensor verifies the digital signature directly at the barrier.
+                    Works 100% offline. Scan with any camera or at the gate scanner to verify entry token.
                   </p>
                   <span className="text-[9px] text-cyan-400 font-mono truncate max-w-[200px]">
                     Token: {activePass.token}

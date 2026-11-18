@@ -12,16 +12,77 @@ import VoiceConciergeModal from './components/VoiceConciergeModal';
 import WhatsAppConcierge from './components/WhatsAppConcierge';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import SettingsModal from './components/SettingsModal';
-import { Heart } from 'lucide-react';
+import { Heart, ArrowRight } from 'lucide-react';
+
+const HASH_MAP = {
+  '': 'home',
+  'overview': 'home',
+  'districts': 'explore',
+  'explore': 'explore',
+  'planner': 'planner',
+  'packages': 'circuits',
+  'circuits': 'circuits',
+  'passes': 'passes',
+  'tickets': 'passes',
+  'scanner': 'scanner'
+};
+
+const TAB_TO_HASH = {
+  home: '',
+  explore: 'districts',
+  planner: 'planner',
+  circuits: 'packages',
+  passes: 'passes',
+  scanner: 'scanner'
+};
+
+const getInitialTab = () => {
+  if (typeof window === 'undefined') return 'home';
+  const raw = window.location.hash.replace('#/', '').replace('#', '').trim().toLowerCase();
+  return HASH_MAP[raw] || 'home';
+};
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTabState] = useState(getInitialTab);
   const [selectedPlaces, setSelectedPlaces] = useState([]);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [isStaffMode, setIsStaffMode] = useState(false);
-  const [issuedPassData, setIssuedPassData] = useState(null);
+  const [issuedPassData, setIssuedPassData] = useState(() => {
+    try {
+      const stored = localStorage.getItem('globetrotter_passes');
+      if (stored) {
+        const list = JSON.parse(stored);
+        if (Array.isArray(list) && list.length > 0) {
+          return list[0];
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  });
   const shouldReduceMotion = useReducedMotion();
+
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    const targetHash = TAB_TO_HASH[tab] ? `#/${TAB_TO_HASH[tab]}` : '#/';
+    if (window.location.hash !== targetHash) {
+      window.history.pushState(null, '', targetHash);
+    }
+  };
+
+  useEffect(() => {
+    const handleHashSync = () => {
+      setActiveTabState(getInitialTab());
+    };
+    window.addEventListener('hashchange', handleHashSync);
+    window.addEventListener('popstate', handleHashSync);
+    return () => {
+      window.removeEventListener('hashchange', handleHashSync);
+      window.removeEventListener('popstate', handleHashSync);
+    };
+  }, []);
 
   const handleToggleStaffMode = (enable) => {
     setIsStaffMode(enable);
@@ -147,11 +208,35 @@ export default function App() {
                 onBookCircuit={handleBookCircuit}
               />
 
-              {/* Digital Entry Pass */}
-              <HolographicGatePass
-                passData={issuedPassData}
-                onOpenAudioGuide={() => setVoiceModalOpen(true)}
-              />
+              {/* Ready to Explore Corridor Callout */}
+              <section className="py-16 px-4 md:px-12 bg-black/40 border-t border-white/5 text-center">
+                <div className="max-w-3xl mx-auto flex flex-col items-center gap-5">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[10px] font-mono uppercase tracking-widest">
+                    Unified Tourism Corridors • AP & TG
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-white font-sans-clean">
+                    Start Your Heritage Journey Across 59 Districts
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed font-sans-clean">
+                    Discover historical temples, lush hill stations, and subterranean caverns. Pick a curated tour package or build your personalized day-by-day plan with our AI concierge.
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                    <button
+                      onClick={() => setActiveTab('explore')}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2 hover:opacity-95 transition-opacity shadow-md cursor-pointer font-sans-clean"
+                    >
+                      <span>Explore 59 Districts</span>
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-950" />
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('planner')}
+                      className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-white font-semibold text-xs flex items-center gap-2 transition-colors cursor-pointer font-sans-clean"
+                    >
+                      <span>Plan Custom Trip with AI</span>
+                    </button>
+                  </div>
+                </div>
+              </section>
             </motion.div>
           )}
 
@@ -234,6 +319,8 @@ export default function App() {
               <HolographicGatePass
                 passData={issuedPassData}
                 onOpenAudioGuide={() => setVoiceModalOpen(true)}
+                onExplorePackages={() => setActiveTab('circuits')}
+                onPlanTrip={() => setActiveTab('planner')}
               />
             </motion.div>
           )}
