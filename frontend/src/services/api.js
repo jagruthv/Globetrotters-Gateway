@@ -78,6 +78,61 @@ export const authService = {
     }
   },
 
+  socialLogin: (provider, { fullName, identifier }) => {
+    let existing = null;
+    try {
+      const stored = localStorage.getItem('globetrotter_user');
+      if (stored) existing = JSON.parse(stored);
+    } catch {
+      existing = null;
+    }
+
+    const token = `gt_jwt_${provider}_${btoa(identifier || 'tourist')}_${Date.now()}`;
+    const linkedAccounts = existing?.linkedAccounts ? [...existing.linkedAccounts] : [];
+    if (!linkedAccounts.find(a => a.provider === provider && a.identifier === identifier)) {
+      linkedAccounts.push({ provider, identifier, linkedAt: new Date().toISOString() });
+    }
+
+    const userData = {
+      id: existing?.id || `usr_${Date.now()}`,
+      fullName: fullName || existing?.fullName || (identifier?.includes('@') ? identifier.split('@')[0] : `Tourist (${identifier ? identifier.slice(-4) : 'Guest'})`),
+      email: provider === 'google' || provider === 'email' ? identifier : (existing?.email || `${identifier || 'guest'}@phone.globetrotter.in`),
+      phone: provider === 'whatsapp' || provider === 'phone' ? identifier : (existing?.phone || null),
+      role: existing?.role || 'ROLE_TOURIST',
+      token,
+      linkedAccounts
+    };
+
+    localStorage.setItem('globetrotter_token', token);
+    localStorage.setItem('globetrotter_user', JSON.stringify(userData));
+    window.dispatchEvent(new Event('auth-change'));
+    return userData;
+  },
+
+  linkAccount: (provider, identifier) => {
+    const user = authService.getCurrentUser();
+    if (!user) return null;
+    const linked = user.linkedAccounts ? [...user.linkedAccounts] : [];
+    if (!linked.find(a => a.provider === provider && a.identifier === identifier)) {
+      linked.push({ provider, identifier, linkedAt: new Date().toISOString() });
+      user.linkedAccounts = linked;
+      if (provider === 'google' && !user.email) user.email = identifier;
+      if (provider === 'whatsapp' && !user.phone) user.phone = identifier;
+      localStorage.setItem('globetrotter_user', JSON.stringify(user));
+      window.dispatchEvent(new Event('auth-change'));
+    }
+    return user;
+  },
+
+  unlinkAccount: (provider) => {
+    const user = authService.getCurrentUser();
+    if (!user || !user.linkedAccounts || user.linkedAccounts.length <= 1) return user;
+    user.linkedAccounts = user.linkedAccounts.filter(a => a.provider !== provider);
+    localStorage.setItem('globetrotter_user', JSON.stringify(user));
+    window.dispatchEvent(new Event('auth-change'));
+    return user;
+  },
+
   getToken: () => localStorage.getItem('globetrotter_token'),
 };
 
