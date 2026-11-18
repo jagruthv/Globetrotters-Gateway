@@ -277,10 +277,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
     setTimeout(() => {
       const guestId = Math.floor(1000 + Math.random() * 9000);
       const guestUser = authService.socialLogin('guest', {
-        fullName: `Guest Explorer #${guestId}`,
-        identifier: `guest_${guestId}@globetrotter.in`
+        fullName: `Guest Traveler #${guestId}`,
+        identifier: null
       });
-      handleFinishAuth(guestUser, 'Instant Guest Pass active!');
+      handleFinishAuth(guestUser, 'Guest Pass active!');
     }, 300);
   };
 

@@ -274,7 +274,7 @@ export const authService = {
     const userData = {
       id: existing?.id || `usr_${Date.now()}`,
       fullName: fullName || existing?.fullName || (identifier?.includes('@') ? identifier.split('@')[0] : `Tourist (${identifier ? identifier.slice(-4) : 'Guest'})`),
-      email: provider === 'google' || provider === 'email' ? identifier : (existing?.email || `${identifier || 'guest'}@phone.globetrotter.in`),
+      email: provider === 'google' || provider === 'email' ? identifier : (existing?.email || null),
       phone: provider === 'whatsapp' || provider === 'phone' ? identifier : (existing?.phone || null),
       role: existing?.role || 'ROLE_TOURIST',
       token,
