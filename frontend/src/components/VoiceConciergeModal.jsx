@@ -506,9 +506,9 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                   muted
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-3 left-3 flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/30 text-[10px] text-amber-300 font-mono">
+                <div className="absolute top-3 left-3 flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/30 text-[10px] text-amber-300 font-sans-clean font-semibold">
                   <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  <span>Live Vision Active (1080p Stream)</span>
+                  <span>Camera Active</span>
                 </div>
                 <div className="absolute bottom-3 right-3 text-[10px] text-slate-300 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm">
                   Show monuments, tickets, or scenery
@@ -555,17 +555,17 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
               <div className="flex flex-col items-center gap-1.5 mt-2">
                 <span className="text-xs font-semibold text-white tracking-wide">
                   {isThinking
-                    ? 'Gemini 3.8 Flash is thinking...'
+                    ? 'Finding travel details...'
                     : isSpeaking
-                    ? 'Gemini is speaking (speak anytime to interrupt)'
+                    ? 'Guide is speaking (tap to pause)'
                     : isListening
-                    ? 'Listening continuously... speak naturally'
-                    : 'Tap microphone to start live session'}
+                    ? 'Listening... speak anytime'
+                    : 'Tap microphone to start audio guide'}
                 </span>
                 <span className="text-[11px] text-slate-400 text-center max-w-sm">
                   {isListening
-                    ? 'Recognizes your speech in real-time. Pausing automatically triggers Gemini.'
-                    : 'Hands-free conversational AI companion with multimodal vision support.'}
+                    ? 'Speak naturally to ask about monuments, timings, and history.'
+                    : 'Ask travel questions by voice or show sights with your camera.'}
                 </span>
 
                 {/* Live Controls: Camera Toggle & Reset */}
