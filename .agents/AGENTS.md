@@ -22,3 +22,9 @@
 ## 3. QUOTA PROTECTION RULES
 - Because `gemini-4-hydrogen` only allows 20 RPD and 5 RPM on Free Tier, default standard app calls to `gemini-3.8-flash` or `gemini-3.5-flash-lite`, and add exponential backoff on HTTP 429 errors.
 - Only attach `tools=[{"google_search": {}}]` when live web data is explicitly required (1,500 RPD limit).
+
+## 4. UNIVERSAL OPERATIONAL & GIT RULES (STRICT ACROSS ALL PROJECTS)
+- **Zero-Plagiarism & Humanized Tone**: All technical writing, reports, and code comments must achieve a 0% AI/plagiarism score. Eliminate robotic cadence, corporate filler, and AI clichés (*delve, leverage, robust, seamless, comprehensive, streamline, testament, pivotal, paramount*). Lead with concrete actions, rationale, and specific identifiers.
+- **Short, Humanized Git Commits**: Git commit titles must be short, lowercase, and conventional (`feat: ...`, `fix: ...`, `refactor: ...`, `chore: ...`). Never write multi-paragraph AI logs in git. Strictly NEVER mention spelling mistakes, file/folder renames, user prompt fixes, or internal AI corrections anywhere in commits or PR titles.
+- **Lightweight & Private Git Hygiene**: Exclude all heavy media (>5-10MB, raw videos, images, design assets) and private academic/evaluation files (`reports/`, `*.docx`, `*.pptx`, `*.pdf`) from git tracking. Keep repository size under 5MB (pure source code). Ensure `.gitignore` continuously blocks all local tokens, private API keys, and credential caches.
+- **Workspace Restructuring & Lite Architecture**: Proactively prune dead temporary files, duplicate scripts, and obsolete caches to keep the workspace ultra-lite.
