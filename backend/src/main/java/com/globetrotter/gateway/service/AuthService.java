@@ -177,7 +177,7 @@ public class AuthService {
     public AuthResponse authenticateMobileOtp(String rawPhone, String enteredOtp) {
         boolean valid = otpService.verifyPhoneOtp(rawPhone, enteredOtp);
         if (!valid) {
-            throw new IllegalArgumentException("Invalid verification code. Please check your SMS or WhatsApp and try again.");
+            throw new IllegalArgumentException("Invalid verification code. Please check your SMS and try again.");
         }
 
         String cleanPhone = rawPhone.replaceAll("\\D", "");

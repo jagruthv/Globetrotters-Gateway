@@ -312,7 +312,7 @@ export const authService = {
       linked.push({ provider, identifier, linkedAt: new Date().toISOString() });
       user.linkedAccounts = linked;
       if (provider === 'google' && !user.email) user.email = identifier;
-      if (provider === 'whatsapp' && !user.phone) user.phone = identifier;
+      if (provider === 'phone' && !user.phone) user.phone = identifier;
       localStorage.setItem('globetrotter_user', JSON.stringify(user));
       window.dispatchEvent(new Event('auth-change'));
     }
