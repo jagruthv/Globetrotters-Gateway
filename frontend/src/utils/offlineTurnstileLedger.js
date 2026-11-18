@@ -13,8 +13,8 @@
  * 4. End-of-Day Core Batch-Sync Pipeline (POST /api/verify/batch-sync)
  */
 
-import { scannerService } from '../services/api';
-import { verifyPassCryptographicSignature } from './cryptoPassService';
+import { scannerService } from '../services/api.js';
+import { verifyPassCryptographicSignature } from './cryptoPassService.js';
 
 const LEDGER_KEY = 'globetrotter_turnstile_ledger';
 const ADMITTED_SET_KEY = 'globetrotter_admitted_passes_cache';

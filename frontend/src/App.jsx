@@ -10,8 +10,8 @@ import HolographicGatePass from './components/HolographicGatePass';
 import AgentPortalView from './components/AgentPortalView';
 import AgentVerificationModal from './components/AgentVerificationModal';
 import VoiceConciergeModal from './components/VoiceConciergeModal';
-import CopilotDrawer from './components/CopilotDrawer';
-import CopilotFloatingTrigger from './components/CopilotFloatingTrigger';
+import TravelAssistantDrawer from './components/TravelAssistantDrawer';
+import AssistantFloatingTrigger from './components/AssistantFloatingTrigger';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import SettingsModal from './components/SettingsModal';
 import SmsGatewayToast from './components/SmsGatewayToast';
@@ -71,7 +71,7 @@ export default function App() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [activeBookingForPayment, setActiveBookingForPayment] = useState(null);
   const [pendingBooking, setPendingBooking] = useState(null);
-  const [copilotOpen, setCopilotOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [issuedPassData, setIssuedPassData] = useState(() => {
     try {
@@ -162,12 +162,12 @@ export default function App() {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [activeTab]);
 
-  // Global ⌘K / Ctrl+K keyboard shortcut to toggle Copilot from anywhere
+  // Global ⌘K / Ctrl+K keyboard shortcut to toggle Travel Assistant from anywhere
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setCopilotOpen((prev) => !prev);
+        setAssistantOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -275,7 +275,7 @@ export default function App() {
   const handleBookCustomPlan = (customPlan) => {
     const allStops = (customPlan.days || []).flatMap(d => (d.stops || []).map(s => s.name || s.placeName || s));
     handleInitiateBooking({
-      circuitName: customPlan.title || 'Personalized Gemini Circuit Pass',
+      circuitName: customPlan.title || 'Personalized Heritage Circuit Pass',
       destinations: allStops.length > 0 ? allStops : selectedPlaces.map(p => p.name),
       totalAmount: customPlan.packagePrice || 320
     });
@@ -300,7 +300,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         selectedPlacesCount={selectedPlaces.length}
         onOpenSettings={() => setSettingsModalOpen(true)}
-        onOpenCopilot={() => setCopilotOpen(true)}
+        onOpenAssistant={() => setAssistantOpen(true)}
       />
 
       {/* Main Tab Views with Framer Motion Spring Transition */}
@@ -400,7 +400,7 @@ export default function App() {
                 onProceedToPasses={() => setActiveTab('passes')}
                 onInitiateBooking={handleInitiateBooking}
                 onBookCustomPlan={handleBookCustomPlan}
-                onOpenCopilot={() => setCopilotOpen(true)}
+                onOpenAssistant={() => setAssistantOpen(true)}
               />
             </motion.div>
           )}
@@ -585,15 +585,15 @@ export default function App() {
       {/* Real-Time SMS & WhatsApp Simulated Gateway Alert Toast */}
       <SmsGatewayToast />
 
-      {/* Persistent Global Copilot AI Assistant Trigger & Drawer (GitHub Copilot Feel) */}
-      <CopilotFloatingTrigger
-        isOpen={copilotOpen}
-        onToggle={() => setCopilotOpen((prev) => !prev)}
+      {/* Persistent Global AI Travel Assistant Trigger & Drawer */}
+      <AssistantFloatingTrigger
+        isOpen={assistantOpen}
+        onToggle={() => setAssistantOpen((prev) => !prev)}
       />
 
-      <CopilotDrawer
-        isOpen={copilotOpen}
-        onClose={() => setCopilotOpen(false)}
+      <TravelAssistantDrawer
+        isOpen={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onInitiateBooking={handleInitiateBooking}

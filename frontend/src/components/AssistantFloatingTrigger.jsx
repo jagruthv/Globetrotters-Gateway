@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, MessageSquare } from 'lucide-react';
 
-export default function CopilotFloatingTrigger({ isOpen, onToggle }) {
+export default function AssistantFloatingTrigger({ isOpen, onToggle }) {
   return (
     <motion.button
       onClick={onToggle}
@@ -10,7 +10,7 @@ export default function CopilotFloatingTrigger({ isOpen, onToggle }) {
       animate={{ scale: 1, opacity: 1 }}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      aria-label="Toggle Tourism AI Copilot"
+      aria-label="Toggle Travel Assistant"
       className={`fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-xl border transition-all cursor-pointer ${
         isOpen
           ? 'bg-amber-400 text-slate-950 border-amber-300 font-bold ring-2 ring-amber-400/40'
@@ -29,7 +29,7 @@ export default function CopilotFloatingTrigger({ isOpen, onToggle }) {
       </div>
 
       <span className="text-xs font-semibold font-sans-clean tracking-tight">
-        {isOpen ? 'Close Copilot' : 'AI Copilot'}
+        {isOpen ? 'Close Assistant' : 'AI Assistant'}
       </span>
 
       <span

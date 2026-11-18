@@ -61,10 +61,8 @@ export default function HolographicGatePass({
   // Real Dynamic QR Code Generator (Encodes clean ticket verification URL or ticket reference)
   useEffect(() => {
     if (activePass?.reference || activePass?.token) {
-      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://globetrotter-gateway.pages.dev';
-      const qrPayload = activePass.reference 
-        ? `${origin}/#/verify?t=${activePass.reference}`
-        : activePass.token;
+      // Encode signed cryptographic token if present, otherwise booking reference
+      const qrPayload = activePass.token || activePass.reference;
 
       QRCode.toDataURL(qrPayload, {
         width: 320,

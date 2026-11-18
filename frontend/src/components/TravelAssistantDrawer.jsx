@@ -41,7 +41,7 @@ const PROMPT_SUGGESTIONS = [
 let msgCounter = 0;
 const getMsgId = (prefix) => `${prefix}-${++msgCounter}`;
 
-export default function CopilotDrawer({
+export default function TravelAssistantDrawer({
   isOpen,
   onClose,
   activeTab,
@@ -65,9 +65,9 @@ export default function CopilotDrawer({
 
     return [
       {
-        id: 'initial-copilot-welcome',
-        sender: 'copilot',
-        text: `Namaste, ${touristName}! I am your Globetrotter Copilot. I can book gate passes, build custom multi-day itineraries, find destinations across all 59 districts, or navigate the platform directly from this chat.\n\nWhat would you like to explore or book today?`,
+        id: 'initial-assistant-welcome',
+        sender: 'assistant',
+        text: `Namaste, ${touristName}! I am your Travel Assistant. I can book gate passes, build custom multi-day itineraries, find destinations across all 59 districts, or navigate the platform directly from this chat.\n\nWhat would you like to explore or book today?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
     ];
@@ -253,7 +253,7 @@ export default function CopilotDrawer({
       return {
         type: 'safety_advisory',
         place: targetPlace || null,
-        scamNotice: targetPlace?.scams_and_fakes || 'Always purchase passes and khadi exclusively at official government counters with hologram stamps.'
+        scamNotice: targetPlace?.scams_and_fakes || 'Always purchase passes and local crafts exclusively at official government counters with hologram stamps.'
       };
     }
 
@@ -352,7 +352,7 @@ export default function CopilotDrawer({
             selectedPlacesCount: selectedPlaces.length,
             currentPlanTitle: currentPlan?.title || null
           },
-          systemInstruction: "You are Globetrotter Copilot, the official verified AI travel assistant for Andhra Pradesh (26 districts) and Telangana (33 districts). You help tourists explore destinations, book gate passes, plan multi-day itineraries, and navigate without queues or tourist scams. Speak clearly, politely, and factually like an expert state tourism guide. Keep responses to 2-3 engaging sentences."
+          systemInstruction: "You are the official verified AI Travel Assistant for Andhra Pradesh (26 districts) and Telangana (33 districts). You help tourists explore destinations, book gate passes, plan multi-day itineraries, and navigate without queues or tourist scams. Speak clearly, politely, and factually like an expert state tourism guide. Keep responses to 2-3 engaging sentences."
         })
       });
 
@@ -364,17 +364,17 @@ export default function CopilotDrawer({
         throw new Error('Edge worker unavailable');
       }
 
-      const copilotMessage = {
-        id: getMsgId('copilot'),
-        sender: 'copilot',
+      const assistantMessage = {
+        id: getMsgId('assistant'),
+        sender: 'assistant',
         text: aiText,
         actionResult,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      setMessages((prev) => [...prev, copilotMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
 
     } catch {
-      let fallbackText = "I have processed your request using the verified 59-district tourism offline atlas!";
+      let fallbackText = "I have processed your request using the verified 59-district tourism atlas.";
       if (actionResult?.type === 'booked_pass') {
         fallbackText = `Your pass for ${actionResult.place.name} has been authenticated! Your digital entry ticket with turnstile QR code is issued below.`;
       } else if (actionResult?.type === 'navigated') {
@@ -391,14 +391,14 @@ export default function CopilotDrawer({
         fallbackText = 'Here is your official safety and authentic purchase advisory:';
       }
 
-      const copilotFallback = {
-        id: getMsgId('copilot-fallback'),
-        sender: 'copilot',
+      const assistantFallback = {
+        id: getMsgId('assistant-fallback'),
+        sender: 'assistant',
         text: fallbackText,
         actionResult,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      setMessages((prev) => [...prev, copilotFallback]);
+      setMessages((prev) => [...prev, assistantFallback]);
     } finally {
       setIsThinking(false);
     }
@@ -422,7 +422,7 @@ export default function CopilotDrawer({
     setMessages([
       {
         id: getMsgId('msg-reset'),
-        sender: 'copilot',
+        sender: 'assistant',
         text: 'Chat history cleared. How can I assist your travel across Andhra Pradesh and Telangana?',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }
@@ -444,14 +444,14 @@ export default function CopilotDrawer({
           className="fixed inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto"
         />
 
-        {/* Sliding Copilot Drawer */}
+        {/* Sliding Travel Assistant Drawer */}
         <motion.aside
           initial={{ x: '100%', opacity: 0.5 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: '100%', opacity: 0 }}
           transition={{ type: 'spring', damping: 28, stiffness: 260 }}
           className="relative z-10 w-full sm:w-[480px] md:w-[520px] h-full bg-[#080C14] border-l border-white/10 shadow-2xl flex flex-col pointer-events-auto text-slate-100 font-sans-clean overflow-hidden"
-          aria-label="Globetrotter Copilot Drawer"
+          aria-label="Travel Assistant Drawer"
         >
           {/* Header Bar */}
           <header className="px-5 py-4 border-b border-white/10 bg-[#0B101B]/95 flex items-center justify-between">
@@ -461,7 +461,7 @@ export default function CopilotDrawer({
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-bold text-white tracking-tight">Globetrotter Copilot</h2>
+                  <h2 className="text-sm font-bold text-white tracking-tight">Travel Assistant</h2>
                   <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold font-mono">
                     MCP Edge
                   </span>
@@ -485,7 +485,7 @@ export default function CopilotDrawer({
                 type="button"
                 onClick={onClose}
                 className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-                title="Close Copilot (Esc)"
+                title="Close Assistant (Esc)"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -603,7 +603,7 @@ export default function CopilotDrawer({
                               </span>
                               <div className="space-y-1">
                                 {day.stops.map((stop, sIdx) => (
-                                  <div key={sIdx} className="flex justify-between text-[11px] text-slate-300">
+                                   <div key={sIdx} className="flex justify-between text-[11px] text-slate-300">
                                     <span>• {stop.name}</span>
                                     <span className="font-mono text-[10px] text-slate-400">{stop.time}</span>
                                   </div>
@@ -711,7 +711,7 @@ export default function CopilotDrawer({
             {isThinking && (
               <div className="flex items-center gap-2 p-3 rounded-2xl bg-[#101726] border border-white/5 w-fit">
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" />
-                <span className="text-xs text-slate-400 font-medium">Copilot is searching verified atlas...</span>
+                <span className="text-xs text-slate-400 font-medium">Assistant is searching verified atlas...</span>
               </div>
             )}
 
@@ -732,7 +732,7 @@ export default function CopilotDrawer({
                 type="text"
                 value={inputQuery}
                 onChange={(e) => setInputQuery(e.target.value)}
-                placeholder="Ask Copilot... ('Book pass for Golconda', 'Plan 2-day Araku trip')"
+                placeholder="Ask Assistant... ('Book pass for Golconda', 'Plan 2-day Araku trip')"
                 className="flex-1 bg-transparent px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none"
               />
 

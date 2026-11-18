@@ -96,7 +96,7 @@ export default function PassIssuanceModal({
                   {passData?.circuitName || 'Corridor Priority Pass'}
                 </h3>
                 <p className="text-xs text-slate-400 mt-1 font-sans-clean">
-                  Cryptographic turnstile authorization • Ed25519 token issued in 0.48s
+                  Cryptographic turnstile authorization • HMAC-SHA256 token issued in 0.48s
                 </p>
               </div>
 
