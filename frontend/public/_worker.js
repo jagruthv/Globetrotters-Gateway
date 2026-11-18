@@ -372,7 +372,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
 
     // ── 4. Proxy all other /api/* endpoints to AWS EC2 Spring Boot Backend ──
     if (url.pathname.startsWith('/api/')) {
-      const backendBase = env?.BACKEND_URL || 'http://16.4.37.178';
+      const backendBase = env?.BACKEND_URL || 'http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com';
       const targetUrl = new URL(url.pathname + url.search, backendBase);
       const proxyRequest = new Request(targetUrl, {
         method: request.method,
