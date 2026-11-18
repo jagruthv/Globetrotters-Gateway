@@ -202,7 +202,7 @@ export default function SettingsModal({
                 </span>
               </div>
 
-              {/* Channel 1: Mobile & WhatsApp */}
+              {/* Channel 1: Mobile & SMS */}
               <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
