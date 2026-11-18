@@ -329,7 +329,7 @@ export default function AgentPortalView({
       {/* AGENT OPERATIONAL WORKSPACE BODY */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 md:p-8 flex flex-col gap-6">
 
-        {/* TOP SHIFT TELEMETRY TILES */}
+        {/* TOP SHIFT STATS */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
             <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider flex items-center gap-1.5">

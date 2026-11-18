@@ -102,8 +102,8 @@ export function verifyPassOffline(passToken, placeId, gateTerminalId = 'Gate-Alp
   if (!isGtPass) {
     return {
       valid: false,
-      status: 'CRYPTOGRAPHIC_MISMATCH',
-      message: 'Cryptographic Failure: Unknown signature scheme or unverified issuer authority.'
+      status: 'INVALID_TICKET_SIGNATURE',
+      message: 'Ticket Verification Failed: Invalid ticket format or unknown issuer authority.'
     };
   }
 
@@ -147,7 +147,7 @@ export function verifyPassOffline(passToken, placeId, gateTerminalId = 'Gate-Alp
 }
 
 /**
- * Returns offline ledger telemetry
+ * Returns offline ledger stats
  */
 export function getLedgerStats() {
   const entries = getOfflineLedgerEntries();

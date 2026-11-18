@@ -138,11 +138,11 @@ export default function FloatingIslandNav({
             <div className="flex items-center gap-1.5 pl-1">
               <div 
                 className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-xs text-amber-200"
-                title={`Signed in as ${currentUser.email}`}
+                title={`Signed in as ${currentUser.fullName || currentUser.email || 'Traveler'}`}
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-400" />
                 <span className="max-w-[100px] truncate text-[11px] font-semibold">
-                  {currentUser.fullName || currentUser.email.split('@')[0]}
+                  {currentUser.fullName || (currentUser.email ? currentUser.email.split('@')[0] : 'Traveler')}
                 </span>
               </div>
               <button

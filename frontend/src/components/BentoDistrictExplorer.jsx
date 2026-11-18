@@ -150,7 +150,7 @@ export default function BentoDistrictExplorer({
     return [...ap, ...tg];
   }, []);
 
-  // Robust Compound Filtering without early returns
+  // Compound filtering without early returns
   const filteredDistricts = useMemo(() => {
     return allDistricts.filter((dist) => {
       const q = searchQuery.toLowerCase().trim();
@@ -233,7 +233,7 @@ export default function BentoDistrictExplorer({
     <section className="relative w-full py-24 px-4 md:px-12 bg-[#06080D] text-slate-200">
       <div className="max-w-7xl mx-auto flex flex-col gap-10">
         
-        {/* Header & Spatial Telemetry Bar */}
+        {/* Header & Search Bar */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
           <div className="flex flex-col gap-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 w-max">
@@ -350,10 +350,10 @@ export default function BentoDistrictExplorer({
           </div>
         </div>
 
-        {/* Results Telemetry Bar */}
+        {/* Results Summary Bar */}
         <div className="flex items-center justify-between text-xs text-slate-400 font-sans-clean">
           <span>
-            Showing <strong className="text-white font-telemetry">{filteredDistricts.length}</strong> of 59 Verified Districts
+            Showing <strong className="text-white font-mono">{filteredDistricts.length}</strong> of 59 Districts
           </span>
           <span className="hidden sm:inline text-slate-500">
             Click any district to view places to visit, ticket fees, and travel tips
