@@ -90,9 +90,10 @@ app:
   # ── External Free OTP Gateways & Identity ──────────────────────────────────
   auth:
     google:
-      client-id: ${GOOGLE_CLIENT_ID:1070287601380-09kulm6f8oaucov7gek75unss022l3su.apps.googleusercontent.com}
+      client-id: ${GOOGLE_CLIENT_ID:}
+      client-secret: ${GOOGLE_CLIENT_SECRET:}
     fast2sms:
-      api-key: ${FAST2SMS_API_KEY:CmnFcz0QbSM6sQ1vaooTmkIvNVl7nuZ79yHzPJT013J82iwZIabow6tUNZwmF21M5P7h91bF3WIhlCqB}
+      api-key: ${FAST2SMS_API_KEY:}
     whatsapp:
       access-token: ${WHATSAPP_ACCESS_TOKEN:}
       phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}

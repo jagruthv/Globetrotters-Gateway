@@ -44,6 +44,9 @@ scratch/
 skills_taxonomy/
 *.tar.gz
 *.zip
+tools/meta_screen.png
+tools/meta_status.json
+tools/meta_credentials.json
 
 # Private Academic Reports, Proposals, and Presentation Slides
 reports/
