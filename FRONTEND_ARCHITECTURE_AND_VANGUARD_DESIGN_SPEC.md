@@ -295,3 +295,46 @@ In subterranean karst caverns (Borra Caves at 915m elevation, Belum Caves passag
 
 
 
+
+---
+
+## 12. Multi-Provider Account Hub & Unified Identity Linking
+- **Sign-In Options**:
+  1. **Google Social Sign-In**: Instant OAuth simulation issuing verified identity (`tourist.explorer@gmail.com`).
+  2. **WhatsApp / Mobile Number OTP**: Direct 10-digit mobile number entry with instant 4-digit code verification.
+  3. **Email & Password**: Traditional credential management with registration toggle.
+  4. **Instant Explorer Guest**: Zero-friction guest session auto-persisting to local storage.
+- **Account Linking Architecture**:
+  - Unified tourist identity schema with `linkedAccounts: [{ provider, identifier, linkedAt }]`.
+  - Tourists can link their WhatsApp number or secondary Google account from Settings anytime.
+  - Signing in with ANY linked provider immediately resolves to the same unified account profile, preserving all passes and saved itineraries.
+
+---
+
+## 13. BookMyShow Cinema-Style Curated Digital Passes & Viral Loops
+- **Perforated Cinema Ticket Silhouette**:
+  - Inward circular punch notches on left and right borders separating the attraction dossier from the entry stub.
+  - Dashed perforated divider line simulating a physical tear-off cinema ticket.
+- **Legible Movie Ticket Metadata Grid**:
+  - Order ID & Booking Reference: `BMS-GT-89421`.
+  - Show Date & Validity Window: `19 Nov 2026 to 25 Nov 2026`.
+  - Gate Checkpoint: `Gate 01 • Fast-Track Turnstile`.
+  - Seat / Admit: `1 Adult (Primary) • [Tourist Name]`.
+  - Fare & Convenience: `₹340 (All-Access Pre-Paid • 0% Convenience Fee)`.
+- **Perforated Stub with QR & Optical Barcode**:
+  - High-density QR Matrix scannable at gates even in 0% cellular blackout zones.
+  - Cinema barcode graphic stripes with monospace ticket serial code.
+- **Viral Growth & Word-of-Mouth Promotion**:
+  - **WhatsApp Share**: Direct one-tap share to WhatsApp groups and family (`https://api.whatsapp.com/send?text=...`).
+  - **Copy Share Card**: Instant clipboard copy formatted for Instagram stories and chat messengers.
+  - **Print / PDF**: Clean printable layout for offline paper tickets.
+
+---
+
+## 14. Autonomous Gemini Concierge as MCP Account Operator
+- **Agent Capabilities via Chat**:
+  - `book_pass`: Issues digital passes under the user's account with cryptographic tokens and confetti celebration.
+  - `save_itinerary`: Persists customized day-by-day plans to the user's profile under `globetrotter_saved_trips`.
+  - `show_passes`: Retrieves and renders active booked passes directly within the conversational stream.
+  - `play_audio`: Unlocks and launches monument audio guide stories for covered attractions.
+- **Free-Tier Compliant Routing**: Powered by Google Gemini `gemini-3.8-flash` (primary) and `gemini-3.5-flash-lite` (fallback), strictly respecting rate limits.
