@@ -1,5 +1,5 @@
 /**
- * Globetrotter Gateway — Framer Motion Animation & Spring Physics Presets
+ * Globetrotter Gateway: Framer Motion Animation & Spring Physics Presets
  * Inspired by Vibe Coding Modern Web Stack ($10,000 UI Quality)
  */
 

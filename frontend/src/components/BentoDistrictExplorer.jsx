@@ -54,7 +54,7 @@ const ZONES = [
   { id: 'tg_south', label: 'Southern Telangana (TG)', state: 'TG' },
 ];
 
-// Diverse Traveler Persona & Interest Filters (Pro-Grade Two-Tone Split Pills — Reel 4)
+// Diverse Traveler Persona & Interest Filters (Pro-Grade Two-Tone Split Pills)
 const TRAVELER_THEMES = [
   { 
     id: 'all', 

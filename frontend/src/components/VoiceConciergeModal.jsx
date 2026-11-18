@@ -27,7 +27,7 @@ const HERITAGE_STORIES = [
     languages: {
       en: {
         title: 'The Miracle of Floating Bricks at Ramappa',
-        narrative: "Welcome to Sri Rudreshwara Temple, famously known as Ramappa Temple, constructed in 1213 AD by General Recharla Rudra during the reign of Kakatiya King Ganapati Deva. This is the only temple in India named after its chief sculptor, Ramappa. The temple is an engineering marvel: its roof is constructed using bricks so light and porous that they actually float on water! Furthermore, Kakatiya engineers laid the foundation using an innovative 'sandbox technique'—an underground bed of sand, jaggery, and karakkaya fruit paste that acted as an earthquake damper, preserving these intricately carved black basalt pillars through multiple major earthquakes over eight centuries."
+        narrative: "Welcome to Sri Rudreshwara Temple, famously known as Ramappa Temple, constructed in 1213 AD by General Recharla Rudra during the reign of Kakatiya King Ganapati Deva. This is the only temple in India named after its chief sculptor, Ramappa. The temple is an engineering marvel: its roof is constructed using bricks so light and porous that they actually float on water! Kakatiya engineers laid the foundation using a proven sandbox technique (an underground bed of sand, jaggery, and karakkaya fruit paste) that acted as an earthquake damper, preserving these intricately carved black basalt pillars through multiple major earthquakes over eight centuries."
       },
       te: {
         title: 'రామప్ప గుడి: నీటిపై తేలే ఇటుకల అద్భుతం',
@@ -93,7 +93,7 @@ const HERITAGE_STORIES = [
     languages: {
       en: {
         title: 'The Hanging Pillar of Veerabhadra Temple',
-        narrative: "Built in the 16th century by the royal treasurer Virupanna and his brother Veeranna under the Vijayanagara Empire, Lepakshi is renowned for its world-famous hanging pillar that does not touch the ground—visitors can pass a thin cloth underneath it completely! Legend also ties this sacred ground to the Ramayana, where the mythical bird Jatayu fell after battling Ravana, and Lord Rama compassionately proclaimed 'Le Pakshi', meaning 'Rise, Bird' in Telugu."
+        narrative: "Built in the 16th century by the royal treasurer Virupanna and his brother Veeranna under the Vijayanagara Empire, Lepakshi is renowned for its world-famous hanging pillar that does not touch the ground. Visitors can pass a thin cloth underneath it completely! Legend also ties this sacred ground to the Ramayana, where the mythical bird Jatayu fell after battling Ravana, and Lord Rama compassionately proclaimed 'Le Pakshi', meaning 'Rise, Bird' in Telugu."
       },
       te: {
         title: 'లేపాక్షి: గాల్లో వేలాడే స్తంభం రహస్యం',
@@ -430,17 +430,17 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 12 }}
         transition={{ duration: 0.25, type: 'spring', damping: 25 }}
-        className="relative w-full max-w-2xl bg-[#080B11] border border-white/10 rounded-3xl p-5 sm:p-7 shadow-2xl text-slate-200 overflow-hidden flex flex-col max-h-[92vh]"
+        className="relative w-full max-w-2xl bg-[#0E121A] border border-white/10 rounded-3xl p-5 sm:p-7 shadow-2xl text-slate-200 overflow-hidden flex flex-col max-h-[92vh]"
       >
         {/* Ambient Top Glow */}
-        <div className="absolute -top-32 -left-32 w-64 h-64 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-32 -left-32 w-64 h-64 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
         {/* Modal Top Bar */}
         <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
-              <Headphones className="w-4 h-4 text-cyan-300" />
+            <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+              <Headphones className="w-4 h-4 text-amber-300" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
@@ -472,7 +472,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
             onClick={() => setActiveTab('stories')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === 'stories'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
                 : 'bg-white/[0.03] text-slate-400 hover:text-slate-200 border border-white/5'
             }`}
           >
@@ -483,7 +483,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
             onClick={() => setActiveTab('live')}
             className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === 'live'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
                 : 'bg-white/[0.03] text-slate-400 hover:text-slate-200 border border-white/5'
             }`}
           >
@@ -498,7 +498,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
             
             {/* Live Camera Viewfinder (if Video Active) */}
             {isVideoActive && (
-              <div className="relative w-full aspect-video max-h-56 rounded-2xl overflow-hidden border border-cyan-500/40 bg-black/60 shadow-lg">
+              <div className="relative w-full aspect-video max-h-56 rounded-2xl overflow-hidden border border-amber-500/40 bg-black/60 shadow-lg">
                 <video
                   ref={videoRef}
                   autoPlay
@@ -506,7 +506,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                   muted
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-3 left-3 flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-cyan-500/30 text-[10px] text-cyan-300 font-mono">
+                <div className="absolute top-3 left-3 flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/30 text-[10px] text-amber-300 font-mono">
                   <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   <span>Live Vision Active (1080p Stream)</span>
                 </div>
@@ -527,7 +527,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                   }}
                   transition={{ repeat: Infinity, duration: isSpeaking ? 1.2 : 1.8, ease: 'easeInOut' }}
                   className={`absolute w-28 h-28 rounded-full ${
-                    isSpeaking ? 'bg-emerald-500/30' : isListening ? 'bg-cyan-500/30' : 'bg-slate-700/20'
+                    isSpeaking ? 'bg-emerald-500/30' : isListening ? 'bg-amber-500/30' : 'bg-slate-700/20'
                   }`}
                 />
 
@@ -536,7 +536,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                   onClick={toggleLiveSession}
                   className={`relative z-10 w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-95 ${
                     isListening
-                      ? 'bg-gradient-to-tr from-cyan-500 to-emerald-400 text-slate-950 ring-4 ring-cyan-400/30'
+                      ? 'bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 ring-4 ring-amber-400/30'
                       : isSpeaking
                       ? 'bg-gradient-to-tr from-emerald-500 to-amber-400 text-slate-950'
                       : 'bg-white/10 hover:bg-white/15 text-slate-300 border border-white/15'
@@ -574,11 +574,11 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                     onClick={toggleVideoStream}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                       isVideoActive
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
                         : 'bg-white/5 text-slate-400 hover:text-slate-200 border border-white/10'
                     }`}
                   >
-                    {isVideoActive ? <Video className="w-3.5 h-3.5 text-cyan-400" /> : <VideoOff className="w-3.5 h-3.5" />}
+                    {isVideoActive ? <Video className="w-3.5 h-3.5 text-amber-400" /> : <VideoOff className="w-3.5 h-3.5" />}
                     <span>{isVideoActive ? 'Camera Vision Active' : 'Enable Live Camera'}</span>
                   </button>
 
@@ -600,11 +600,11 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
 
             {/* Live Streaming Speech Transcript (No Fake Canned Strings) */}
             {liveTranscript && (
-              <div className="p-3 rounded-2xl bg-cyan-950/20 border border-cyan-500/30 flex items-start gap-2.5">
-                <Mic className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 animate-pulse" />
+              <div className="p-3 rounded-2xl bg-amber-950/20 border border-amber-500/30 flex items-start gap-2.5">
+                <Mic className="w-4 h-4 text-amber-400 shrink-0 mt-0.5 animate-pulse" />
                 <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-mono tracking-wider text-cyan-400">Live Speech:</span>
-                  <p className="text-sm text-cyan-100 font-sans-clean font-medium">
+                  <span className="text-[10px] uppercase font-mono tracking-wider text-amber-400">Live Speech:</span>
+                  <p className="text-sm text-amber-100 font-sans-clean font-medium">
                     "{liveTranscript}"
                   </p>
                 </div>
@@ -643,7 +643,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                         className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1"
                         title="Replay Voice"
                       >
-                        <Volume2 className="w-3 h-3 text-cyan-400" />
+                        <Volume2 className="w-3 h-3 text-amber-400" />
                         <span>Replay</span>
                       </button>
                     </div>
@@ -662,12 +662,12 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 placeholder="Or type a question (e.g. 'Best places in Warangal')..."
-                className="flex-1 py-2.5 px-4 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400 transition-colors"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400 transition-colors"
               />
               <button
                 type="submit"
                 disabled={!textInput.trim() || isThinking}
-                className="py-2.5 px-4 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs flex items-center gap-1 hover:bg-cyan-400 transition-colors disabled:opacity-40"
+                className="py-2.5 px-4 rounded-full bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 hover:bg-amber-300 transition-colors disabled:opacity-40"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Ask</span>
@@ -700,7 +700,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                     }}
                     className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
                       selectedLanguage === lang.code
-                        ? 'bg-cyan-500 text-slate-950'
+                        ? 'bg-amber-400 text-slate-950 font-bold'
                         : 'bg-white/5 text-slate-300 hover:text-white'
                     }`}
                   >
@@ -722,14 +722,14 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                     key={story.id}
                     className={`p-4 rounded-2xl border transition-all ${
                       isSelected
-                        ? 'bg-cyan-950/20 border-cyan-500/40 shadow-lg'
+                        ? 'bg-amber-950/20 border-amber-500/40 shadow-lg'
                         : 'bg-white/[0.02] border-white/5 hover:border-white/10'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 font-semibold">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 font-semibold">
                             {story.district}
                           </span>
                           <span className="text-[10px] text-slate-400">{story.duration}</span>
@@ -747,7 +747,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                         className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform active:scale-95 ${
                           isCurrentlyPlaying
                             ? 'bg-emerald-400 text-slate-950'
-                            : 'bg-cyan-500 text-slate-950 hover:bg-cyan-400'
+                            : 'bg-amber-400 text-slate-950 hover:bg-amber-300'
                         }`}
                         title={isCurrentlyPlaying ? 'Pause Audio' : 'Play Heritage Story'}
                       >

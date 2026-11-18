@@ -1,5 +1,5 @@
 /**
- * antiBotProofOfWork.js — Client-Side Zero-Friction Proof-of-Work & Bot Detection Subsystem
+ * antiBotProofOfWork.js: Client-Side Zero-Friction Proof-of-Work & Bot Detection Subsystem
  *
  * Implements client-side ALTCHA / Hashcash PoW puzzle solving via Web Crypto API.
  * Solves server challenge in a non-blocking background loop (~30-75ms on modern mobile/desktop).

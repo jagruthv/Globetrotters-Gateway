@@ -210,7 +210,7 @@ export default function App() {
   }
 
   return (
-    <div className="relative min-h-[100dvh] bg-[#06080D] text-slate-100 font-sans-clean overflow-x-hidden selection:bg-cyan-500/20 pb-20 md:pb-0">
+    <div className="relative min-h-[100dvh] bg-[#080A0F] text-slate-100 font-sans-clean overflow-x-hidden selection:bg-amber-500/20 pb-20 md:pb-0">
       
       {/* Floating Island Glass Navigation Dock (Desktop) */}
       <FloatingIslandNav
@@ -253,7 +253,7 @@ export default function App() {
               {/* Ready to Explore Corridor Callout */}
               <section className="py-16 px-4 md:px-12 bg-black/40 border-t border-white/5 text-center">
                 <div className="max-w-3xl mx-auto flex flex-col items-center gap-5">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-[10px] font-mono uppercase tracking-widest">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[10px] font-mono uppercase tracking-widest">
                     Unified Tourism Corridors • AP & TG
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-extrabold text-white font-sans-clean">
@@ -265,7 +265,7 @@ export default function App() {
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                     <button
                       onClick={() => setActiveTab('explore')}
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-2 hover:opacity-95 transition-opacity shadow-md cursor-pointer font-sans-clean"
+                      className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all shadow-md cursor-pointer font-sans-clean"
                     >
                       <span>Explore 59 Districts</span>
                       <ArrowRight className="w-3.5 h-3.5 text-slate-950" />
@@ -382,7 +382,7 @@ export default function App() {
                 <p className="text-xs text-slate-400">Gate scanning and ticket verification are hosted in the dedicated Field Agent Console.</p>
                 <button
                   onClick={handleOpenAgentPortal}
-                  className="px-5 py-2.5 rounded-xl bg-cyan-400 text-slate-950 font-bold text-xs cursor-pointer"
+                  className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs cursor-pointer"
                 >
                   Enter Agent Portal
                 </button>
@@ -451,7 +451,7 @@ export default function App() {
               <span className="font-display font-bold text-lg text-white tracking-wider">
                 GLOBETROTTER GATEWAY
               </span>
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 font-sans-clean font-semibold">
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 font-sans-clean font-semibold">
                 Official Travel Portal
               </span>
             </div>
@@ -478,7 +478,7 @@ export default function App() {
               <span>•</span>
               <button
                 onClick={handleOpenAgentPortal}
-                className="hover:text-cyan-300 text-slate-400 transition-colors underline-offset-4 hover:underline cursor-pointer"
+                className="hover:text-amber-300 text-slate-400 transition-colors underline-offset-4 hover:underline cursor-pointer"
               >
                 Agent Portal
               </button>
@@ -487,7 +487,7 @@ export default function App() {
 
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <span>Crafted with</span>
-            <Heart className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
+            <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
             <span>for Global Travelers</span>
           </div>
 

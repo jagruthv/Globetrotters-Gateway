@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, ExternalLink } from 'lucide-react';
 
 /**
- * WhatsAppConcierge — Official 24/7 Smart Tourism Support Action
+ * WhatsAppConcierge: Official 24/7 Smart Tourism Support Action
  * Implements the WhatsApp integration requirement from Website Pre-Launch Quality Audit (Reel 19).
  * Connects tourists directly to official verified support with pre-filled encoded inquiries.
  */

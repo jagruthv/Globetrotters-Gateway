@@ -35,7 +35,7 @@ export default function LiveWeatherBadge({ latitude, longitude, compact = true }
         return <Cloud className="w-3 h-3 text-slate-300 flex-shrink-0" />;
       case 'cloud-rain':
       case 'cloud-drizzle':
-        return <CloudRain className="w-3 h-3 text-cyan-300 flex-shrink-0" />;
+        return <CloudRain className="w-3 h-3 text-sky-400 flex-shrink-0" />;
       case 'cloud-lightning':
         return <CloudLightning className="w-3 h-3 text-amber-300 flex-shrink-0" />;
       case 'cloud-fog':
@@ -71,7 +71,7 @@ export default function LiveWeatherBadge({ latitude, longitude, compact = true }
       </div>
       <div className="flex items-center gap-3 text-[10px] text-slate-400">
         <span className="flex items-center gap-1">
-          <Droplets className="w-2.5 h-2.5 text-cyan-400" />
+          <Droplets className="w-2.5 h-2.5 text-sky-400" />
           {weather.humidity}
         </span>
         <span className="flex items-center gap-1">

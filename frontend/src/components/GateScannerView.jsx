@@ -258,7 +258,7 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
             <select
               value={selectedPlaceId}
               onChange={(e) => setSelectedPlaceId(Number(e.target.value))}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-cyan-400 cursor-pointer font-sans-clean"
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400 cursor-pointer font-sans-clean"
             >
               {CHECKPOINTS.map((cp) => (
                 <option key={cp.id} value={cp.id} className="bg-[#0B0F17] text-white">
@@ -272,14 +272,14 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono flex items-center justify-between">
               <span>Scanned Ticket Token</span>
-              <span className="text-[10px] text-cyan-400 font-normal">Ready for optical reader or camera</span>
+              <span className="text-[10px] text-amber-400 font-normal">Ready for optical reader or camera</span>
             </label>
             <input
               type="text"
               value={tokenInput}
               onChange={(e) => setTokenInput(e.target.value)}
               placeholder="Scan QR code or enter token..."
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-cyan-400"
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-amber-400"
             />
           </div>
 
@@ -287,7 +287,7 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
           <button
             onClick={handleScanPass}
             disabled={isScanning || !tokenInput.trim()}
-            className="w-full py-4 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-extrabold text-base flex items-center justify-center gap-2.5 transition-all shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.99]"
+            className="w-full py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-base flex items-center justify-center gap-2.5 transition-all shadow-md cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.99]"
           >
             {isScanning ? (
               <span>Verifying Ticket...</span>

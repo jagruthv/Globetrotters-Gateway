@@ -336,9 +336,9 @@ export default function AiFluidTripStudio({
         {/* Studio Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
           <div className="flex flex-col gap-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 w-max">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-medium text-cyan-300 font-sans-clean font-semibold">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 w-max">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[10px] uppercase tracking-[0.2em] font-medium text-amber-300 font-sans-clean font-semibold">
                 Smart Tour Planner
               </span>
             </div>
@@ -354,15 +354,15 @@ export default function AiFluidTripStudio({
           <div className="flex items-center gap-3">
             <button
               onClick={onExploreMore}
-              className="px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-slate-300 flex items-center gap-2 transition-colors font-sans-clean"
+              className="px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-slate-300 flex items-center gap-2 transition-colors font-sans-clean cursor-pointer"
             >
-              <Compass className="w-3.5 h-3.5 text-cyan-400" />
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
               <span>Browse All 59 Districts</span>
             </button>
             {selectedPlaces.length > 0 && (
               <button
                 onClick={onClearPlaces}
-                className="px-3.5 py-2.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-semibold text-rose-300 flex items-center gap-1.5 transition-colors font-sans-clean"
+                className="px-3.5 py-2.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-xs font-semibold text-rose-300 flex items-center gap-1.5 transition-colors font-sans-clean cursor-pointer"
                 title="Clear all selected places"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -382,7 +382,7 @@ export default function AiFluidTripStudio({
                 <span className="text-xs font-semibold text-slate-300 font-sans-clean">
                   Selected Destinations
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 text-xs font-bold font-telemetry">
+                <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold font-telemetry">
                   {selectedPlaces.length}
                 </span>
               </div>
@@ -404,7 +404,7 @@ export default function AiFluidTripStudio({
                 </div>
                 <button
                   onClick={onExploreMore}
-                  className="px-5 py-2.5 rounded-xl bg-cyan-400 text-slate-950 font-bold text-xs hover:bg-cyan-300 transition-colors font-sans-clean"
+                  className="px-6 py-2.5 rounded-full bg-amber-400 text-slate-950 font-bold text-xs hover:bg-amber-300 transition-colors font-sans-clean cursor-pointer"
                 >
                   Explore 59 Districts
                 </button>
@@ -417,7 +417,7 @@ export default function AiFluidTripStudio({
                     className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-colors flex items-center justify-between gap-3 group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="w-6 h-6 rounded-lg bg-cyan-400/20 text-cyan-300 font-bold text-xs flex items-center justify-center font-telemetry flex-shrink-0">
+                      <span className="w-6 h-6 rounded-lg bg-amber-400/20 text-amber-300 font-bold text-xs flex items-center justify-center font-telemetry flex-shrink-0">
                         {idx + 1}
                       </span>
                       <div className="flex flex-col min-w-0">
@@ -431,7 +431,7 @@ export default function AiFluidTripStudio({
                     </div>
                     <button
                       onClick={() => onRemovePlace(place.name)}
-                      className="w-7 h-7 rounded-lg bg-white/[0.04] hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 flex items-center justify-center transition-colors flex-shrink-0"
+                      className="w-7 h-7 rounded-lg bg-white/[0.04] hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer"
                       title="Remove place"
                       aria-label={`Remove ${place.name}`}
                     >
@@ -445,7 +445,7 @@ export default function AiFluidTripStudio({
 
           {/* Intelligent Optimizer Controls Card */}
           <div className="lg:col-span-5 flex flex-col gap-5">
-            <div className="p-6 rounded-3xl bg-[#0B0F17]/95 border border-white/10 backdrop-blur-2xl flex flex-col gap-5 shadow-2xl">
+            <div className="p-6 rounded-3xl bg-[#0E121A]/95 border border-white/10 backdrop-blur-2xl flex flex-col gap-5 shadow-2xl">
               
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <span className="text-xs font-semibold text-slate-300 font-sans-clean">
@@ -460,10 +460,10 @@ export default function AiFluidTripStudio({
               <div className="flex flex-col gap-2.5 p-4 rounded-2xl bg-white/[0.02] border border-white/10 font-sans-clean">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
                     <span className="text-slate-200 font-bold tracking-wide">Dynamic Day Sequencing</span>
                   </div>
-                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-400/20 font-medium font-telemetry flex items-center gap-1">
+                  <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/20 font-medium font-telemetry flex items-center gap-1">
                     <span>Gemini 3.5 Flash Lite</span>
                   </span>
                 </div>
@@ -474,7 +474,7 @@ export default function AiFluidTripStudio({
 
                 <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px]">
                   <span className="text-slate-400">Selected Attractions:</span>
-                  <span className="font-bold text-cyan-300 font-telemetry">
+                  <span className="font-bold text-amber-300 font-telemetry">
                     {selectedPlaces.length} {selectedPlaces.length === 1 ? 'Destination' : 'Destinations'} 
                     {selectedPlaces.length > 0 ? ` (Auto-sequenced across ~${recommendedDays} ${recommendedDays === 1 ? 'Day' : 'Days'})` : ''}
                   </span>
@@ -493,9 +493,9 @@ export default function AiFluidTripStudio({
                     <button
                       key={p.id}
                       onClick={() => setTravelPace(p.id)}
-                      className={`py-2.5 px-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-0.5 transition-colors font-sans-clean ${
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-0.5 transition-colors font-sans-clean cursor-pointer ${
                         travelPace === p.id
-                          ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300 shadow-sm'
+                          ? 'bg-amber-500/15 border-amber-400/40 text-amber-300 shadow-sm'
                           : 'bg-white/[0.02] border-white/5 text-slate-400 hover:border-white/15'
                       }`}
                     >
@@ -516,10 +516,10 @@ export default function AiFluidTripStudio({
                 <button
                   disabled={selectedPlaces.length === 0 || isGenerating}
                   onClick={() => handleGeneratePlan()}
-                  className={`w-full py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-colors font-sans-clean ${
+                  className={`w-full py-4 rounded-full font-bold text-xs flex items-center justify-center gap-2 transition-all font-sans-clean cursor-pointer active:scale-[0.98] ${
                     selectedPlaces.length === 0
                       ? 'bg-white/[0.05] text-slate-500 cursor-not-allowed'
-                      : 'bg-cyan-400 hover:bg-cyan-300 text-slate-950 shadow-sm'
+                      : 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-md'
                   }`}
                 >
                   {isGenerating ? (
@@ -548,7 +548,7 @@ export default function AiFluidTripStudio({
             animate={{ opacity: 1, y: 0 }}
             className="w-full flex flex-col gap-8 pt-6"
           >
-            <div className="p-6 md:p-8 rounded-3xl bg-[#0B0F17]/95 border border-white/10 backdrop-blur-3xl flex flex-col gap-8 shadow-2xl">
+            <div className="p-6 md:p-8 rounded-3xl bg-[#0E121A]/95 border border-white/10 backdrop-blur-3xl flex flex-col gap-8 shadow-2xl">
               
               {/* Plan Header & Verified Status Badges */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
@@ -558,11 +558,11 @@ export default function AiFluidTripStudio({
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
                       <span>{planResult.isOfflineFallback ? 'Offline Mode Active' : 'Verified Regional Tour Route'}</span>
                     </span>
-                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/25 font-sans-clean font-semibold flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-cyan-400" />
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/25 font-sans-clean font-semibold flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-400" />
                       <span>{planResult.modelUsed || 'Smart Travel Route'}</span>
                     </span>
-                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-400/20 font-sans-clean font-medium">
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-white/[0.05] text-slate-300 border border-white/10 font-sans-clean font-medium">
                       Gate Timings & Rest Breaks Verified
                     </span>
                     {planResult.totalRoadKm && (
@@ -583,9 +583,9 @@ export default function AiFluidTripStudio({
                 <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
                   <button
                     onClick={() => setGeminiDrawerOpen(true)}
-                    className="px-4 py-2.5 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer font-sans-clean"
+                    className="px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean"
                   >
-                    <Sparkles className="w-4 h-4 text-cyan-200 animate-pulse" />
+                    <Sparkles className="w-4 h-4 text-amber-400" />
                     <span>Chat with Gemini to Modify Plan</span>
                   </button>
 
@@ -595,12 +595,12 @@ export default function AiFluidTripStudio({
                   >
                     {isSpeaking ? (
                       <>
-                        <VolumeX className="w-4 h-4 text-cyan-400" />
+                        <VolumeX className="w-4 h-4 text-amber-400" />
                         <span>Stop Audio Guide</span>
                       </>
                     ) : (
                       <>
-                        <Volume2 className="w-4 h-4 text-cyan-400" />
+                        <Volume2 className="w-4 h-4 text-amber-400" />
                         <span>Listen to Audio Guide</span>
                       </>
                     )}
@@ -614,7 +614,7 @@ export default function AiFluidTripStudio({
                         onProceedToPasses();
                       }
                     }}
-                    className="px-5 py-2.5 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm font-sans-clean cursor-pointer"
+                    className="px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md font-sans-clean cursor-pointer active:scale-[0.98]"
                   >
                     <Ticket className="w-4 h-4" />
                     <span>Proceed to Gate Passes</span>
@@ -632,7 +632,7 @@ export default function AiFluidTripStudio({
                       className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-4"
                     >
                       <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                        <span className="text-sm font-bold text-cyan-300 font-telemetry">
+                        <span className="text-sm font-bold text-amber-300 font-telemetry">
                           Day {dayPlan.dayNumber || dayPlan.day}
                         </span>
                         <span className="text-xs text-slate-400 font-telemetry">
@@ -703,7 +703,7 @@ export default function AiFluidTripStudio({
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className="w-5 h-5 rounded-full bg-cyan-400/20 text-cyan-300 font-bold text-[10px] flex items-center justify-center font-telemetry flex-shrink-0">
+                                  <span className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-300 font-bold text-[10px] flex items-center justify-center font-telemetry flex-shrink-0">
                                     {sIdx + 1}
                                   </span>
                                   <span className="text-xs font-bold text-white truncate font-sans-clean">
@@ -712,7 +712,7 @@ export default function AiFluidTripStudio({
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <LiveWeatherBadge latitude={stopLat} longitude={stopLng} compact={true} />
-                                  <span className="text-[10px] text-cyan-300 font-telemetry">
+                                  <span className="text-[10px] text-amber-300 font-telemetry">
                                     {stop.arrivalTime || '09:30 AM'}
                                   </span>
                                 </div>
@@ -765,7 +765,7 @@ export default function AiFluidTripStudio({
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-cyan-400/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+                    <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
                       <MessageSquare className="w-4 h-4" />
                     </div>
                     <div>
@@ -795,16 +795,16 @@ export default function AiFluidTripStudio({
                     <button
                       key={chip}
                       onClick={() => handleSendChatMessage(chip)}
-                      className="px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 text-[11px] text-slate-300 transition-colors flex items-center gap-1.5 font-sans-clean"
+                      className="px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 text-[11px] text-slate-300 transition-colors flex items-center gap-1.5 font-sans-clean cursor-pointer"
                     >
-                      <Sparkles className="w-3 h-3 text-cyan-400" />
+                      <Sparkles className="w-3 h-3 text-amber-400" />
                       <span>{chip}</span>
                     </button>
                   ))}
                 </div>
 
                 {/* Chat Conversation Thread */}
-                <div className="p-4 rounded-2xl bg-[#06080D]/90 border border-white/10 flex flex-col gap-3 max-h-[360px] overflow-y-auto font-sans-clean text-xs">
+                <div className="p-4 rounded-2xl bg-[#080A0F]/90 border border-white/10 flex flex-col gap-3 max-h-[360px] overflow-y-auto font-sans-clean text-xs">
                   {chatMessages.map((msg) => (
                     <div
                       key={msg.id}
@@ -815,7 +815,7 @@ export default function AiFluidTripStudio({
                       <div
                         className={`p-3.5 rounded-2xl ${
                           msg.sender === 'user'
-                            ? 'bg-cyan-500/20 border border-cyan-400/30 text-white rounded-br-none'
+                            ? 'bg-amber-500/20 border border-amber-400/30 text-white rounded-br-none'
                             : 'bg-white/[0.04] border border-white/10 text-slate-200 rounded-bl-none leading-relaxed'
                         }`}
                       >
@@ -826,7 +826,7 @@ export default function AiFluidTripStudio({
                           <div className="mt-3 pt-2.5 border-t border-white/10">
                             <button
                               onClick={msg.action.action}
-                              className="px-3 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 shadow-sm transition-colors font-sans-clean"
+                              className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 shadow-sm transition-colors font-sans-clean cursor-pointer"
                             >
                               <Check className="w-3 h-3" />
                               <span>{msg.action.label}</span>
@@ -841,9 +841,9 @@ export default function AiFluidTripStudio({
                               <button
                                 key={sIdx}
                                 onClick={() => handleSendChatMessage(sug)}
-                                className="px-2.5 py-1 rounded-lg bg-white/[0.05] hover:bg-cyan-500/20 text-cyan-300 border border-white/10 text-[10px] flex items-center gap-1 transition-colors text-left font-sans-clean"
+                                className="px-2.5 py-1 rounded-lg bg-white/[0.05] hover:bg-amber-500/15 text-amber-300 border border-white/10 text-[10px] flex items-center gap-1 transition-colors text-left font-sans-clean cursor-pointer"
                               >
-                                <CornerDownRight className="w-2.5 h-2.5 text-cyan-400 flex-shrink-0" />
+                                <CornerDownRight className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
                                 <span>{sug}</span>
                               </button>
                             ))}
@@ -858,7 +858,7 @@ export default function AiFluidTripStudio({
 
                   {isChatThinking && (
                     <div className="mr-auto flex items-center gap-2 p-3 rounded-2xl bg-white/[0.03] border border-white/10 text-slate-300 text-xs font-sans-clean">
-                      <span className="w-3 h-3 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                      <span className="w-3 h-3 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
                       <span>Reviewing road timings, gate hours & dining options...</span>
                     </div>
                   )}
@@ -878,12 +878,12 @@ export default function AiFluidTripStudio({
                     placeholder="Ask a question about your trip, swap a destination, or find authentic food..."
                     autoComplete="off"
                     spellCheck={false}
-                    className="flex-1 h-11 px-4 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400/50 transition-colors font-sans-clean"
+                    className="flex-1 h-11 px-4 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400/50 transition-colors font-sans-clean"
                   />
                   <button
                     onClick={() => handleSendChatMessage()}
                     disabled={!inputQuery.trim() || isChatThinking}
-                    className="h-11 px-5 rounded-xl bg-cyan-400 hover:bg-cyan-300 disabled:bg-white/[0.05] disabled:text-slate-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-md flex-shrink-0 font-sans-clean"
+                    className="h-11 px-5 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:bg-white/[0.05] disabled:text-slate-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-md flex-shrink-0 font-sans-clean cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span>Send</span>

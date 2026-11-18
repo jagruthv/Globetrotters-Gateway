@@ -114,7 +114,7 @@ export const EXACT_PLACE_PHOTOS = {
   "pochera waterfalls & deep rock canyon": "/images/candidates/adilabad/2018052528.jpg",
   "qutb shahi tombs heritage park": "/images/candidates/hyderabad/2019043031.jpg",
   "rajahmundry rose milk legendary outlets": "/images/aptourism/rajahmundry.jpg",
-  "ramappa temple (sri rudreshwara swamy — unesco world heritage site)": "/images/telangana/ramappa_temple.jpg",
+  "ramappa temple (sri rudreshwara swamy, unesco world heritage site)": "/images/telangana/ramappa_temple.jpg",
   "ramayapatnam sea port & historic coastal beach": "/images/aptourism/ramayapatnam.jpg",
   "rollapadu wildlife sanctuary (great indian bustard haven)": "/images/aptourism/rollapadu_wildlife_sanctuary.jpg",
   "rushikonda beach (blue flag certified)": "/images/aptourism/rushikonda.jpg",
