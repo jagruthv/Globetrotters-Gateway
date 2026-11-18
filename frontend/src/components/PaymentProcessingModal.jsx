@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, X, CheckCircle2, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -6,10 +6,10 @@ import confetti from 'canvas-confetti';
 const STATUS_MESSAGES = {
   5: 'Connecting to state tourism payment gateway...',
   4: 'Simulating instant UPI payment authorization...',
-  3: 'Payment verified • Minting cryptographic gate pass...',
+  3: 'Payment verified • Creating digital entry pass...',
   2: 'Registering pass with corridor gate authority...',
   1: 'Generating official offline QR entry code...',
-  0: 'Pass Authenticated! Issuing your digital ticket...'
+  0: 'Pass Verified! Issuing your digital ticket...'
 };
 
 export default function PaymentProcessingModal({
@@ -49,12 +49,14 @@ export default function PaymentProcessingModal({
     }
   }, [bookingDetails, onPaymentSuccess]);
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setSecondsRemaining(5);
       setPaymentFinished(false);
     }
-  }, [isOpen]);
+  }
 
   useEffect(() => {
     if (!isOpen || paymentFinished) return;
