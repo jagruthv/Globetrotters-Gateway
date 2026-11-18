@@ -12,9 +12,12 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,11 +36,18 @@ public class OtpService {
     @Value("${app.auth.sms.gateway-url:${SMS_GATEWAY_URL:}}")
     private String smsGatewayUrl;
 
-    // 2. Fast2SMS Quick OTP Gateway (Free Trial India)
+    // 2. Fast2SMS Quick OTP Gateway (India)
     @Value("${app.auth.fast2sms.api-key:${FAST2SMS_API_KEY:}}")
     private String fast2smsApiKey;
 
-    // 3. Twilio SMS Gateway (Free Trial Global)
+    // 3. Meta WhatsApp Cloud API (1,000 Free Monthly Conversations with Free Virtual Number)
+    @Value("${app.auth.whatsapp.access-token:${WHATSAPP_ACCESS_TOKEN:}}")
+    private String whatsappAccessToken;
+
+    @Value("${app.auth.whatsapp.phone-number-id:${WHATSAPP_PHONE_NUMBER_ID:}}")
+    private String whatsappPhoneNumberId;
+
+    // 4. Twilio SMS Gateway (Free Trial Global)
     @Value("${app.auth.twilio.account-sid:${TWILIO_ACCOUNT_SID:}}")
     private String twilioAccountSid;
 
@@ -47,14 +57,14 @@ public class OtpService {
     @Value("${app.auth.twilio.from-number:${TWILIO_FROM_NUMBER:}}")
     private String twilioFromNumber;
 
-    // 4. Free Telegram Bot Dispatch (Instant Zero-Cost Mobile Alerts)
+    // 5. Free Telegram Bot Dispatch (Instant Zero-Cost Mobile Alerts)
     @Value("${app.auth.telegram.bot-token:${TELEGRAM_BOT_TOKEN:}}")
     private String telegramBotToken;
 
     @Value("${app.auth.telegram.chat-id:${TELEGRAM_CHAT_ID:}}")
     private String telegramChatId;
 
-    // 5. Generic Webhook (e.g. n8n / Zapier / Make / WhatsApp Webhook)
+    // 6. Generic Webhook (e.g. n8n / Zapier / Make / WhatsApp Webhook)
     @Value("${app.auth.webhook.otp-url:${OTP_WEBHOOK_URL:}}")
     private String otpWebhookUrl;
 
@@ -96,13 +106,17 @@ public class OtpService {
 
         log.info("[OTP DISPATCH] Destination: +91 {} | Code: {} | Active Gateway: {}", cleanPhone, code, gatewayProvider);
 
+        String whatsappDeepLink = "https://api.whatsapp.com/send?phone=91" + cleanPhone +
+                "&text=" + URLEncoder.encode("Globetrotter Gateway Verification Code: " + code, StandardCharsets.UTF_8);
+
         return Map.of(
                 "success", true,
                 "phone", "+91 " + cleanPhone,
                 "expiresInSeconds", 300,
                 "provider", gatewayProvider,
+                "whatsappDeepLink", whatsappDeepLink,
                 "message", "Verification code dispatched via " + gatewayProvider,
-                "devCode", code // Surface code for effortless developer testing
+                "devCode", code // Surface code for effortless testing
         );
     }
 
@@ -202,16 +216,40 @@ public class OtpService {
     /**
      * Cascading External Gateway Dispatcher:
      * Attempts real external transmission in priority order:
-     * 1. Fast2SMS (Indian carrier OTP)
-     * 2. Twilio (Global SMS API)
-     * 3. Telegram Bot (Free instantaneous mobile push)
-     * 4. Webhook (WhatsApp / n8n workflow)
-     * 5. Local Safe Fallback (Live Toast & Server Console)
+     * 1. Meta WhatsApp Cloud API (1,000 free monthly conversations with Virtual Number, 0 GST)
+     * 2. Fast2SMS Quick OTP
+     * 3. Twilio (Global SMS API)
+     * 4. Telegram Bot (Free instantaneous mobile push)
+     * 5. Webhook (WhatsApp / n8n workflow)
+     * 6. Local Safe Fallback (Live Toast & Server Console)
      */
     private String dispatchToExternalGateways(String cleanPhone, String code) {
         RestClient restClient = RestClient.create();
 
-        // 1. Fast2SMS Quick OTP
+        // 1. Meta WhatsApp Cloud API (Zero GST, Virtual Number, 1,000 free/month)
+        if (whatsappAccessToken != null && !whatsappAccessToken.isBlank() &&
+            whatsappPhoneNumberId != null && !whatsappPhoneNumberId.isBlank()) {
+            try {
+                Map<String, Object> body = Map.of(
+                        "messaging_product", "whatsapp",
+                        "to", "91" + cleanPhone,
+                        "type", "text",
+                        "text", Map.of("body", "🌍 Globetrotter Gateway Verification Code: *" + code + "*\n\nValid for 5 minutes. Do not share this code.")
+                );
+                restClient.post()
+                        .uri("https://graph.facebook.com/v19.0/{phoneId}/messages", whatsappPhoneNumberId.trim())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + whatsappAccessToken.trim())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)
+                        .retrieve()
+                        .toBodilessEntity();
+                return "Meta WhatsApp Cloud API (Virtual Sender)";
+            } catch (Exception e) {
+                log.warn("WhatsApp Cloud API error: {}", e.getMessage());
+            }
+        }
+
+        // 2. Fast2SMS Quick OTP
         if (fast2smsApiKey != null && !fast2smsApiKey.isBlank()) {
             try {
                 restClient.get()
@@ -225,7 +263,7 @@ public class OtpService {
             }
         }
 
-        // 2. Twilio SMS
+        // 3. Twilio SMS
         if (twilioAccountSid != null && !twilioAccountSid.isBlank() &&
             twilioAuthToken != null && !twilioAuthToken.isBlank() &&
             twilioFromNumber != null && !twilioFromNumber.isBlank()) {
@@ -251,7 +289,7 @@ public class OtpService {
             }
         }
 
-        // 3. Telegram Bot (Free Instant Mobile Alerts)
+        // 4. Telegram Bot (Free Instant Mobile Alerts)
         if (telegramBotToken != null && !telegramBotToken.isBlank() &&
             telegramChatId != null && !telegramChatId.isBlank()) {
             try {
@@ -267,7 +305,7 @@ public class OtpService {
             }
         }
 
-        // 4. Custom SMS / WhatsApp Webhook
+        // 5. Custom SMS / WhatsApp Webhook
         if (otpWebhookUrl != null && !otpWebhookUrl.isBlank()) {
             try {
                 restClient.post()
@@ -282,7 +320,7 @@ public class OtpService {
             }
         }
 
-        // 5. Generic SMS Gateway URL
+        // 6. Generic SMS Gateway URL
         if (smsGatewayUrl != null && !smsGatewayUrl.isBlank() && smsAuthKey != null && !smsAuthKey.isBlank()) {
             try {
                 restClient.post()

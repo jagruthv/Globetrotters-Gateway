@@ -10,7 +10,8 @@ import {
   ArrowRight,
   Phone,
   KeyRound,
-  RotateCcw
+  RotateCcw,
+  MessageSquare
 } from 'lucide-react';
 import { authService } from '../services/api';
 
@@ -338,13 +339,25 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                       </div>
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={loading || enteredOtp.length !== 6}
-                      className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
-                    >
-                      {loading ? <span>Verifying OTP...</span> : <span>Verify & Enter Gateway</span>}
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        type="submit"
+                        disabled={loading || enteredOtp.length !== 6}
+                        className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
+                      >
+                        {loading ? <span>Verifying OTP...</span> : <span>Verify & Enter Gateway</span>}
+                      </button>
+
+                      <a
+                        href={`https://api.whatsapp.com/send?phone=91${phoneNumber}&text=${encodeURIComponent(`Globetrotter Gateway Verification Code: ${dispatchedOtp || '582914'}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold text-xs flex items-center justify-center gap-2 hover:bg-emerald-500/25 transition-colors font-sans-clean cursor-pointer"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Confirm via WhatsApp (100% Free • No GST)</span>
+                      </a>
+                    </div>
 
                     <div className="flex items-center justify-center text-xs text-slate-400 font-sans-clean">
                       {resendTimer > 0 ? (
