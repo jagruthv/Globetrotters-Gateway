@@ -1,11 +1,103 @@
 /**
  * Cloudflare Pages Edge Worker for Globetrotter Gateway
  * Handles live AI chat and multimodal vision routing with Google Gemini 3.8 Flash.
+ * Hardened with Arena-Grade Anti-Bot, Anti-Scraping & Origin Integrity Armor.
  */
 
 function getGeminiKey(env) {
   // Read exclusively from Cloudflare encrypted environment secrets vault
   return (env && env.GEMINI_API_KEY) ? env.GEMINI_API_KEY : '';
+}
+
+// ── Arena-Grade Threat & Automation Armor ────────────────────────────────────
+const ALLOWED_HOSTNAMES = new Set([
+  'globetrotter-gateway.pages.dev',
+  'localhost',
+  '127.0.0.1'
+]);
+
+function isAllowedHost(urlString) {
+  try {
+    if (!urlString) return false;
+    const parsed = new URL(urlString);
+    if (ALLOWED_HOSTNAMES.has(parsed.hostname)) return true;
+    if (parsed.hostname.endsWith('.globetrotter-gateway.pages.dev')) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function verifyWebsiteIntegrity(request) {
+  const origin = request.headers.get('Origin') || '';
+  const referer = request.headers.get('Referer') || '';
+  const userAgent = (request.headers.get('User-Agent') || '').toLowerCase();
+  const secFetchSite = request.headers.get('Sec-Fetch-Site') || '';
+
+  // 1. Block automated CLI tools, HTTP scripting libraries, headless runners & scrapers
+  const blockedSignatures = [
+    'curl', 'python', 'aiohttp', 'requests', 'node-fetch', 'axios', 
+    'postman', 'insomnia', 'go-http-client', 'httpclient', 'scrapy', 
+    'urllib', 'wget', 'libwww-perl', 'java/', 'bot', 'spider', 'crawler'
+  ];
+  if (!userAgent || blockedSignatures.some(sig => userAgent.includes(sig))) {
+    return {
+      allowed: false,
+      response: new Response(JSON.stringify({
+        error: 'Security Alert (OAT-005): Automated API execution prohibited.',
+        message: 'This endpoint is strictly coupled to interactive browser sessions at https://globetrotter-gateway.pages.dev.'
+      }), {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Threat-Defense': 'Arena-Grade-Guard-Active'
+        }
+      })
+    };
+  }
+
+  // 2. Browser Fetch Metadata Integrity (Sec-Fetch-Site cannot be forged by client scripts)
+  if (secFetchSite && secFetchSite === 'cross-site') {
+    return {
+      allowed: false,
+      response: new Response(JSON.stringify({
+        error: 'Security Alert: Cross-site invocation blocked. Requests must originate directly on globetrotter-gateway.pages.dev.'
+      }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    };
+  }
+
+  // 3. Strict Origin & Referer Verification
+  const validOrigin = origin ? isAllowedHost(origin) : false;
+  const validReferer = referer ? isAllowedHost(referer) : false;
+
+  if (!validOrigin && !validReferer) {
+    return {
+      allowed: false,
+      response: new Response(JSON.stringify({
+        error: 'Access Denied: Missing or unauthorized Origin/Referer header.',
+        message: 'Requests are strictly locked to the Globetrotter Gateway website.'
+      }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    };
+  }
+
+  return { allowed: true };
+}
+
+function getCorsHeaders(request) {
+  const origin = request.headers.get('Origin') || '';
+  const allowOrigin = isAllowedHost(origin) ? origin : 'https://globetrotter-gateway.pages.dev';
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Vary': 'Origin'
+  };
 }
 
 export default {
@@ -15,16 +107,13 @@ export default {
     // ── 1. Plan Generation with Gemini 3.8 Flash (Fallback: Gemini 3.5 Flash Lite) ──
     if (url.pathname === '/api/trip/generate-ai-plan') {
       if (request.method === 'OPTIONS') {
-        return new Response(null, {
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-        });
+        return new Response(null, { headers: getCorsHeaders(request) });
       }
 
       if (request.method === 'POST') {
+        const check = verifyWebsiteIntegrity(request);
+        if (!check.allowed) return check.response;
+
         try {
           const body = await request.json();
           const places = body.places || [];
@@ -34,7 +123,7 @@ export default {
           if (places.length === 0) {
             return new Response(JSON.stringify({ error: 'No places provided' }), {
               status: 400,
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+              headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
             });
           }
 
@@ -130,7 +219,7 @@ CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no
 
           if (planData) {
             return new Response(JSON.stringify(planData), {
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+              headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
             });
           }
         } catch (e) {
@@ -142,16 +231,13 @@ CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no
     // ── 2. Interactive Plan Modification with Gemini 3.8 Flash ──
     if (url.pathname === '/api/trip/modify-ai-plan') {
       if (request.method === 'OPTIONS') {
-        return new Response(null, {
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-        });
+        return new Response(null, { headers: getCorsHeaders(request) });
       }
 
       if (request.method === 'POST') {
+        const check = verifyWebsiteIntegrity(request);
+        if (!check.allowed) return check.response;
+
         try {
           const body = await request.json();
           const { currentPlan, userFeedback } = body;
@@ -251,7 +337,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
 
           if (modifyData) {
             return new Response(JSON.stringify(modifyData), {
-              headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+              headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
             });
           }
         } catch (e) {
@@ -263,16 +349,13 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
     // ── 3. AI Chat & Live Multimodal Vision Endpoint ──
     if (url.pathname === '/api/chat' || url.pathname === '/api/chat/message' || url.pathname === '/api/chat/live') {
       if (request.method === 'OPTIONS') {
-        return new Response(null, {
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-        });
+        return new Response(null, { headers: getCorsHeaders(request) });
       }
 
       if (request.method === 'POST') {
+        const check = verifyWebsiteIntegrity(request);
+        if (!check.allowed) return check.response;
+
         try {
           const body = await request.json();
           const userPrompt = body.message || body.prompt || body.content || '';
@@ -352,7 +435,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
           }), {
             headers: {
               'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*'
+              ...getCorsHeaders(request)
             }
           });
         } catch (err) {
@@ -363,7 +446,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
             status: 500,
             headers: {
               'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*'
+              ...getCorsHeaders(request)
             }
           });
         }
