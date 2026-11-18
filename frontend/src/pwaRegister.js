@@ -2,7 +2,7 @@
  * Globetrotter Gateway • PWA Service Worker & Network Sentinel
  * 
  * Manages service worker lifecycle, offline status detection,
- * and edge turnstile network state dispatching.
+ * and offline network state dispatching.
  */
 
 export function registerServiceWorker() {

@@ -73,7 +73,7 @@ public class Place {
     private String physicalDifficulty;     // e.g. "STRENUOUS", "MODERATE", "EASY"
     
     @Column(columnDefinition = "TEXT")
-    private String practicalAccessGuide;   // Comprehensive educational instructions: where private cars stop, committee rules, terrain, required footwear, timings
+    private String practicalAccessGuide;   // Practical visitor instructions: where private cars stop, committee rules, terrain, required footwear, timings
 
     private BigDecimal totalEstimatedCost; // True per-person budget: entry + parking share + last-mile transfer + essential guide
 

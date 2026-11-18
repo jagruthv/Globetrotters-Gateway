@@ -260,7 +260,7 @@ export default function App() {
                     Start Your Heritage Journey Across 59 Districts
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed font-sans-clean">
-                    Discover historical temples, lush hill stations, and subterranean caverns. Pick a curated tour package or build your personalized day-by-day plan with our AI concierge.
+                    Discover historical temples, lush hill stations, and natural underground caves. Pick a curated tour package or build your personalized day-by-day plan with our AI concierge.
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                     <button
@@ -378,13 +378,13 @@ export default function App() {
               className="pt-28 pb-16"
             >
               <div className="max-w-md mx-auto text-center p-8 bg-[#0D121F] rounded-3xl border border-white/10 flex flex-col items-center gap-4">
-                <h3 className="text-xl font-bold text-white">Field Agent Portal</h3>
-                <p className="text-xs text-slate-400">Gate scanning and ticket verification are hosted in the dedicated Field Agent Console.</p>
+                <h3 className="text-xl font-bold text-white">Gate Staff & Conductor Console</h3>
+                <p className="text-xs text-slate-400">Scan and verify tickets at attraction entrance gates.</p>
                 <button
                   onClick={handleOpenAgentPortal}
                   className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs cursor-pointer"
                 >
-                  Enter Agent Portal
+                  Open Gate Scanner
                 </button>
               </div>
             </motion.div>

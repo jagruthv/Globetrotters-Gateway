@@ -6,7 +6,6 @@ import {
   Shield, 
   Volume2, 
   VolumeX, 
-  ArrowRight,
   User,
   CheckCircle2,
   Mail,
@@ -392,49 +391,18 @@ export default function SettingsModal({
               </div>
             </div>
 
-            {/* SECTION 4: FIELD AGENT PORTAL */}
-            <div className="flex flex-col gap-3 pt-2 border-t border-white/10">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
-                  Field Agent Operations
-                </span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-medium ${
-                  isAgent 
-                    ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' 
-                    : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
-                }`}>
-                  {isAgent ? 'Accredited Agent' : 'Field Agent Access'}
-                </span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-400/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
-                    <Shield className="w-4 h-4" />
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-xs font-bold text-white font-sans-clean">
-                      Gate Turnstile Terminal
-                    </span>
-                    <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean">
-                      {isAgent
-                        ? 'Access the dedicated turnstile verification console to scan QR passes with instant green/red admittance.'
-                        : 'This operational console is reserved for verified field agents and gate conductors.'}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    onClose();
-                    if (onOpenAgentPortal) onOpenAgentPortal();
-                  }}
-                  className="w-full py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm cursor-pointer font-sans-clean active:scale-[0.98]"
-                >
-                  <span>{isAgent ? 'Open Field Agent Terminal' : 'Apply for Agent Accreditation (5s)'}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
+            {/* Staff / Conductor Link */}
+            <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+              <span className="text-[11px] font-sans-clean">Gate Staff or Conductor?</span>
+              <button
+                onClick={() => {
+                  onClose();
+                  if (onOpenAgentPortal) onOpenAgentPortal();
+                }}
+                className="text-[11px] text-amber-400 hover:text-amber-300 font-semibold hover:underline cursor-pointer font-sans-clean"
+              >
+                {isAgent ? 'Open Gate Scanner' : 'Staff Access'}
+              </button>
             </div>
 
             {/* Footer */}

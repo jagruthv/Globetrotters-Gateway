@@ -70,7 +70,7 @@ export default function CookieConsentBanner() {
                 </button>
               </div>
               <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                We operate under strict <strong>data minimization</strong> (DPDP Act 2023 & GDPR). We use essential memory cookies for offline pass caching. Zero ad tracking beacons.
+                We keep your data private. We only use essential memory cookies to save your booked passes and preferences offline. No advertising trackers.
               </p>
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function CookieConsentBanner() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-white">Essential Cookies</div>
-                  <div className="text-[11px] text-slate-400">QR pass verification & turnstile sync</div>
+                  <div className="text-[11px] text-slate-400">QR ticket verification & offline access</div>
                 </div>
                 <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-medium">
                   Always Active

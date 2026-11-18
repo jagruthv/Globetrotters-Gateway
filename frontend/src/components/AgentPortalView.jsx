@@ -57,10 +57,10 @@ function playScannerSound(isGranted) {
 
 const CHECKPOINTS = [
   { id: 1, name: 'Araku Tribal Museum (Alluri Sitharama Raju)', gate: 'Turnstile A1' },
-  { id: 2, name: 'Borra Caves Subterranean Gate (Alluri Sitharama Raju)', gate: 'Turnstile B2' },
-  { id: 3, name: 'Belum Caves Karst Passage (Nandyal)', gate: 'Turnstile C1' },
+  { id: 2, name: 'Borra Caves Cave Entrance (Alluri Sitharama Raju)', gate: 'Turnstile B2' },
+  { id: 3, name: 'Belum Caves Main Gate (Nandyal)', gate: 'Turnstile C1' },
   { id: 4, name: 'Coringa Mangrove Boardwalk (Kakinada)', gate: 'North Turnstile' },
-  { id: 5, name: 'Golconda Fort Acoustic Portico (Hyderabad)', gate: 'Fateh Darwaza Turnstile' },
+  { id: 5, name: 'Golconda Fort Main Gate (Hyderabad)', gate: 'Fateh Darwaza Turnstile' },
   { id: 6, name: 'Ramappa Temple UNESCO Sanctum (Mulugu)', gate: 'Main Mandapa Gate' },
   { id: 7, name: 'Gandikota Fort Gorge View (YSR Kadapa)', gate: 'Canyon Viewpoint Turnstile' }
 ];
@@ -418,7 +418,7 @@ export default function AgentPortalView({
             <div className="flex flex-col">
               <h2 className="text-lg font-bold text-white font-sans-clean flex items-center gap-2">
                 <Scan className="w-5 h-5 text-amber-400" />
-                <span>Turnstile Gate Verification</span>
+                <span>Gate Pass Verification</span>
               </h2>
               <span className="text-xs text-slate-400 font-sans-clean">
                 Point barcode scanner at visitor phone or manually enter ticket code
@@ -514,7 +514,7 @@ export default function AgentPortalView({
             ) : (
               <>
                 <Scan className="w-5 h-5 text-slate-950" />
-                <span>Verify Pass & Open Turnstile</span>
+                <span>Verify Pass & Open Gate</span>
               </>
             )}
           </button>
@@ -524,7 +524,7 @@ export default function AgentPortalView({
         <div className="p-6 rounded-3xl bg-[#0E121A] border border-white/10 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">
-              Live Gate Turnstile Feed
+              Live Gate Scanner Feed
             </span>
             <span className="text-[10px] text-amber-400 font-mono">Auto-Synced</span>
           </div>

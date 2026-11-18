@@ -52,10 +52,10 @@ function playScannerSound(isGranted) {
 
 const CHECKPOINTS = [
   { id: 1, name: 'Araku Tribal Museum (Alluri Sitharama Raju)' },
-  { id: 2, name: 'Borra Caves Subterranean Gate (Alluri Sitharama Raju)' },
-  { id: 3, name: 'Belum Caves Karst Passage (Nandyal)' },
+  { id: 2, name: 'Borra Caves Cave Entrance (Alluri Sitharama Raju)' },
+  { id: 3, name: 'Belum Caves Main Gate (Nandyal)' },
   { id: 4, name: 'Coringa Mangrove Boardwalk (Kakinada)' },
-  { id: 5, name: 'Golconda Fort Acoustic Portico (Hyderabad)' },
+  { id: 5, name: 'Golconda Fort Main Gate (Hyderabad)' },
   { id: 6, name: 'Ramappa Temple UNESCO Sanctum (Mulugu)' },
   { id: 7, name: 'Gandikota Fort Gorge View (YSR Kadapa)' }
 ];

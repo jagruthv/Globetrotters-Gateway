@@ -455,6 +455,9 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
 
     // ── 4. Proxy all other /api/* endpoints to AWS EC2 Spring Boot Backend ──
     if (url.pathname.startsWith('/api/')) {
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { headers: getCorsHeaders(request) });
+      }
       const backendBase = env?.BACKEND_URL || 'http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com';
       const targetUrl = new URL(url.pathname + url.search, backendBase);
       const proxyRequest = new Request(targetUrl, {
@@ -463,10 +466,36 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
         body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
         redirect: 'follow'
       });
-      return fetch(proxyRequest);
+      const backendResp = await fetch(proxyRequest);
+      const cors = getCorsHeaders(request);
+      const newHeaders = new Headers(backendResp.headers);
+      for (const [k, v] of Object.entries(cors)) {
+        newHeaders.set(k, v);
+      }
+      newHeaders.set('X-Content-Type-Options', 'nosniff');
+      newHeaders.set('X-Frame-Options', 'DENY');
+      return new Response(backendResp.body, {
+        status: backendResp.status,
+        statusText: backendResp.statusText,
+        headers: newHeaders
+      });
     }
 
-    // Serve static assets via Cloudflare Pages
-    return env.ASSETS.fetch(request);
+    // Serve static assets via Cloudflare Pages with Defense-in-Depth Security Armor
+    const assetResp = await env.ASSETS.fetch(request);
+    const secHeaders = new Headers(assetResp.headers);
+    secHeaders.set('X-Frame-Options', 'DENY');
+    secHeaders.set('X-Content-Type-Options', 'nosniff');
+    secHeaders.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    secHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+    secHeaders.set('Permissions-Policy', 'geolocation=(self), microphone=(self), camera=(self)');
+    secHeaders.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    secHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' https://generativelanguage.googleapis.com https://accounts.google.com https://api.razorpay.com http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com http://localhost:*; frame-src 'self' https://accounts.google.com https://api.razorpay.com;");
+
+    return new Response(assetResp.body, {
+      status: assetResp.status,
+      statusText: assetResp.statusText,
+      headers: secHeaders
+    });
   }
 };

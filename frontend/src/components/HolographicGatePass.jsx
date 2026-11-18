@@ -273,7 +273,7 @@ export default function HolographicGatePass({
                 <span className="text-xs font-bold text-amber-300 mt-1">
                   Gate 01 • Fast-Track
                 </span>
-                <span className="text-[10px] text-slate-500">Auto-Turnstile</span>
+                <span className="text-[10px] text-slate-500">Express Entry</span>
               </div>
 
               {/* Rate */}

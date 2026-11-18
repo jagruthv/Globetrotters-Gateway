@@ -92,7 +92,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 setError(null);
                 try {
                   const googleUser = await authService.loginWithGoogle(response.credential);
-                  handleFinishAuth(googleUser, `Signed in as ${googleUser.fullName || 'Google Verified Explorer'}`);
+                  handleFinishAuth(googleUser, `Signed in as ${googleUser.fullName || googleUser.email || 'Traveler'}`);
                 } catch (err) {
                   setError(err.message || 'Google verification failed.');
                   setLoading(false);
@@ -136,29 +136,19 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
     if (window.google?.accounts?.id) {
       try {
-        window.google.accounts.id.prompt(async (notification) => {
+        window.google.accounts.id.prompt((notification) => {
           if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            // If popup was blocked, fallback to safe demo session
-            const googleUser = authService.socialLogin('google', {
-              fullName: 'Google Verified Explorer',
-              identifier: 'explorer@gmail.com'
-            });
-            handleFinishAuth(googleUser, 'Signed in via Google account!');
+            setLoading(false);
+            setError('Google sign-in was closed or blocked. You can sign in using Email OTP or Phone below.');
           }
         });
       } catch {
-        const googleUser = authService.socialLogin('google', {
-          fullName: 'Google Verified Explorer',
-          identifier: 'explorer@gmail.com'
-        });
-        handleFinishAuth(googleUser, 'Signed in via Google account!');
+        setLoading(false);
+        setError('Google sign-in could not be opened. Please use Email OTP or Phone below.');
       }
     } else {
-      const googleUser = authService.socialLogin('google', {
-        fullName: 'Google Verified Explorer',
-        identifier: 'explorer@gmail.com'
-      });
-      handleFinishAuth(googleUser, 'Signed in via Google account!');
+      setLoading(false);
+      setError('Google Sign-In is unavailable in this browser. Please use Email OTP or Phone below.');
     }
   };
 
@@ -225,13 +215,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         const data = await authService.login(email.trim().toLowerCase(), password);
         handleFinishAuth(data, 'Signed in successfully!');
       }
-    } catch {
-      const cleanEmail = email.trim().toLowerCase();
-      const fallbackUser = authService.socialLogin('email', {
-        fullName: fullName.trim() || cleanEmail.split('@')[0],
-        identifier: cleanEmail
-      });
-      handleFinishAuth(fallbackUser, 'Signed in with email session!');
+    } catch (err) {
+      setError(err.message || 'Incorrect email or password. Please try again or use Email OTP.');
+      setLoading(false);
     }
   };
 

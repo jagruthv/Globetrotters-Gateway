@@ -197,7 +197,7 @@ public class DataInitializer implements CommandLineRunner {
 
         Place katikiFalls = getOrCreatePlace("Katiki Waterfalls", "katiki-waterfalls", "Nature & Adventure",
                 "Andhra Pradesh", "Araku Valley",
-                "A breathtaking 50-foot cascading mountain waterfall originated from the Gosthani River in dense forest terrain.",
+                "A 50-foot cascading mountain waterfall originated from the Gosthani River in dense forest terrain.",
                 18.2930, 83.0080, "09:00 AM", "04:30 PM", new BigDecimal("80.00"),
                 null,
                 "Gatevalsa / Katiki Village, Araku, AP 531149",
@@ -449,7 +449,7 @@ public class DataInitializer implements CommandLineRunner {
                 18.1500, 80.0500, "08:00 AM", "06:00 PM", new BigDecimal("80.00"),
                 null,
                 "Govindaraopet Mandal, Mulugu District, Telangana 506344",
-                "03:30 PM", "06:00 PM", "Breathtaking sunset over 13 forested hill islands linked by illuminated suspension bridges.",
+                "03:30 PM", "06:00 PM", "Panoramic sunset over 13 forested hill islands linked by illuminated suspension bridges.",
                 "11:00 AM", "01:30 PM", 225,
                 "Paved Road to Lake Jetty + Suspension Rope Bridge",
                 new BigDecimal("50.00"),
@@ -667,8 +667,8 @@ public class DataInitializer implements CommandLineRunner {
                     .state("Andhra Pradesh")
                     .region("Palnadu & Guntur")
                     .tag("Imperial Forts • Sacred Caves • Theme Resort")
-                    .summary("Explore the heroic heart of Andhra: 14th-century Kondaveedu hilltop fortress, sacred Kotappakonda Trikuta hill, subterranean Guthikonda caves, and Haailand theme resort.")
-                    .description("The definitive Palnadu-Guntur corridor pass. Experience the 21-hairpin Kondaveedu ghat road, Dakshina Kashi limestone caves, 100-foot Prabhalu shrine, and world-class water park thrills with one seamless digital QR ticket. Valid for 3 days.")
+                    .summary("Explore the heart of Andhra: 14th-century Kondaveedu hilltop fortress, sacred Kotappakonda Trikuta hill, ancient Guthikonda caves, and Haailand theme resort.")
+                    .description("The definitive Palnadu-Guntur corridor pass. Experience the 21-hairpin Kondaveedu ghat road, Dakshina Kashi limestone caves, 100-foot Prabhalu shrine, and water park thrills with one direct digital QR ticket. Valid for 3 days.")
                     .basePrice(new BigDecimal("865.00"))
                     .discountedCircuitPrice(new BigDecimal("699.00"))
                     .validityDays(3)

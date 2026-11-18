@@ -248,11 +248,28 @@ export const authService = {
       window.dispatchEvent(new Event('auth-change'));
       return data;
     } catch {
-      const googleUser = authService.socialLogin('google', {
-        fullName: 'Google Verified Explorer',
-        identifier: 'explorer@gmail.com'
-      });
-      return googleUser;
+      // Decode the real user email & name directly from the Google ID token
+      try {
+        const base64Url = idToken.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        );
+        const payload = JSON.parse(jsonPayload);
+        if (payload?.email) {
+          const googleUser = authService.socialLogin('google', {
+            fullName: payload.name || payload.email.split('@')[0],
+            identifier: payload.email
+          });
+          return googleUser;
+        }
+      } catch (parseErr) {
+        console.warn('Failed to parse Google ID token client-side:', parseErr);
+      }
+      throw new Error('Google sign-in could not be completed. Please try Email OTP.');
     }
   },
 
