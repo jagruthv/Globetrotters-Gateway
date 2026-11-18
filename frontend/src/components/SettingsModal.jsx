@@ -91,7 +91,7 @@ export default function SettingsModal({
     try {
       const updatedUser = await authService.verifyAndLinkMobile(phoneInput, enteredOtp);
       setCurrentUser(updatedUser);
-      setPhoneSuccess('Mobile number verified & linked for WhatsApp tickets!');
+      setPhoneSuccess('Mobile number verified & linked for instant SMS & pass alerts!');
       setTimeout(() => {
         setIsVerifyingPhone(false);
         setPhoneSuccess(null);
