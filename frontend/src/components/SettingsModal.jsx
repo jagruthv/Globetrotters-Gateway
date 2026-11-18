@@ -109,7 +109,7 @@ export default function SettingsModal({
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl">
         
-        {/* DOUBLE-BEZEL CONTAINER */}
+        {/* CARD CONTAINER */}
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

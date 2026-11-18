@@ -382,7 +382,7 @@ export default function AiFluidTripStudio({
                 <span className="text-xs font-semibold text-slate-300 font-sans-clean">
                   Selected Destinations
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold font-telemetry">
+                <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold font-mono">
                   {selectedPlaces.length}
                 </span>
               </div>
@@ -417,7 +417,7 @@ export default function AiFluidTripStudio({
                     className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-colors flex items-center justify-between gap-3 group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="w-6 h-6 rounded-lg bg-amber-400/20 text-amber-300 font-bold text-xs flex items-center justify-center font-telemetry flex-shrink-0">
+                      <span className="w-6 h-6 rounded-lg bg-amber-400/20 text-amber-300 font-bold text-xs flex items-center justify-center font-mono flex-shrink-0">
                         {idx + 1}
                       </span>
                       <div className="flex flex-col min-w-0">
@@ -474,7 +474,7 @@ export default function AiFluidTripStudio({
 
                 <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px]">
                   <span className="text-slate-400">Selected Attractions:</span>
-                  <span className="font-bold text-amber-300 font-telemetry">
+                  <span className="font-bold text-amber-300 font-mono">
                     {selectedPlaces.length} {selectedPlaces.length === 1 ? 'Destination' : 'Destinations'} 
                     {selectedPlaces.length > 0 ? ` (Auto-sequenced across ~${recommendedDays} ${recommendedDays === 1 ? 'Day' : 'Days'})` : ''}
                   </span>
@@ -632,10 +632,10 @@ export default function AiFluidTripStudio({
                       className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-4"
                     >
                       <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                        <span className="text-sm font-bold text-amber-300 font-telemetry">
+                        <span className="text-sm font-bold text-amber-300 font-mono">
                           Day {dayPlan.dayNumber || dayPlan.day}
                         </span>
-                        <span className="text-xs text-slate-400 font-telemetry">
+                        <span className="text-xs text-slate-400 font-mono">
                           {dayPlan.estimatedDistance || `${dayPlan.dayKm || 80} km`} • {dayPlan.estimatedDuration || '3.5 hrs'}
                         </span>
                       </div>
@@ -665,7 +665,7 @@ export default function AiFluidTripStudio({
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 min-w-0">
-                                    <span className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-300 font-bold text-[10px] flex items-center justify-center font-telemetry flex-shrink-0">
+                                    <span className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-300 font-bold text-[10px] flex items-center justify-center font-mono flex-shrink-0">
                                       <Utensils className="w-3 h-3 text-amber-300" aria-hidden="true" />
                                     </span>
                                     <span className="text-xs font-bold text-amber-200 truncate font-sans-clean">
@@ -673,7 +673,7 @@ export default function AiFluidTripStudio({
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2 flex-shrink-0">
-                                    <span className="text-[10px] text-amber-300 font-telemetry">
+                                    <span className="text-[10px] text-amber-300 font-mono">
                                       {stop.arrivalTime || '01:00 PM'} – {stop.departureTime || '01:45 PM'}
                                     </span>
                                   </div>
@@ -703,7 +703,7 @@ export default function AiFluidTripStudio({
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-300 font-bold text-[10px] flex items-center justify-center font-telemetry flex-shrink-0">
+                                  <span className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-300 font-bold text-[10px] flex items-center justify-center font-mono flex-shrink-0">
                                     {sIdx + 1}
                                   </span>
                                   <span className="text-xs font-bold text-white truncate font-sans-clean">
@@ -712,7 +712,7 @@ export default function AiFluidTripStudio({
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <LiveWeatherBadge latitude={stopLat} longitude={stopLng} compact={true} />
-                                  <span className="text-[10px] text-amber-300 font-telemetry">
+                                  <span className="text-[10px] text-amber-300 font-mono">
                                     {stop.arrivalTime || '09:30 AM'}
                                   </span>
                                 </div>

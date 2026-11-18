@@ -150,16 +150,16 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
 
                   {/* Badges */}
                   <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-amber-300 font-telemetry">
+                    <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-amber-300 font-mono">
                       {circuit.states}
                     </span>
-                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-400/40 text-[10px] font-bold text-emerald-300 font-telemetry">
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-400/40 text-[10px] font-bold text-emerald-300 font-mono">
                       {circuit.savings}
                     </span>
                   </div>
 
                   <div className="absolute bottom-3 left-3 right-3">
-                    <span className="text-[10px] text-slate-300 font-telemetry block font-medium">
+                    <span className="text-[10px] text-slate-300 font-mono block font-medium">
                       {circuit.duration}
                     </span>
                     <h3 className="text-xl font-bold text-white drop-shadow-md">
@@ -174,7 +174,7 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
                     {circuit.description}
                   </p>
 
-                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs font-telemetry">
+                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs font-mono">
                     <div>
                       <span className="text-[10px] text-slate-500 block">Main Highlight</span>
                       <span className="text-white font-semibold">{circuit.standout}</span>

@@ -53,7 +53,7 @@ export default function MobileAppBottomDock({
               <div className="relative">
                 <Icon className={`w-5 h-5 ${isActive ? 'text-amber-400' : 'text-slate-400'}`} />
                 {tab.badge && (
-                  <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-bold text-[9px] flex items-center justify-center font-telemetry">
+                  <span className="absolute -top-1.5 -right-2 w-4 h-4 rounded-full bg-amber-400 text-slate-950 font-bold text-[9px] flex items-center justify-center font-mono">
                     {tab.badge}
                   </span>
                 )}

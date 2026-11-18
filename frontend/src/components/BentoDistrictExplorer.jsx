@@ -419,16 +419,16 @@ export default function BentoDistrictExplorer({
 
                       {/* State & Spot Count Badge */}
                       <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                        <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-amber-300 font-telemetry">
+                        <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-amber-300 font-mono">
                           {district.state === 'Andhra Pradesh' ? 'AP' : 'TG'} • HQ: {district.hq}
                         </span>
                         <div className="flex items-center gap-1.5">
                           {isFlagship && (
-                            <span className="px-2.5 py-1 rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-400/30 text-[10px] font-bold text-amber-300 font-telemetry">
+                            <span className="px-2.5 py-1 rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-400/30 text-[10px] font-bold text-amber-300 font-mono">
                               Flagship Hub
                             </span>
                           )}
-                          <span className="px-2.5 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/10 text-[10px] font-bold text-white font-telemetry">
+                          <span className="px-2.5 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/10 text-[10px] font-bold text-white font-mono">
                             {district.spots.length} Sights
                           </span>
                         </div>
@@ -445,7 +445,7 @@ export default function BentoDistrictExplorer({
                           </h4>
                         </div>
                         {firstSpot.individualPrice !== undefined && (
-                          <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-semibold text-emerald-400 font-telemetry flex-shrink-0">
+                          <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-semibold text-emerald-400 font-mono flex-shrink-0">
                             {firstSpot.individualPrice === 0 ? 'Free Entry' : `₹${firstSpot.individualPrice}`}
                           </span>
                         )}
@@ -498,7 +498,7 @@ export default function BentoDistrictExplorer({
                       )}
 
                       {/* Highlights Row */}
-                      <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400 font-telemetry">
+                      <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400 font-mono">
                         <div className="flex items-center gap-1.5 truncate max-w-[160px]">
                           <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
                           <span className="truncate">{firstSpot.mandal || district.hq}</span>
@@ -542,10 +542,10 @@ export default function BentoDistrictExplorer({
               <div className="p-5 md:p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02] flex-shrink-0">
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/25 font-telemetry font-bold">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/25 font-mono font-bold">
                       {activeDistrictModal.state}
                     </span>
-                    <span className="text-xs text-slate-400 font-telemetry">
+                    <span className="text-xs text-slate-400 font-mono">
                       HQ: {activeDistrictModal.hq} • {activeDistrictModal.spots.length} Verified Destinations
                     </span>
                   </div>
@@ -649,7 +649,7 @@ export default function BentoDistrictExplorer({
                               loading="lazy"
                             />
                             {spot.averageRating && (
-                              <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[10px] font-bold text-amber-300 font-telemetry flex items-center gap-1">
+                              <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[10px] font-bold text-amber-300 font-mono flex items-center gap-1">
                                 <Star className="w-2.5 h-2.5 fill-amber-300 text-amber-300" aria-hidden="true" />
                                 <span>{spot.averageRating} ({spot.reviewCount?.toLocaleString()})</span>
                               </div>
@@ -659,7 +659,7 @@ export default function BentoDistrictExplorer({
                             </div>
                           </div>
 
-                          {/* Info & Telemetry */}
+                          {/* Info & Details */}
                           <div className="flex flex-col justify-between flex-1 gap-2.5">
                             <div>
                               <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -667,11 +667,11 @@ export default function BentoDistrictExplorer({
                                   {spot.name}
                                 </h4>
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] text-amber-300 font-telemetry">
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.05] text-amber-300 font-mono">
                                     {spot.category || 'Heritage'}
                                   </span>
                                   {spot.physicalDifficulty === 'EASY' && (
-                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-400/20 font-telemetry flex items-center gap-1">
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-400/20 font-mono flex items-center gap-1">
                                       <Accessibility className="w-3 h-3" aria-hidden="true" />
                                       <span>Gentle Walking</span>
                                     </span>
@@ -684,7 +684,7 @@ export default function BentoDistrictExplorer({
                             </div>
 
                             {/* Ground Reality Badges */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-white/5 text-[10px] text-slate-300 font-telemetry">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-white/5 text-[10px] text-slate-300 font-mono">
                               <div>
                                 <span className="text-slate-500 block">Timings</span>
                                 <span className="truncate block font-medium">{spot.timings || 'Daytime Access'}</span>

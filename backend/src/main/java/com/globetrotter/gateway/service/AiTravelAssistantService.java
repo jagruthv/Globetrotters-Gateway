@@ -183,7 +183,7 @@ public class AiTravelAssistantService {
             String reply = "🎫 **How the Digital QR Pass Works:**\n\n"
                     + "1. **One Booking, One Pass:** Select any tour package or destination and confirm your travel date.\n"
                     + "2. **Instant QR Generation:** Your digital pass is immediately created with a secure QR code.\n"
-                    + "3. **Seamless Entry:** At every attraction gate, simply present your QR pass on your phone.\n"
+                    + "3. **Quick Entry:** At every attraction gate, simply present your QR pass on your phone.\n"
                     + "4. **Direct Gate Verification:** The gate scanner verifies that specific attraction and allows instant entry!";
 
             return new AssistantResult(reply, List.of(

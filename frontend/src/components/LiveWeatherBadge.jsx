@@ -53,7 +53,7 @@ export default function LiveWeatherBadge({ latitude, longitude, compact = true }
         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/10 text-[10px] text-slate-300 font-sans-clean font-medium cursor-help hover:border-amber-400/40 transition-colors"
       >
         {renderIcon(weather.iconType)}
-        <span className="text-amber-300 font-bold font-telemetry">{weather.temperature}</span>
+        <span className="text-amber-300 font-bold font-mono">{weather.temperature}</span>
         <span className="hidden sm:inline text-slate-400 truncate max-w-[80px]">{weather.condition}</span>
       </span>
     );
@@ -67,7 +67,7 @@ export default function LiveWeatherBadge({ latitude, longitude, compact = true }
           <span className="font-bold text-white">{weather.temperature}</span>
           <span className="text-slate-400">• {weather.condition}</span>
         </div>
-        <span className="text-[10px] text-slate-500 font-telemetry">Live</span>
+        <span className="text-[10px] text-slate-500 font-mono">Live</span>
       </div>
       <div className="flex items-center gap-3 text-[10px] text-slate-400">
         <span className="flex items-center gap-1">

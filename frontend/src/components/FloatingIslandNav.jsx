@@ -112,7 +112,7 @@ export default function FloatingIslandNav({
                 <Icon className={`w-3.5 h-3.5 relative z-10 ${isActive ? 'text-amber-400' : 'text-slate-400'}`} />
                 <span className="relative z-10">{item.label}</span>
                 {item.badge && (
-                  <span className="relative z-10 px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 font-bold text-[10px] font-telemetry">
+                  <span className="relative z-10 px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 font-bold text-[10px] font-mono">
                     {item.badge}
                   </span>
                 )}
@@ -228,7 +228,7 @@ export default function FloatingIslandNav({
                 )}
               </div>
 
-              <span className="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-telemetry pb-2">
+              <span className="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-mono pb-2">
                 Navigation Directory
               </span>
               {navItems.map((item, idx) => {
