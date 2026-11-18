@@ -338,3 +338,20 @@ In subterranean karst caverns (Borra Caves at 915m elevation, Belum Caves passag
   - `show_passes`: Retrieves and renders active booked passes directly within the conversational stream.
   - `play_audio`: Unlocks and launches monument audio guide stories for covered attractions.
 - **Free-Tier Compliant Routing**: Powered by Google Gemini `gemini-3.8-flash` (primary) and `gemini-3.5-flash-lite` (fallback), strictly respecting rate limits.
+
+---
+
+## 15. Subtopic 1 Viewport Discipline & Asymmetric Photography Scrim
+- **Clear Monument Photography (84% Opacity)**:
+  - Eliminates muddy, over-dimmed 38% backgrounds where users could not identify the monuments.
+  - Monument photography rendered at 84% opacity with subtle color enhancement (`brightness-105 contrast-105 saturate-110`).
+  - Swapped low-resolution images for 1200px+ panoramas (Charminar, Gandikota Canyon, Borra Caves, Ramappa Temple).
+- **Asymmetric Directional Scrim**:
+  - Horizontal gradient: `from-[#080A0F] via-[#080A0F]/75 via-50% to-[#080A0F]/20`.
+  - Left 50% provides deep contrast behind headlines, subtitles, and selector inputs for 100% WCAG AAA text legibility.
+  - Right 50% stays clear and brightly lit so visitors can immediately see the monument.
+- **Viewport Discipline (Zero Scrolling Above Fold)**:
+  - Constrained outer hero container to `min-h-[100dvh] lg:h-[100dvh] lg:max-h-[820px]`.
+  - Compressed typography: headline `text-2xl sm:text-3xl lg:text-[32px] xl:text-[36px] leading-[1.12]`.
+  - Unified Double-Bezel Console: Combines destination selection, travel date, travelers count, gate pass status, audio tour add-on, price, and primary booking button into a single compact bar.
+  - Guaranteed 100% visibility of the entire hero section on standard 1366x768 and 1080p laptop displays without scrolling.
