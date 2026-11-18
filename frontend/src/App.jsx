@@ -582,7 +582,7 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Real-Time SMS & WhatsApp Simulated Gateway Alert Toast */}
+      {/* Real-Time SMS Alert Toast */}
       <SmsGatewayToast />
 
       {/* Persistent Global AI Travel Assistant Trigger & Drawer */}

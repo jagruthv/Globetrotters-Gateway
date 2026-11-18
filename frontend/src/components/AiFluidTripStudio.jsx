@@ -35,7 +35,7 @@ export default function AiFluidTripStudio({
   onProceedToPasses,
   onBookCustomPlan,
   onInitiateBooking,
-  onOpenCopilot
+  onOpenAssistant
 }) {
   // 'AUTO' allows the AI to calculate the optimal days based on spots count & elevation fatigue
   const [selectedDuration, setSelectedDuration] = useState('AUTO');
@@ -660,13 +660,13 @@ export default function AiFluidTripStudio({
 
                   <button
                     onClick={() => {
-                      if (onOpenCopilot) onOpenCopilot();
+                      if (onOpenAssistant) onOpenAssistant();
                       else setGeminiDrawerOpen(true);
                     }}
                     className="px-4 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Chat with Copilot to Customize</span>
+                    <span>Chat with Assistant to Customize</span>
                   </button>
 
                   <button

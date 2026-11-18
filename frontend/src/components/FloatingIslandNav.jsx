@@ -21,7 +21,7 @@ export default function FloatingIslandNav({
   setActiveTab, 
   selectedPlacesCount = 0,
   onOpenSettings,
-  onOpenCopilot
+  onOpenAssistant
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -125,15 +125,15 @@ export default function FloatingIslandNav({
 
         {/* Right Action: Settings & Auth Button */}
         <div className="flex items-center gap-2 pr-1">
-          {/* Ask Copilot AI Button */}
+          {/* Ask Travel Assistant Button */}
           <button
             type="button"
-            onClick={onOpenCopilot}
+            onClick={onOpenAssistant}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 border border-emerald-500/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 text-xs font-semibold transition-all cursor-pointer shadow-sm"
-            title="Ask Globetrotter Copilot (Ctrl+K)"
+            title="Ask Travel Assistant (Ctrl+K)"
           >
             <Sparkles className="w-3.5 h-3.5 fill-emerald-400/30 text-emerald-400" />
-            <span className="hidden sm:inline">Copilot</span>
+            <span className="hidden sm:inline">Assistant</span>
           </button>
 
           {/* Settings & Preferences Button */}
@@ -281,13 +281,13 @@ export default function FloatingIslandNav({
                 type="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  if (onOpenCopilot) onOpenCopilot();
+                  if (onOpenAssistant) onOpenAssistant();
                 }}
                 className="w-full p-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-left flex items-center justify-between transition-colors text-emerald-200 cursor-pointer"
               >
                 <div className="flex items-center gap-3.5">
                   <Sparkles className="w-5 h-5 text-emerald-400" />
-                  <span className="font-semibold text-base">Ask Globetrotter Copilot</span>
+                  <span className="font-semibold text-base">Ask Travel Assistant</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-emerald-400" />
               </button>

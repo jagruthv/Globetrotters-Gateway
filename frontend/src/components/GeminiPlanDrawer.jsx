@@ -132,8 +132,8 @@ export default function GeminiPlanDrawer({
     return [
       {
         id: 'welcome-msg',
-        sender: 'gemini',
-        text: `Namaste, ${touristName}! I am your Autonomous Gemini Concierge & Account Operator. I can customize your route, book entry passes, save trips to your profile, or display your tickets directly here.\n\nWhat would you like me to do?`,
+        sender: 'assistant',
+        text: `Namaste, ${touristName}! I am your Travel Concierge. I can customize your route, book entry passes, save trips to your profile, or display your tickets directly here.\n\nWhat would you like me to do?`,
         showPlanPreview: true,
         plan: currentPlan
       }
@@ -227,9 +227,9 @@ export default function GeminiPlanDrawer({
 
       const aiFallbackMsg = {
         id: createMsgId('ai-err'),
-        sender: 'gemini',
+        sender: 'assistant',
         text: actionResult?.type === 'booked_ticket' 
-          ? "I've booked your All-Access Entry Ticket directly under your account! Here is your BookMyShow-style cinema pass."
+          ? "I've booked your All-Access Entry Ticket directly under your account! Here is your official verified entry pass."
           : actionResult?.type === 'saved_trip'
           ? "Your itinerary has been saved to your account profile!"
           : `I've adjusted your trip pacing to: "${textToSend}". You can confirm your booking below!`,
@@ -350,7 +350,7 @@ export default function GeminiPlanDrawer({
                       <div className="flex items-center gap-2">
                         <Ticket className="w-4 h-4 text-amber-400" />
                         <span className="text-[11px] font-bold text-white uppercase font-mono">
-                          Digital Movie-Style Gate Pass
+                          Digital Entry Gate Pass
                         </span>
                       </div>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">
@@ -532,7 +532,7 @@ export default function GeminiPlanDrawer({
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Ask Gemini ('Book pass for me', 'Save this trip', 'Add sunset viewpoint')..."
+              placeholder="Ask Assistant ('Book pass for me', 'Save this trip', 'Add sunset viewpoint')..."
               className="flex-1 py-2.5 px-4 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400 transition-colors font-sans-clean"
             />
             <button
