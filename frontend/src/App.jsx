@@ -11,14 +11,26 @@ import GateScannerView from './components/GateScannerView';
 import VoiceConciergeModal from './components/VoiceConciergeModal';
 import WhatsAppConcierge from './components/WhatsAppConcierge';
 import CookieConsentBanner from './components/CookieConsentBanner';
+import SettingsModal from './components/SettingsModal';
 import { Heart } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedPlaces, setSelectedPlaces] = useState([]);
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [isStaffMode, setIsStaffMode] = useState(false);
   const [issuedPassData, setIssuedPassData] = useState(null);
   const shouldReduceMotion = useReducedMotion();
+
+  const handleToggleStaffMode = (enable) => {
+    setIsStaffMode(enable);
+    if (enable) {
+      setActiveTab('scanner');
+    } else {
+      setActiveTab('home');
+    }
+  };
 
   // When switching tabs, reset view to top
   useEffect(() => {
@@ -101,6 +113,9 @@ export default function App() {
         setActiveTab={setActiveTab}
         onOpenVoiceModal={() => setVoiceModalOpen(true)}
         selectedPlacesCount={selectedPlaces.length}
+        onOpenSettings={() => setSettingsModalOpen(true)}
+        isStaffMode={isStaffMode}
+        onExitStaffMode={() => handleToggleStaffMode(false)}
       />
 
       {/* Main Tab Views with Framer Motion Spring Transition */}
@@ -114,7 +129,7 @@ export default function App() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Sovereign Interactive Hero */}
+              {/* Interactive Travel Hero */}
               <FluidLiquidDropHero
                 onExploreDistricts={() => setActiveTab('explore')}
                 onLaunchTripPlanner={() => setActiveTab('planner')}
@@ -133,10 +148,9 @@ export default function App() {
                 onBookCircuit={handleBookCircuit}
               />
 
-              {/* Holographic Turnstile Gate Pass */}
+              {/* Digital Entry Pass */}
               <HolographicGatePass
                 passData={issuedPassData}
-                onNavigateToScanner={() => setActiveTab('scanner')}
               />
             </motion.div>
           )}
@@ -203,7 +217,6 @@ export default function App() {
             >
               <HolographicGatePass
                 passData={issuedPassData}
-                onNavigateToScanner={() => setActiveTab('scanner')}
               />
             </motion.div>
           )}
@@ -217,7 +230,10 @@ export default function App() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="pt-16"
             >
-              <GateScannerView passData={issuedPassData} />
+              <GateScannerView 
+                passData={issuedPassData} 
+                onExitStaffMode={() => handleToggleStaffMode(false)}
+              />
             </motion.div>
           )}
 
@@ -230,13 +246,13 @@ export default function App() {
               transition={{ duration: 0.35 }}
               className="pt-24 pb-16 text-center max-w-lg mx-auto"
             >
-              <h2 className="text-3xl font-serif text-white mb-4">Destination NotFound</h2>
+              <h2 className="text-3xl font-serif text-white mb-4">Destination Not Found</h2>
               <p className="text-slate-400 mb-8">The requested tourism corridor or route does not exist. Explore our 59 districts or heritage circuits.</p>
               <button
                 onClick={() => setActiveTab('home')}
-                className="px-6 py-3 bg-[#E5C158] text-[#0A0D14] font-medium rounded-full shadow-lg hover:bg-[#F3D57A] transition-all min-h-[44px]"
+                className="px-6 py-3 bg-[#E5C158] text-[#0A0D14] font-medium rounded-full shadow-lg hover:bg-[#F3D57A] transition-all min-h-[44px] cursor-pointer"
               >
-                Return to Sovereign Gateway
+                Return to Home
               </button>
             </motion.div>
           )}
@@ -249,6 +265,14 @@ export default function App() {
         onClose={() => setVoiceModalOpen(false)}
       />
 
+      {/* Settings & Preferences Modal */}
+      <SettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        isStaffMode={isStaffMode}
+        onToggleStaffMode={handleToggleStaffMode}
+      />
+
       {/* Native Mobile Bottom Navigation Dock (iOS / Android Feel) */}
       <MobileAppBottomDock
         activeTab={activeTab}
@@ -257,7 +281,7 @@ export default function App() {
         selectedPlacesCount={selectedPlaces.length}
       />
 
-      {/* Sovereign Master Footer */}
+      {/* Footer */}
       <footer className="relative z-10 w-full py-16 px-4 md:px-12 border-t border-white/10 bg-[#04060A] text-slate-400">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           
@@ -267,17 +291,17 @@ export default function App() {
                 GLOBETROTTER GATEWAY
               </span>
               <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 font-sans-clean font-semibold">
-                Smart Gateway v3.2
+                Official Travel Portal
               </span>
             </div>
             <p className="text-xs text-slate-400 max-w-sm text-center md:text-left font-sans-clean leading-relaxed">
-              Open regional directory across Andhra Pradesh and Telangana. Powered by ground-truth schemas and verified state registries (APTDC, TSTDC, ASI).
+              Digital travel guide and verified circuit passes for Andhra Pradesh and Telangana.
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 text-xs font-sans-clean text-slate-400">
             <div className="flex items-center gap-4">
-              <span>59 Districts Verified</span>
+              <span>59 Districts</span>
               <span>•</span>
               <span>646 Destinations</span>
             </div>
@@ -296,7 +320,7 @@ export default function App() {
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <span>Crafted with</span>
             <Heart className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
-            <span>for Global Explorers</span>
+            <span>for Global Travelers</span>
           </div>
 
         </div>

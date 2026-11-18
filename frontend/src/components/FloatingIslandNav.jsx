@@ -5,14 +5,15 @@ import {
   Map, 
   Layers, 
   Ticket, 
-  Scan, 
   Menu, 
   X, 
   Headphones,
   ShieldCheck,
   ChevronRight,
   User,
-  LogOut
+  LogOut,
+  Settings,
+  Shield
 } from 'lucide-react';
 import AuthModal from './AuthModal';
 
@@ -20,7 +21,10 @@ export default function FloatingIslandNav({
   activeTab, 
   setActiveTab, 
   onOpenVoiceModal,
-  selectedPlacesCount = 0
+  selectedPlacesCount = 0,
+  onOpenSettings,
+  isStaffMode = false,
+  onExitStaffMode
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -59,8 +63,7 @@ export default function FloatingIslandNav({
     { id: 'explore', label: '59 Districts', icon: Map },
     { id: 'planner', label: 'Tour Planner', icon: Layers, badge: selectedPlacesCount > 0 ? selectedPlacesCount : null },
     { id: 'circuits', label: 'Tour Packages', icon: Layers },
-    { id: 'passes', label: 'Entry Passes', icon: Ticket },
-    { id: 'scanner', label: 'Gate Scanner', icon: Scan }
+    { id: 'passes', label: 'Entry Passes', icon: Ticket }
   ];
 
   return (
@@ -118,15 +121,37 @@ export default function FloatingIslandNav({
           })}
         </div>
 
-        {/* Right Action: Audio Guide & Auth Button */}
+        {/* Right Action: Audio Guide, Settings & Auth Button */}
         <div className="flex items-center gap-2 pr-1">
+          {/* Staff Mode Active Pill */}
+          {isStaffMode && (
+            <button
+              onClick={onExitStaffMode}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-semibold hover:bg-amber-500/30 transition-colors cursor-pointer"
+              title="Click to Exit Staff Mode"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Exit Staff Mode</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenVoiceModal}
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white text-xs font-medium transition-colors"
-            title="Launch State Cultural Audio Guide"
+            className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer"
+            title="Launch Cultural Audio Guide"
           >
             <Headphones className="w-3.5 h-3.5 text-cyan-400" />
             <span className="hidden sm:inline font-sans-clean">Audio Guide</span>
+          </button>
+
+          {/* Settings & Preferences Button */}
+          <button
+            onClick={onOpenSettings}
+            className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            title="Settings & Staff Portal"
+            aria-label="Settings"
+          >
+            <Settings className="w-3.5 h-3.5" />
           </button>
 
           {/* User Sign In / Account Button */}
@@ -260,6 +285,19 @@ export default function FloatingIslandNav({
                   </motion.button>
                 );
               })}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenSettings();
+                }}
+                className="w-full p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-left flex items-center justify-between transition-colors text-slate-300"
+              >
+                <div className="flex items-center gap-3.5">
+                  <Settings className="w-5 h-5 text-cyan-400" />
+                  <span className="font-semibold text-base">Settings & Staff Portal</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              </button>
             </div>
 
             <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs text-slate-400 font-sans-clean">

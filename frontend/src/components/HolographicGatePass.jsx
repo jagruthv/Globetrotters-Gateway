@@ -5,13 +5,13 @@ import {
   QrCode, 
   Sparkles, 
   CheckCircle, 
-  Share2
+  Share2,
+  Printer
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function HolographicGatePass({ 
-  passData = null, 
-  onNavigateToScanner 
+  passData = null
 }) {
   const [isCopied, setIsCopied] = useState(false);
 
@@ -202,16 +202,18 @@ export default function HolographicGatePass({
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCelebrate}
-                  className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold hover:bg-cyan-300 transition-colors flex items-center gap-1.5 shadow-md font-sans-clean"
+                  className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold hover:bg-cyan-300 transition-colors flex items-center gap-1.5 shadow-md font-sans-clean cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Official Stamp</span>
                 </button>
                 <button
-                  onClick={onNavigateToScanner}
-                  className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-200 transition-colors font-sans-clean"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-200 transition-colors flex items-center gap-1.5 font-sans-clean cursor-pointer"
+                  title="Print or save as PDF"
                 >
-                  Test Gate Scanner
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print Ticket</span>
                 </button>
               </div>
             </div>

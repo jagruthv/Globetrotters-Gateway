@@ -111,7 +111,7 @@ export default function AiFluidTripStudio({
         const normalized = {
           success: true,
           calcDurationMs,
-          modelUsed: remotePlan.modelUsed || 'Spring Boot Multi-Model Engine (OSRM + AI)',
+          modelUsed: 'Smart Route Optimizer',
           isOfflineFallback: false,
           days: remotePlan.days || remotePlan.itinerary || [],
           itinerary: remotePlan.itinerary || remotePlan.days || [],
@@ -140,7 +140,7 @@ export default function AiFluidTripStudio({
         const normalized = {
           success: true,
           calcDurationMs,
-          modelUsed: 'Offline Deterministic Route Engine (Offline Fallback)',
+          modelUsed: 'Instant Route Planner',
           isOfflineFallback: true,
           days: localPlan.days || [],
           itinerary: localPlan.days || [],
@@ -555,9 +555,9 @@ export default function AiFluidTripStudio({
                       <ShieldCheck className="w-3 h-3 text-emerald-400" />
                       <span>{planResult.isOfflineFallback ? 'Offline Mode Active' : 'Verified Regional Tour Route'}</span>
                     </span>
-                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-400/25 font-sans-clean font-semibold flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-purple-400" />
-                      <span>{planResult.modelUsed || 'Google Gemini 3.5 Flash Lite'}</span>
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-400/25 font-sans-clean font-semibold flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-cyan-400" />
+                      <span>{planResult.modelUsed || 'Smart Travel Route'}</span>
                     </span>
                     <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-400/20 font-sans-clean font-medium">
                       Gate Timings & Rest Breaks Verified

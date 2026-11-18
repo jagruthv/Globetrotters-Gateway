@@ -89,7 +89,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 w-fit">
               <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
               <span className="text-[10px] uppercase font-semibold text-cyan-300 tracking-wider">
-                Sovereign Tourist Gateway
+                Official Tourist Portal
               </span>
             </div>
             <h3 className="text-2xl font-bold text-white font-sans-clean">
