@@ -39,9 +39,9 @@ export default function WhatsAppConcierge() {
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="h-2 w-2 rounded-full bg-emerald-400" />
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Official Concierge</h4>
+                  <h4 className="text-xs font-semibold text-emerald-400 font-sans-clean">Official concierge</h4>
                   <p className="text-[10px] text-slate-400">AP & TG Tourism Desk (24/7)</p>
                 </div>
               </div>
@@ -77,7 +77,7 @@ export default function WhatsAppConcierge() {
             {/* Footer Direct CTA */}
             <button
               onClick={() => handleLaunchWhatsApp()}
-              className="w-full mt-2 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40 transition-all active:scale-[0.98]"
+              className="w-full mt-2 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
             >
               <MessageCircle className="w-4 h-4" />
               <span>Start WhatsApp Chat</span>
@@ -91,7 +91,7 @@ export default function WhatsAppConcierge() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2.5 px-3.5 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl shadow-emerald-950/50 border border-emerald-400/30 backdrop-blur-md transition-colors"
+        className="flex items-center gap-2.5 px-3.5 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg border border-emerald-400/30 backdrop-blur-md transition-colors"
         aria-label="Open Official WhatsApp Support"
       >
         <MessageCircle className="w-5 h-5 fill-current" />
