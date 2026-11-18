@@ -104,18 +104,21 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // ── Pre-Flight Edge Armor: Block sensitive dotfiles and system probing ──
+    // ── Pre-Flight Edge Armor: Block sensitive dotfiles, path traversal and system probing ──
     const lowerPath = url.pathname.toLowerCase();
+    const decodedPath = decodeURIComponent(url.pathname).toLowerCase();
     if (
       lowerPath.startsWith('/.') ||
       lowerPath.includes('/.env') ||
       lowerPath.includes('/.git') ||
       lowerPath.includes('/.aws') ||
       lowerPath.includes('/wp-') ||
-      lowerPath.includes('/package.json')
+      lowerPath.includes('/package.json') ||
+      lowerPath.includes('..') ||
+      decodedPath.includes('..')
     ) {
       return new Response(JSON.stringify({
-        error: 'Security Alert (OAT-004): Direct access to configuration or environment artifacts is strictly forbidden.',
+        error: 'Security Alert (OAT-004): Direct access to configuration artifacts or directory traversal is strictly forbidden.',
         path: url.pathname
       }), {
         status: 403,
@@ -512,7 +515,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
     secHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
     secHeaders.set('Permissions-Policy', 'geolocation=(self), microphone=(self), camera=(self)');
     secHeaders.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-    secHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' https://generativelanguage.googleapis.com https://accounts.google.com https://api.razorpay.com http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com http://localhost:*; frame-src 'self' https://accounts.google.com https://api.razorpay.com;");
+    secHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' https://generativelanguage.googleapis.com https://accounts.google.com https://api.razorpay.com http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com http://localhost:*; frame-src 'self' https://accounts.google.com https://api.razorpay.com; frame-ancestors 'none';");
 
     return new Response(assetResp.body, {
       status: assetResp.status,

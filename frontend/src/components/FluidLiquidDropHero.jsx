@@ -230,9 +230,6 @@ export default function FluidLiquidDropHero({
 
         {/* Subtle top clearance under floating island nav */}
         <div className="absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-[#080A0F]/70 to-transparent pointer-events-none" />
-
-        {/* Golden-hour ambient bloom honoring Deccan stone architecture */}
-        <div className="absolute top-1/4 right-1/4 w-[360px] h-[360px] bg-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
       </div>
 
       {/* Main Content Grid: Balanced Typography + Viewport-Disciplined Tourism Dock */}
@@ -244,7 +241,7 @@ export default function FluidLiquidDropHero({
           {/* Header Pill */}
           <div className="flex items-center gap-2">
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/[0.05] border border-white/10 w-max backdrop-blur-xl">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               <span className="text-[10px] font-semibold text-emerald-300 font-sans-clean">
                 Smart Tourism Gateway • Andhra Pradesh & Telangana
               </span>

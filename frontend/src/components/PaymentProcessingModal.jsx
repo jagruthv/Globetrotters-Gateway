@@ -156,13 +156,13 @@ export default function PaymentProcessingModal({
 
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 {paymentFinished ? (
-                  <CheckCircle2 className="w-10 h-10 text-emerald-400 animate-bounce" />
+                  <CheckCircle2 className="w-10 h-10 text-emerald-400 transition-transform duration-300" />
                 ) : (
                   <>
-                    <span className="text-3xl font-extrabold text-white font-mono leading-none">
+                    <span className="text-3xl font-bold text-white font-mono leading-none">
                       {secondsRemaining}s
                     </span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">
+                    <span className="text-[11px] text-slate-400 font-sans-clean mt-1">
                       Verifying
                     </span>
                   </>
@@ -171,8 +171,8 @@ export default function PaymentProcessingModal({
             </div>
 
             <div className="mt-3 text-center">
-              <span className="inline-flex items-center gap-2 text-xs font-medium text-slate-300">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="inline-flex items-center gap-2 text-xs font-medium text-slate-300 font-sans-clean">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 <span>{currentMsg}</span>
               </span>
             </div>
