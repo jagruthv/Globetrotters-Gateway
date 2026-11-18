@@ -58,7 +58,6 @@ public class AtlasDataSeeder implements CommandLineRunner {
     );
 
     @Override
-    @Transactional
     public void run(String... args) throws Exception {
         log.info("Starting AtlasDataSeeder: Ingesting exhaustive Andhra Pradesh & Telangana ground-truth places...");
 
@@ -225,8 +224,9 @@ public class AtlasDataSeeder implements CommandLineRunner {
             cp.setPlace(canonical);
             circuitPlaceRepository.save(cp);
         }
-        log.info("Deleting duplicate place row: ID={}, Name='{}', Slug='{}'", duplicate.getId(), duplicate.getName(), duplicate.getSlug());
-        placeRepository.delete(duplicate);
+        log.info("Soft-deactivating duplicate place row: ID={}, Name='{}', Slug='{}'", duplicate.getId(), duplicate.getName(), duplicate.getSlug());
+        duplicate.setActive(false);
+        placeRepository.save(duplicate);
     }
 
     private void purgeOrphanedDuplicates(Set<Long> canonicalIds) {
@@ -239,12 +239,11 @@ public class AtlasDataSeeder implements CommandLineRunner {
                     if (canonicalMatch != null) {
                         cp.setPlace(canonicalMatch);
                         circuitPlaceRepository.save(cp);
-                    } else {
-                        circuitPlaceRepository.delete(cp);
                     }
                 }
-                log.info("Purging orphaned database place: ID={}, Name='{}', Slug='{}'", p.getId(), p.getName(), p.getSlug());
-                placeRepository.delete(p);
+                log.info("Soft-deactivating orphaned database place: ID={}, Name='{}', Slug='{}'", p.getId(), p.getName(), p.getSlug());
+                p.setActive(false);
+                placeRepository.save(p);
             }
         }
     }
