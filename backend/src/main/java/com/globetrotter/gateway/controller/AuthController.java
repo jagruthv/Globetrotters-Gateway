@@ -213,6 +213,13 @@ public class AuthController {
     }
 
     private String getClientIp(HttpServletRequest request) {
+        String cfIp = request.getHeader("CF-Connecting-IP");
+        if (cfIp != null && !cfIp.isBlank()) {
+            String candidate = cfIp.trim();
+            if (candidate.matches("^[0-9a-fA-F:.]+$")) {
+                return candidate;
+            }
+        }
         String xf = request.getHeader("X-Forwarded-For");
         if (xf != null && !xf.isBlank()) {
             String candidate = xf.split(",")[0].trim();

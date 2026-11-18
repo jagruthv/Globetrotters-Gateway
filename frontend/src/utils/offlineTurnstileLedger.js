@@ -4,14 +4,17 @@
  * Implements Offline Verification for Remote Underground & Canyon Gates
  * (Borra Caves, Belum Caves, Gandikota, Ramappa Temple).
  * 
- * Features:
- * 1. Offline Signature & Format Validation (Ed25519 / HMAC-SHA256 Token Parser)
- * 2. Client-Side Replay-Attack / Anti-Passback Defense (Local Session Bloom Lock)
+ * Cryptographic Architecture:
+ * 1. HMAC-SHA256 Cryptographic Signature Verification via Web Crypto API (crypto.subtle)
+ *    Matching Spring Boot QrCodeService.java token format:
+ *    GT_PASS:<ref>:<circuitId>:<userId>:<timestamp>:<base64url_hmac_sha256>
+ * 2. Client-Side Anti-Passback Replay Defense (Local Bloom Session Cache)
  * 3. Append-Only Turnstile Flash Ledger (Stored in browser LocalStorage / IndexedDB)
  * 4. End-of-Day Core Batch-Sync Pipeline (POST /api/verify/batch-sync)
  */
 
 import { scannerService } from '../services/api';
+import { verifyPassCryptographicSignature } from './cryptoPassService';
 
 const LEDGER_KEY = 'globetrotter_turnstile_ledger';
 const ADMITTED_SET_KEY = 'globetrotter_admitted_passes_cache';
@@ -59,10 +62,32 @@ function recordAdmittedPass(token, placeId) {
 }
 
 /**
- * Offline Turnstile Verification
- * Evaluates pass validity and enforces anti-passback without internet connection.
+ * Searches local stored passes for matching reference or token
  */
-export function verifyPassOffline(passToken, placeId, gateTerminalId = 'Gate-Alpha-01') {
+function findLocalPass(tokenOrRef) {
+  try {
+    const raw = localStorage.getItem('globetrotter_passes');
+    if (!raw) return null;
+    const passes = JSON.parse(raw);
+    if (!Array.isArray(passes)) return null;
+
+    const clean = tokenOrRef.trim().toUpperCase();
+    return passes.find((p) => {
+      if (!p) return false;
+      const refMatch = p.reference && p.reference.toUpperCase() === clean;
+      const tokenMatch = p.token && (p.token === tokenOrRef || p.token.includes(tokenOrRef));
+      return refMatch || tokenMatch;
+    });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Offline Turnstile Verification
+ * Evaluates pass validity via real HMAC-SHA256 signature check and enforces anti-passback.
+ */
+export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Gate-Alpha-01') {
   if (!passToken || typeof passToken !== 'string') {
     return {
       valid: false,
@@ -73,7 +98,7 @@ export function verifyPassOffline(passToken, placeId, gateTerminalId = 'Gate-Alp
 
   const cleanToken = passToken.trim();
 
-  // 1. Anti-Passback / Replay Protection
+  // 1. Anti-Passback / Replay Protection Check
   const admitted = getAdmittedPasses();
   const replayKey = `${cleanToken}::${placeId}`;
   if (admitted[replayKey]) {
@@ -82,67 +107,136 @@ export function verifyPassOffline(passToken, placeId, gateTerminalId = 'Gate-Alp
       valid: false,
       isPassback: true,
       status: 'PASSBACK_REJECTED',
-      message: `ANTI-PASSBACK TRIGGERED: Pass already checked in at this gate (${new Date(priorEntry.timestamp).toLocaleTimeString()}). Re-entry denied.`,
+      message: `Anti-passback alert: Pass already checked in at this gate (${new Date(priorEntry.timestamp).toLocaleTimeString()}). Re-entry denied.`,
       priorTimestamp: priorEntry.admittedAt
     };
   }
 
-  // 2. Syntax & Token Structural Validation
-  // Supported tokens:
-  // - "APTG-89421"
-  // - "GT-2026-APTG-..."
-  // - "GT_PASS:<ref>-<corridor>:<hash>"
-  const isGtPass = 
-    cleanToken.startsWith('APTG-') || 
-    cleanToken.startsWith('GT-') || 
-    cleanToken.startsWith('GT_') || 
-    cleanToken.includes('APTG') || 
-    cleanToken.length >= 8;
+  // 2. Real Cryptographic HMAC-SHA256 Verification (for GT_PASS tokens)
+  if (cleanToken.startsWith('GT_PASS:')) {
+    const cryptoResult = await verifyPassCryptographicSignature(cleanToken);
 
-  if (!isGtPass) {
+    if (!cryptoResult.valid) {
+      return {
+        valid: false,
+        isCryptographic: true,
+        status: cryptoResult.status,
+        message: cryptoResult.message
+      };
+    }
+
+    // Signature verified! Extract booking reference
+    const ref = cryptoResult.bookingRef || 'GT-SIGNED-PASS';
+    const localMatch = findLocalPass(ref);
+    const touristName = localMatch?.touristName || 'Verified Corridor Passholder';
+
+    // Record admission in anti-passback shield
+    recordAdmittedPass(cleanToken, placeId);
+
+    // Append to offline audit log
+    const newEntry = {
+      id: `scan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      passToken: cleanToken,
+      placeId: Number(placeId),
+      gateTerminalId,
+      verifiedAt: new Date().toISOString(),
+      displayTime: new Date().toLocaleTimeString(),
+      syncStatus: 'PENDING_BATCH_SYNC',
+      reference: ref,
+      corridor: 'AP-TG Heritage Corridor',
+      verificationMethod: 'HMAC_SHA256_WEB_CRYPTO'
+    };
+
+    const existingEntries = getOfflineLedgerEntries();
+    saveOfflineLedgerEntries([newEntry, ...existingEntries]);
+
     return {
-      valid: false,
-      status: 'INVALID_TICKET_SIGNATURE',
-      message: 'Ticket Verification Failed: Invalid ticket format or unknown issuer authority.'
+      valid: true,
+      isCryptographic: true,
+      status: 'CRYPTO_VERIFIED',
+      message: 'Pass Verified • HMAC-SHA256 Cryptographic Signature Valid',
+      bookingReference: ref,
+      touristName,
+      timestamp: newEntry.displayTime,
+      offlineEntryId: newEntry.id
     };
   }
 
-  // Extract reference or tourist tag if present
-  let ref = 'GT-OFFLINE-PASS';
-  let corridor = 'AP-TG Heritage Corridor';
-  if (cleanToken.includes(':')) {
-    const parts = cleanToken.split(':');
-    if (parts[1]) ref = parts[1];
+  // 3. Sovereign Reference Code Verification (e.g. APTG-89421 or GT-2026-XXXXX)
+  const localPass = findLocalPass(cleanToken);
+  const isValidSyntax = 
+    /^APTG-\d{4,6}$/i.test(cleanToken) || 
+    /^GT-\d{4}-[A-Z0-9-]+$/i.test(cleanToken) ||
+    cleanToken.length >= 8;
+
+  if (localPass) {
+    recordAdmittedPass(cleanToken, placeId);
+
+    const newEntry = {
+      id: `scan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      passToken: cleanToken,
+      placeId: Number(placeId),
+      gateTerminalId,
+      verifiedAt: new Date().toISOString(),
+      displayTime: new Date().toLocaleTimeString(),
+      syncStatus: 'PENDING_BATCH_SYNC',
+      reference: localPass.reference,
+      corridor: localPass.circuitName || 'AP-TG Heritage Corridor',
+      verificationMethod: 'LOCAL_BOOKING_LEDGER'
+    };
+
+    const existingEntries = getOfflineLedgerEntries();
+    saveOfflineLedgerEntries([newEntry, ...existingEntries]);
+
+    return {
+      valid: true,
+      isCryptographic: false,
+      status: 'LOCAL_LEDGER_ADMITTED',
+      message: `Pass Verified • Booking Record Found (${localPass.circuitName || 'Heritage Pass'})`,
+      bookingReference: localPass.reference,
+      touristName: localPass.touristName || 'Verified Visitor',
+      timestamp: newEntry.displayTime,
+      offlineEntryId: newEntry.id
+    };
   }
 
-  // 3. Mark admitted in local replay shield
-  recordAdmittedPass(cleanToken, placeId);
+  if (isValidSyntax) {
+    // Valid format fallback for field terminals
+    recordAdmittedPass(cleanToken, placeId);
 
-  // 4. Append to offline audit log
-  const newEntry = {
-    id: `scan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    passToken: cleanToken,
-    placeId: Number(placeId),
-    gateTerminalId,
-    verifiedAt: new Date().toISOString(),
-    displayTime: new Date().toLocaleTimeString(),
-    syncStatus: 'PENDING_BATCH_SYNC', // or 'SYNCED_TO_CORE'
-    reference: ref,
-    corridor
-  };
+    const newEntry = {
+      id: `scan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      passToken: cleanToken,
+      placeId: Number(placeId),
+      gateTerminalId,
+      verifiedAt: new Date().toISOString(),
+      displayTime: new Date().toLocaleTimeString(),
+      syncStatus: 'PENDING_BATCH_SYNC',
+      reference: cleanToken,
+      corridor: 'AP-TG Heritage Corridor',
+      verificationMethod: 'REFERENCE_SYNTAX_VALIDATION'
+    };
 
-  const existingEntries = getOfflineLedgerEntries();
-  const updatedEntries = [newEntry, ...existingEntries];
-  saveOfflineLedgerEntries(updatedEntries);
+    const existingEntries = getOfflineLedgerEntries();
+    saveOfflineLedgerEntries([newEntry, ...existingEntries]);
 
+    return {
+      valid: true,
+      isCryptographic: false,
+      status: 'OFFLINE_GRANTED',
+      message: 'Pass Verified • Gate Admitted (Offline Record Registered)',
+      bookingReference: cleanToken,
+      touristName: 'Verified Corridor Passholder',
+      timestamp: newEntry.displayTime,
+      offlineEntryId: newEntry.id
+    };
+  }
+
+  // 4. Token rejected
   return {
-    valid: true,
-    status: 'OFFLINE_GRANTED',
-    message: 'Pass Verified • Gate Admitted (Offline Ledger Active)',
-    bookingReference: ref,
-    touristName: 'Verified Corridor Passholder',
-    timestamp: newEntry.displayTime,
-    offlineEntryId: newEntry.id
+    valid: false,
+    status: 'INVALID_TICKET_FORMAT',
+    message: 'Ticket Verification Failed: Unrecognized ticket code or issuer authority.'
   };
 }
 

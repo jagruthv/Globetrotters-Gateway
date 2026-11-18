@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -40,8 +41,9 @@ public class AuthService {
     private String googleClientId;
 
     public AuthResponse authenticate(AuthRequest request) {
+        String cleanEmail = request.getEmail() != null ? Normalizer.normalize(request.getEmail().trim().toLowerCase(), Normalizer.Form.NFKC) : "";
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(cleanEmail, request.getPassword())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -65,15 +67,19 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        // Unicode NFKC normalization prevents homoglyph spoofing (Scenario 20: Spotify account collision defense)
+        String cleanEmail = Normalizer.normalize(request.getEmail().trim().toLowerCase(), Normalizer.Form.NFKC);
+        String cleanFullName = Normalizer.normalize(request.getFullName().trim(), Normalizer.Form.NFKC);
+
+        if (userRepository.existsByEmail(cleanEmail)) {
             throw new IllegalArgumentException("Error: Email is already in use!");
         }
 
         // Public registration is strictly locked to ROLE_TOURIST (prevents privilege escalation)
         User user = User.builder()
-                .email(request.getEmail())
+                .email(cleanEmail)
                 .password(passwordEncoder.encode(request.getPassword()))
-                .fullName(request.getFullName())
+                .fullName(cleanFullName)
                 .phoneNumber(request.getPhoneNumber())
                 .isEmailVerified(false)
                 .isPhoneVerified(false)
@@ -84,7 +90,7 @@ public class AuthService {
 
         // Auto login after registration
         return authenticate(new AuthRequest() {{
-            setEmail(request.getEmail());
+            setEmail(cleanEmail);
             setPassword(request.getPassword());
         }});
     }

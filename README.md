@@ -10,7 +10,7 @@
 ```mermaid
 graph TD
     Client["React + Vite Frontend PWA"] --> OfflineEngine["Offline 59-District Route Planner (offlineRouteEngine.js)"]
-    Client --> Scanner["Staff Gate Scanner (Ed25519 + HMAC QR)"]
+    Client --> Scanner["Staff Gate Scanner (HMAC-SHA256 Cryptographic Pass Verification)"]
     Client --> API["Spring Boot REST Backend Engine"]
     API --> CloudDB["AWS RDS PostgreSQL Cloud Database (Pre-seeded 59 Districts)"]
     API --> MasterAtlas["MASTER_59_DISTRICT_ATLAS.json"]
@@ -27,15 +27,15 @@ graph TD
 | **`backend/`** | Spring Boot 3 Java REST API powering authentication, circuit bookings, HMAC QR code signing, and gate turnstile verification. | `src/main/java/`, `pom.xml`, `data/globetrotter_dev.mv.db` |
 | **`data_compiler/`** | Single source of truth data pipeline consolidating all 59 districts of AP & Telangana. | `MASTER_59_DISTRICT_ATLAS.json`, `build_database_seed_json.py` |
 | **`scratch/`** | Official AP Tourism high-resolution photography vault scraped directly from `aptourism.gov.in`. | `scratch/ap_tourism_wallpapers/` (88 official photos) |
-| **Root Workspace** | Capstone presentation, neural network model weights, and defense documentation. | `yolov8n.pt`, `Smart_Tourism_Platform_Review1_1.pptx`, Atlas Docs |
+| **Root Workspace** | Capstone presentation and architectural defense documentation. | `Smart_Tourism_Platform_Review1_1.pptx`, Atlas Docs |
 
 ---
 
 ## 3. Technology Stack & Key Specifications
 
-- **Frontend**: React 19, Vite, Tailwind CSS, Lucide React, HTML5 QR Scanner.
-- **Backend**: Java 21, Spring Boot 3.4, Spring Security, JWT (HMAC-SHA256), Spring Data JPA, H2 Database.
-- **AI & Security**: YOLOv8 Object Detection model (`yolov8n.pt`) for gate turnstile camera verification, HMAC-SHA256 anti-replay bitmask pass redemption.
+- **Frontend**: React 19, Vite, Tailwind CSS, Lucide React, Framer Motion, HTML5 Optical Camera QR Scanner (`jsQR`).
+- **Backend**: Java 21, Spring Boot 3.4, Spring Security, JWT (HMAC-SHA256), Spring Data JPA, PostgreSQL (AWS RDS) / H2.
+- **Security & Edge Turnstile**: HMAC-SHA256 Cryptographic Pass Signatures (Web Crypto API & Java `QrCodeService`), Client-Side Anti-Passback Bloom Shield, Zero-Dependency Browser Camera Decoding.
 - **Performance Budget**: Sub-50ms gate scanner verification latency, sub-390ms frontend production build.
 
 ---

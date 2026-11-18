@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, X, CheckCircle2, Zap } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { generateCryptographicPassToken } from '../utils/cryptoPassService';
 
 const STATUS_MESSAGES = {
   5: 'Connecting to state tourism payment gateway...',
@@ -21,7 +22,7 @@ export default function PaymentProcessingModal({
   const [secondsRemaining, setSecondsRemaining] = useState(5);
   const [paymentFinished, setPaymentFinished] = useState(false);
 
-  const completeBooking = useCallback(() => {
+  const completeBooking = useCallback(async () => {
     const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
     const destinations = bookingDetails?.destinations || ['Cultural Heritage Gate'];
     const circuitName = bookingDetails?.circuitName || 'Official Monument Pass';
@@ -31,9 +32,17 @@ export default function PaymentProcessingModal({
     const refNumber = `GT-${new Date().getFullYear()}-${randomCode}`;
     const today = new Date().toISOString().split('T')[0];
 
+    // Generate real cryptographic HMAC-SHA256 signed pass token
+    let signedToken = '';
+    try {
+      signedToken = await generateCryptographicPassToken(refNumber, 1, 1);
+    } catch {
+      signedToken = refNumber;
+    }
+
     const passPayload = {
       reference: refNumber,
-      token: `GT_PASS:${circuitName.replace(/\s+/g, '')}:${Date.now()}:hmac_sha256_${randomCode}`,
+      token: signedToken,
       circuitName: circuitName,
       touristName: touristName,
       touristCount: numTourists,

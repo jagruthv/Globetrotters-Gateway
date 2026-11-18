@@ -331,8 +331,8 @@ export default function AgentPortalView({
 
     // 1. Local Offline Engine verification
     if (!isOnline) {
-      setTimeout(() => {
-        const offRes = verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
+      setTimeout(async () => {
+        const offRes = await verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
         setIsScanning(false);
         const isOk = offRes.valid;
         playScannerSound(isOk);
@@ -374,7 +374,7 @@ export default function AgentPortalView({
       setTimeout(() => setVerdict(null), 5000);
     } catch {
       // Fallback to local offline ledger
-      const offRes = verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
+      const offRes = await verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
       const isOk = offRes.valid;
       playScannerSound(isOk);
 

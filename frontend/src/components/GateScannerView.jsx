@@ -107,8 +107,8 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
 
     // 1. If device is offline, verify offline immediately
     if (!isOnline) {
-      setTimeout(() => {
-        const offRes = verifyPassOffline(tokenInput, selectedPlaceId, checkpointName);
+      setTimeout(async () => {
+        const offRes = await verifyPassOffline(tokenInput, selectedPlaceId, checkpointName);
         setIsScanning(false);
         const isOk = offRes.valid;
         playScannerSound(isOk);
@@ -157,7 +157,7 @@ export default function GateScannerView({ passData = null, onExitAgentMode }) {
       setTimeout(() => setVerdict(null), 4000);
     } catch {
       // Silent fallback to local verification
-      const offRes = verifyPassOffline(tokenInput, selectedPlaceId, checkpointName);
+      const offRes = await verifyPassOffline(tokenInput, selectedPlaceId, checkpointName);
       const isOk = offRes.valid;
       playScannerSound(isOk);
 
