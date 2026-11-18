@@ -73,7 +73,7 @@ Before claiming any task is complete, run and verify all 4 tiers:
 ---
 
 ## Rule 7: $0 Modern Cloud Infrastructure
-- **Frontend & Edge**: Cloudflare Pages + Edge Worker (`_worker.js`) at [globtroter-gateway.pages.dev](https://globtroter-gateway.pages.dev).
+- **Frontend & Edge**: Cloudflare Pages + Edge Worker (`_worker.js`) at [globetrotter-gateway.pages.dev](https://globetrotter-gateway.pages.dev).
 - **Database**: AWS RDS PostgreSQL 24/7 (`globetrotter-db.cx2cek6kon94.ap-south-1.rds.amazonaws.com:5432`) runs without requiring any local laptop.
 - **Real-Time Client State**: `localStorage` + Edge synchronization.
 

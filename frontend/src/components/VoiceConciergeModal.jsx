@@ -44,7 +44,7 @@ const HERITAGE_STORIES = [
     title: 'Charminar: 1591 Plague Deliverance Arch',
     district: 'Hyderabad, Telangana',
     duration: '1 min 30 sec',
-    image: '/images/candidates/hyderabad/charminar-hyderabad-telangana-1-city-homepage.jpeg',
+    image: '/images/telangana/hyderabad.jpg',
     standout: 'Qutb Shahi Monolithic Monument',
     languages: {
       en: {

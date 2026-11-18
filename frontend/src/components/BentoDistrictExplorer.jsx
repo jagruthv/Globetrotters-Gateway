@@ -60,7 +60,7 @@ const TRAVELER_THEMES = [
     id: 'all', 
     label: 'All Sights', 
     Icon: Compass,
-    image: '/images/candidates/visakhapatnam/kailasagiri-hilltop-park-visakhapatnam-andhra-pradesh-1.jpeg',
+    image: '/images/aptourism/kailasagiri_hill.jpg',
     count: 646
   },
   { 
@@ -68,7 +68,7 @@ const TRAVELER_THEMES = [
     label: 'Spiritual & Temples', 
     category: 'Heritage & Spiritual', 
     Icon: Landmark,
-    image: '/images/candidates/tirupati/sri-venkateswara-swamy-vaari-temple-tirupati-andhra-pradesh-1.jpeg',
+    image: '/images/aptourism/sri_venkateshwara_swamy_temple.jpg',
     count: 214
   },
   { 
@@ -76,7 +76,7 @@ const TRAVELER_THEMES = [
     label: 'Nature & Waterfalls', 
     category: 'Nature & Wildlife,Waterfalls & Gorges', 
     Icon: Trees,
-    image: '/images/candidates/alluri_sitharama_raju/borra-caves-alluri-sitharama-raju-andhra-pradesh-1.jpeg',
+    image: '/images/aptourism/borra_caves.jpg',
     count: 142
   },
   { 
@@ -84,7 +84,7 @@ const TRAVELER_THEMES = [
     label: 'Forts & Heritage', 
     category: 'Historical Forts & Monuments', 
     Icon: Castle,
-    image: '/images/candidates/hyderabad/charminar-hyderabad-telangana-1-city-homepage.jpeg',
+    image: '/images/telangana/hyderabad.jpg',
     count: 98
   },
   { 
@@ -92,7 +92,7 @@ const TRAVELER_THEMES = [
     label: 'Culture & GI Crafts', 
     category: 'Artisans & Culture', 
     Icon: Palette,
-    image: '/images/candidates/warangal/thousand-pillar-temple-hanamkonda-warangal-telangana-1.jpeg',
+    image: '/images/telangana/warangal.jpg',
     count: 64
   },
   { 
@@ -100,7 +100,7 @@ const TRAVELER_THEMES = [
     label: 'Free Public Sights', 
     freeOnly: true, 
     Icon: Ticket,
-    image: '/images/candidates/ntr/prakasam-barrage-vijayawada-ntr-andhra-pradesh-1.jpeg',
+    image: '/images/aptourism/bhavani_islands.jpg',
     count: 185
   },
 ];

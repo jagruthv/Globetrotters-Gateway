@@ -18,7 +18,7 @@ const SIGNATURE_CIRCUITS = [
     retailPrice: 420,
     passPrice: 280,
     savings: '33% Savings',
-    image: '/images/candidates/amaravati/amaravati-mahachaitya-amaravati-andhra-pradesh-1-attr-nearby.jpg',
+    image: '/images/aptourism/mahachaitya_amaravathi.jpg',
     description: 'Ancient monastic cave stupas, relic caskets, and UNESCO Mahachaitya sites tracing 2,200 years of Buddhist scholarship.'
   },
   {

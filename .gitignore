@@ -39,6 +39,7 @@ yarn-debug.log*
 pnpm-debug.log*
 
 # Heavy Media & Temporary Scratch Files
+archive/
 scratch/
 skills_taxonomy/
 *.tar.gz
