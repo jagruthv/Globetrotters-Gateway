@@ -66,67 +66,33 @@ Fast client-side lexical keyword token scorer for offline environments. Scans qu
 
 ---
 
-## 2. Offline Crowd Analytics Engine (`offlineCrowdEngine.js`)
+## 2. Cryptographic Pass Engine (`cryptoPassService.js`)
 
-Implements academic queueing theory and stochastic arrival models in pure JavaScript, executing in **0ms** with zero server requests.
-
-### Mathematical Formulations
-
-#### 1. Non-Homogeneous Poisson Process (NHPP)
-Arrival rate $\lambda(t)$ varies continuously across the diurnal cycle with Gaussian bell-curve surges centered around peak hours:
-$$\lambda(t) = \lambda_{\text{base}} + (\lambda_{\text{peak}} - \lambda_{\text{base}}) \cdot \exp\left(-\frac{(t - \mu_{\text{peak}})^2}{2\sigma^2}\right) \cdot \omega_{\text{day}} \cdot M_{\text{event}}$$
-- $\mu_{\text{peak}}$: Centroid of peak surge window (e.g. 11.5 for morning temples, 17.0 for beaches/forts).
-- $\sigma$: Spread of peak surge window ($\sigma = 2.4\,\text{hours}$).
-- $\omega_{\text{day}}$: Day-of-week multiplier (Saturday/Sunday: 1.45x, Friday: 1.15x, Weekdays: 0.85x).
-- $M_{\text{event}}$: Active festival multiplier.
-
-#### 2. Regional Festival & Hydrological Calendar ($M_{\text{event}}$)
-- **Maha Shivaratri (Feb / March)**:
-  - Kotappakonda Trikoteswara: **15.0x** (10-Lakh pilgrimage congregation, 100-ft electrified Prabhalu).
-  - Srisailam, Guthikonda, Vemulawada: **4.5x**.
-- **Karthika Masam (Nov / Dec)**:
-  - Sacred lighting and deepotsavam pilgrimages: **2.8x**.
-- **Monsoon Waterfalls & Dam Hydrology (July - Oct)**:
-  - Kuntala, Bogatha, Ethipothala, Nagarjuna Sagar crest gates: **3.5x** peak flood inflow; drops to **0.35x** in dry summer months (April - May).
-- **Tirupati Srivari Brahmotsavams (Sept / Oct)**: **3.8x** surge.
-- **Sammakka Saralamma Medaram Jathara (Jan / Feb)**: **12.0x** mega tribal pilgrimage.
-- **Bonalu & Golconda Monsoon (July / Aug)**: **2.5x** heritage crowd surge.
-
-#### 3. Kingman's Heavy-Traffic Queuing Approximation
-Estimates physical ticket counter queue wait times ($W_q$):
-$$W_q \approx \frac{\rho}{1 - \rho} \cdot \frac{C_a^2 + C_s^2}{2} \cdot \frac{1}{\mu}$$
-- $\rho = \frac{\lambda}{c \cdot \mu}$: Traffic intensity / server utilization.
-- $C_a^2, C_s^2$: Coefficients of variation for inter-arrival and service distributions.
-- Demonstrates Globetrotter fast-track QR bypass savings by comparing physical wait time $W_q$ against instant turnstile check-in ($< 5\,\text{seconds}$).
-
-#### 4. Client-Side Guide Cache (`setCachedGuide`, `getCachedGuide`)
-Stores serialized guide responses in browser storage to provide full offline guidebook access in remote areas without data signal.
+Implements client-side Web Crypto API (`crypto.subtle`) token issuance and verification:
+1. **`generateCryptographicPassToken(bookingReference, circuitId, touristId)`**:
+   - Generates an HMAC-SHA256 signature using the browser's native `crypto.subtle` API.
+   - Outputs the production token format:
+     `GT_PASS:<bookingReference>:<circuitId>:<touristId>:<timestamp>:<base64urlSignature>`
+2. **`verifyPassCryptographicSignature(token)`**:
+   - Validates HMAC-SHA256 signature using `constantTimeEquals` to prevent side-channel timing attacks.
+   - Enforces timestamp freshness checks (rejects passes > 5 minutes in future or > 30 days old).
 
 ---
 
-## 3. Authentic Photo & Offline Banner Engine (`authenticPlacePhotos.js`)
+## 3. Edge Turnstile Offline Ledger (`offlineTurnstileLedger.js`)
+
+Provides offline gate verification for remote attractions (Borra Caves, Belum Caves, Gandikota, Ramappa Temple):
+1. **Cryptographic Validation**: Directly verifies `GT_PASS` tokens via `cryptoPassService.js`.
+2. **Anti-Passback Admission Cache**: Prevents double check-ins within the operating session.
+3. **Flash Turnstile Ledger**: Maintains local check-in records for end-of-day batch synchronization.
+
+---
+
+## 4. Authentic Photo & Offline Banner Engine (`authenticPlacePhotos.js`)
 
 Consolidates all photographic resolution and zero-network fallback logic:
-1. **`EXACT_PLACE_PHOTOS`**: Curated dictionary mapping normalized place keys to verified local custodian photographs.
+1. **`EXACT_PLACE_PHOTOS`**: Curated dictionary mapping normalized place keys to verified custodian photographs.
 2. **`getAuthenticPlacePhoto(placeOrName)`**: Resolves verified local photography with zero false positives. Returns `null` if unverified so the card displays a clean blank state rather than fake stock images.
 3. **`getOfflineImageFallback(title, category, district)`**: Dynamic client-side SVG data-URI generator providing 0-byte offline vector backdrops for circuit passes and network blackout zones.
-
----
-
-## 4. Anti-Bot Proof-of-Work & Client Integrity Engine (`antiBotProofOfWork.js`)
-
-Implements zero-friction client-side computational puzzles (ALTCHA / Hashcash architecture) and passive automation telemetry:
-1. **`solvePoWChallenge(challengeToken, difficulty)`**:
-   - Searches for an integer nonce such that $\text{SHA-256}(\text{token} \parallel \text{nonce})$ satisfies leading zero requirements.
-   - Uses native `window.crypto.subtle.digest("SHA-256", ...)`.
-   - Executes in **30–75ms** in non-blocking browser threads.
-2. **`collectClientIntegrity()`**:
-   - Gathers passive browser signals (`navigator.webdriver`, screen dimensions, plugin lists, hardware concurrency).
-   - Generates compact Base64 token sent in `X-Client-Integrity`.
-3. **`preWarmAntiBotProof()`**:
-   - Asynchronously fetches and solves challenge during idle moments (e.g. page mount, modal open).
-   - Stores solved token in cache so subsequent checkout or booking pass creation has **0ms perceived latency**.
-4. **`getAntiBotHeaders()`**:
-   - Produces `X-PoW-Token` and `X-Client-Integrity` headers for sensitive API endpoints.
 
 

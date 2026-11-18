@@ -105,6 +105,26 @@ const TRAVELER_THEMES = [
   },
 ];
 
+function getRelevanceSortedSpots(spots, query) {
+  if (!query) return spots || [];
+  const q = query.toLowerCase().trim();
+  return [...(spots || [])].sort((a, b) => {
+    const aMatch = (
+      (a.name && a.name.toLowerCase().includes(q)) ||
+      (a.category && a.category.toLowerCase().includes(q)) ||
+      (a.description && a.description.toLowerCase().includes(q)) ||
+      (a.culinarySpecialty && a.culinarySpecialty.toLowerCase().includes(q))
+    ) ? 1 : 0;
+    const bMatch = (
+      (b.name && b.name.toLowerCase().includes(q)) ||
+      (b.category && b.category.toLowerCase().includes(q)) ||
+      (b.description && b.description.toLowerCase().includes(q)) ||
+      (b.culinarySpecialty && b.culinarySpecialty.toLowerCase().includes(q))
+    ) ? 1 : 0;
+    return bMatch - aMatch;
+  });
+}
+
 export default function BentoDistrictExplorer({ 
   onSelectPlaceForTrip, 
   selectedPlaces = [] 
@@ -385,7 +405,8 @@ export default function BentoDistrictExplorer({
           /* Asymmetrical Authentic Bento Box Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredDistricts.map((district, idx) => {
-              const firstSpot = district.spots[0] || {};
+              const orderedSpots = getRelevanceSortedSpots(district.spots, searchQuery);
+              const firstSpot = orderedSpots[0] || {};
               const photoUrl = getAuthenticPlacePhoto(firstSpot.name, firstSpot.imageUrl);
               const fallbackBanner = getOfflineImageFallback(firstSpot.name, firstSpot.category, district.name);
               const isFirstSelected = isPlaceSelected(firstSpot.name);
@@ -486,7 +507,7 @@ export default function BentoDistrictExplorer({
                       {isFlagship && district.spots.length > 1 && (
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] text-slate-500 font-sans-clean font-medium">Top Sights:</span>
-                          {district.spots.slice(0, 3).map((s) => (
+                          {orderedSpots.slice(0, 3).map((s) => (
                             <span
                               key={s.name}
                               className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] text-slate-300 border border-white/5 font-sans-clean truncate max-w-[140px]"

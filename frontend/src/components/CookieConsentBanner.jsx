@@ -50,27 +50,27 @@ export default function CookieConsentBanner() {
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           aria-label="Cookie consent banner"
           role="region"
-          className="fixed bottom-20 md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-md z-50 p-5 rounded-2xl bg-[#090D16]/95 backdrop-blur-xl border border-white/15 shadow-2xl text-slate-200"
+          className="fixed bottom-20 md:bottom-6 left-3 right-3 md:left-auto md:right-6 md:max-w-sm z-50 p-3.5 sm:p-4 rounded-2xl bg-[#090D16]/95 backdrop-blur-xl border border-white/15 shadow-2xl text-slate-200"
         >
-          <div className="flex items-start gap-3.5 mb-3">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 shrink-0">
-              <Cookie className="w-5 h-5" />
+          <div className="flex items-start gap-3 mb-2">
+            <div className="p-1.5 rounded-xl bg-amber-500/10 text-amber-400 shrink-0 mt-0.5">
+              <Cookie className="w-4 h-4" />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display font-bold text-sm text-white tracking-wide">
-                  Privacy & Cookie Preferences
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-display font-bold text-xs text-white tracking-wide">
+                  Cookie & Privacy Preferences
                 </h3>
                 <button
                   onClick={handleDeclineNonEssential}
                   aria-label="Close and decline non-essential cookies"
-                  className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+                  className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                We keep your data private. We only use essential memory cookies to save your booked passes and preferences offline. No advertising trackers.
+              <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
+                We use essential cookies to store booked passes and offline gate verification. No ad trackers.
               </p>
             </div>
           </div>
@@ -104,21 +104,21 @@ export default function CookieConsentBanner() {
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row items-center gap-2 pt-2 text-xs">
+          <div className="flex items-center gap-2 pt-1.5 text-xs">
             {!showPreferences ? (
               <>
                 <button
                   type="button"
                   onClick={handleAcceptAll}
-                  className="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-[#E5C158] hover:bg-[#F3D57A] text-[#0A0D14] font-semibold transition-all shadow-md min-h-[44px] flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2 px-3 rounded-xl bg-[#E5C158] hover:bg-[#F3D57A] text-[#0A0D14] font-bold transition-all shadow-sm min-h-[38px] flex items-center justify-center gap-1.5 cursor-pointer font-sans-clean"
                 >
-                  <ShieldCheck className="w-4 h-4" />
+                  <ShieldCheck className="w-3.5 h-3.5" />
                   Accept All
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowPreferences(true)}
-                  className="w-full sm:w-auto py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 font-medium transition-colors min-h-[44px]"
+                  className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 font-medium transition-colors min-h-[38px] cursor-pointer font-sans-clean text-[11px]"
                 >
                   Preferences
                 </button>
@@ -127,7 +127,7 @@ export default function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={handleSavePreferences}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#E5C158] hover:bg-[#F3D57A] text-[#0A0D14] font-semibold transition-all shadow-md min-h-[44px]"
+                className="w-full py-2 px-3 rounded-xl bg-[#E5C158] hover:bg-[#F3D57A] text-[#0A0D14] font-bold transition-all shadow-sm min-h-[38px] cursor-pointer font-sans-clean"
               >
                 Save Preferences
               </button>

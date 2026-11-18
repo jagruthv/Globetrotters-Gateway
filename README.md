@@ -35,7 +35,8 @@ graph TD
 
 - **Frontend**: React 19, Vite, Tailwind CSS, Lucide React, Framer Motion, HTML5 Optical Camera QR Scanner (`jsQR`).
 - **Backend**: Java 21, Spring Boot 3.4, Spring Security, JWT (HMAC-SHA256), Spring Data JPA, PostgreSQL (AWS RDS) / H2.
-- **Security & Edge Turnstile**: HMAC-SHA256 Cryptographic Pass Signatures (Web Crypto API & Java `QrCodeService`), Client-Side Anti-Passback Bloom Shield, Zero-Dependency Browser Camera Decoding.
+- **Security & Edge Turnstile**: HMAC-SHA256 Cryptographic Pass Signatures (Web Crypto API & Java `QrCodeService`), Client-Side Anti-Passback Admission Cache, Zero-Dependency Browser Camera Decoding.
+- **Master Destination Atlas**: Curated ground-truth dataset covering 646 destinations across all 59 districts of Andhra Pradesh and Telangana. 96 primary heritage sites feature verified photography, with remaining rural and regional spots using regional district identity imagery.
 - **Performance Budget**: Sub-50ms gate scanner verification latency, sub-390ms frontend production build.
 
 ---

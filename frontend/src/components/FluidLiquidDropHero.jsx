@@ -664,9 +664,9 @@ export default function FluidLiquidDropHero({
                     <Headphones className="w-5 h-5" />
                   </div>
                   <div className="flex flex-col text-xs">
-                    <span className="font-bold text-white">Curated Smart Audio Walking Tour</span>
+                    <span className="font-bold text-white">Curated Heritage Audio Guide</span>
                     <span className="text-[11px] text-slate-400">
-                      GPS-synced storytelling, secret architectural viewpoints & artisan introductions.
+                      Narrated historical storytelling, architectural viewpoints & artisan guides.
                     </span>
                   </div>
                 </div>
@@ -773,7 +773,7 @@ export default function FluidLiquidDropHero({
                 {addAudioTour && (
                   <div className="flex items-center justify-between py-2 border-b border-white/5">
                     <div className="flex flex-col">
-                      <span className="text-slate-200 font-semibold">Smart GPS Audio Walking Tour</span>
+                      <span className="text-slate-200 font-semibold">Curated Heritage Audio Guide</span>
                       <span className="text-[10px] text-slate-400">
                         Official narrated storytelling & offline audio guide
                       </span>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Sparkles, 
@@ -15,10 +15,12 @@ import {
   CornerDownRight,
   Compass,
   CheckCircle2,
-  Check 
+  Check,
+  Search
 } from 'lucide-react';
 import { tripService, chatService } from '../services/api';
 import { offlineRouteFallback, resolveSpotCoordinates } from '../utils/offlineRouteEngine';
+import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
 import LiveWeatherBadge from './LiveWeatherBadge';
 import GeminiPlanDrawer from './GeminiPlanDrawer';
 
@@ -29,6 +31,7 @@ const createMessageId = (prefix) => `${prefix}-${Date.now()}`;
 
 export default function AiFluidTripStudio({ 
   selectedPlaces = [], 
+  onAddPlace,
   onRemovePlace, 
   onClearPlaces, 
   onExploreMore,
@@ -46,6 +49,44 @@ export default function AiFluidTripStudio({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [generationError, setGenerationError] = useState(null);
   const [chatSessionId] = useState(() => 'trip_chat_' + Math.random().toString(36).substring(2, 9));
+
+  // Quick In-Planner Destination Search & Add
+  const [quickSearchQuery, setQuickSearchQuery] = useState('');
+  const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
+
+  const allDestinations = useMemo(() => {
+    const list = [];
+    const collect = (districts, stateName) => {
+      (districts || []).forEach(d => {
+        (d.spots || []).forEach(s => {
+          list.push({ ...s, district: d.name, state: stateName });
+        });
+      });
+    };
+    collect(MASTER_ATLAS_DATA?.andhraPradesh, 'Andhra Pradesh');
+    collect(MASTER_ATLAS_DATA?.telangana, 'Telangana');
+    return list;
+  }, []);
+
+  const searchResults = useMemo(() => {
+    const q = quickSearchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return allDestinations
+      .filter(d => 
+        d.name.toLowerCase().includes(q) || 
+        d.district.toLowerCase().includes(q) ||
+        (d.category && d.category.toLowerCase().includes(q))
+      )
+      .slice(0, 8);
+  }, [allDestinations, quickSearchQuery]);
+
+  const handleQuickAdd = (destination) => {
+    if (onAddPlace) {
+      onAddPlace(destination, destination.district);
+    }
+    setQuickSearchQuery('');
+    setIsQuickSearchOpen(false);
+  };
 
   // Agentic AI Discussion Chat State
   const [chatMessages, setChatMessages] = useState([]);
@@ -307,18 +348,34 @@ export default function AiFluidTripStudio({
             handleGeneratePlan(nextDays);
           }
         };
-      } else if (lower.includes('food') || lower.includes('eat') || lower.includes('lunch') || lower.includes('breakfast')) {
-        const hasAraku = selectedPlaces.some(p => p.name.toLowerCase().includes('araku') || p.name.toLowerCase().includes('borra'));
-        const hasVizag = selectedPlaces.some(p => p.district?.toLowerCase().includes('visakhapatnam') || p.name.toLowerCase().includes('beach'));
-        
-        aiReply = `Authentic culinary specialties along your route:\n` +
-          (hasAraku ? `• **Araku Valley & Borra**: Hot Bamboo Chicken cooked inside green bamboo stalks over wood embers (₹200), and fresh organic Araku Arabica hill filter coffee (₹25).\n` : '') +
-          (hasVizag ? `• **Visakhapatnam Coast**: Fresh fried coastal pomfret & sea crab at beach shacks near Rushikonda, followed by hot Madugula Halwa.\n` : '') +
-          `• Always carry packaged mineral water when traveling through rural ghat roads.`;
+      } else if (lower.includes('food') || lower.includes('eat') || lower.includes('lunch') || lower.includes('breakfast') || lower.includes('dinner')) {
+        const foodSpots = selectedPlaces.filter(p => p.culinarySpecialty);
+        if (foodSpots.length > 0) {
+          const list = foodSpots.map(p => `• **${p.name}** (${p.district || 'Regional'}): ${p.culinarySpecialty}`).join('\n');
+          aiReply = `Verified culinary specialties along your route:\n${list}\n\nTip: Drink sealed bottled water along interior highway stretches and remote ghat roads.`;
+        } else {
+          aiReply = `Along your route, look for certified local restaurants and heritage dhabas offering hot Andhra & Telangana meals, freshly steamed idlis, and regional filter coffee.`;
+        }
+      } else if (lower.includes('golden') || lower.includes('sunset') || lower.includes('sunrise') || lower.includes('photo')) {
+        const photoSpots = selectedPlaces.filter(p => p.goldenHour || p.golden_hour);
+        if (photoSpots.length > 0) {
+          const list = photoSpots.map(p => `• **${p.name}**: Best light at ${p.goldenHour || p.golden_hour}`).join('\n');
+          aiReply = `Recommended golden hours for photography along your trip:\n${list}`;
+        } else {
+          aiReply = `For optimal photography and mild temperatures, plan visits to viewpoints and temple courtyards between 6:30 AM – 8:30 AM or 4:30 PM – 6:00 PM.`;
+        }
+      } else if (lower.includes('time') || lower.includes('timing') || lower.includes('hour') || lower.includes('open') || lower.includes('close')) {
+        const timingSpots = selectedPlaces.filter(p => p.timings);
+        if (timingSpots.length > 0) {
+          const list = timingSpots.map(p => `• **${p.name}**: ${p.timings}`).join('\n');
+          aiReply = `Official gate timings for your attractions:\n${list}`;
+        } else {
+          aiReply = `Most heritage sites and museums open from 9:00 AM to 5:30 PM. Temples typically close briefly from 12:30 PM to 4:00 PM for afternoon sevas.`;
+        }
       } else if (lower.includes('remove') || lower.includes('drop') || lower.includes('swap')) {
-        aiReply = `You can easily remove any place from your list above by clicking its trash icon, and then click 'Create My Tour Plan'. For nearby alternatives with gentle walking, scenic gardens and heritage view pavilions are recommended.`;
+        aiReply = `You can remove any place from your list by clicking its trash icon, or use the quick-search bar above to add new attractions before generating your tour plan.`;
       } else {
-        aiReply = `I reviewed your selected destinations against official monument timings and verified road conditions. Morning visits avoid peak crowds, and driving routes include sensible rest breaks. What would you like to explore or adjust?`;
+        aiReply = `I sequenced your selected stops by road distance and terrain. Morning hours are reserved for major monuments before peak heat, and driving legs include realistic travel buffers. Ask me about food, timings, photography, or pacing!`;
       }
 
       setChatMessages((prev) => [
@@ -426,6 +483,66 @@ export default function AiFluidTripStudio({
               <span className="text-[11px] text-slate-500 font-sans-clean">
                 {selectedPlaces.length === 0 ? 'No attractions added yet' : 'Places included in your upcoming route'}
               </span>
+            </div>
+
+            {/* INLINE QUICK-ADD DESTINATION SEARCH */}
+            <div className="relative">
+              <div className="flex items-center gap-2 p-2 rounded-2xl bg-white/[0.04] border border-white/10 focus-within:border-amber-400/50 transition-colors">
+                <Search className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+                <input
+                  type="text"
+                  value={quickSearchQuery}
+                  onChange={(e) => {
+                    setQuickSearchQuery(e.target.value);
+                    setIsQuickSearchOpen(true);
+                  }}
+                  onFocus={() => setIsQuickSearchOpen(true)}
+                  placeholder="Quick-add any spot (e.g. Borra Caves, Ramappa, Charminar)..."
+                  className="flex-1 bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-sans-clean"
+                />
+                {quickSearchQuery && (
+                  <button
+                    onClick={() => {
+                      setQuickSearchQuery('');
+                      setIsQuickSearchOpen(false);
+                    }}
+                    className="text-slate-400 hover:text-white px-2 py-0.5 text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Autocomplete Results Dropdown */}
+              {isQuickSearchOpen && searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1.5 z-30 max-h-60 overflow-y-auto rounded-2xl bg-[#0E121A] border border-white/15 shadow-2xl p-2 flex flex-col gap-1">
+                  {searchResults.map((dest) => {
+                    const isAlreadyAdded = selectedPlaces.some(p => p.name.toLowerCase() === dest.name.toLowerCase());
+                    return (
+                      <div
+                        key={dest.name}
+                        className="flex items-center justify-between p-2.5 rounded-xl hover:bg-white/[0.05] transition-colors gap-3"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-bold text-white truncate font-sans-clean">{dest.name}</span>
+                          <span className="text-[10px] text-slate-400 truncate">{dest.district} • {dest.category}</span>
+                        </div>
+                        <button
+                          onClick={() => handleQuickAdd(dest)}
+                          disabled={isAlreadyAdded}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 cursor-pointer transition-all ${
+                            isAlreadyAdded
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 cursor-default'
+                              : 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-sm'
+                          }`}
+                        >
+                          {isAlreadyAdded ? 'Added' : '+ Add to Trip'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* INSTANT PASS CHECKOUT CARD FOR SELECTED MONUMENTS */}
@@ -659,15 +776,22 @@ export default function AiFluidTripStudio({
                   </button>
 
                   <button
-                    onClick={() => {
-                      if (onOpenAssistant) onOpenAssistant();
-                      else setGeminiDrawerOpen(true);
-                    }}
+                    onClick={() => setGeminiDrawerOpen(true)}
                     className="px-4 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Chat with Assistant to Customize</span>
+                    <span>Fine-Tune with Gemini</span>
                   </button>
+
+                  {onOpenAssistant && (
+                    <button
+                      onClick={onOpenAssistant}
+                      className="px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-2 transition-colors font-sans-clean cursor-pointer"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Voice Assistant</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={toggleSpeech}

@@ -19,7 +19,15 @@ const SIGNATURE_CIRCUITS = [
     passPrice: 280,
     savings: '33% Savings',
     image: '/images/aptourism/mahachaitya_amaravathi.jpg',
-    description: 'Ancient monastic cave stupas, relic caskets, and UNESCO Mahachaitya sites tracing 2,200 years of Buddhist scholarship.'
+    description: 'Ancient monastic cave stupas, relic caskets, and UNESCO Mahachaitya sites tracing 2,200 years of Buddhist scholarship.',
+    places: [
+      { name: 'Amaravati Mahachaitya & Museum', district: 'Palnadu', category: 'Heritage & Spiritual' },
+      { name: 'Bojjannakonda Rock-Cut Monasteries', district: 'Anakapalli', category: 'Heritage & Spiritual' },
+      { name: 'Nagarjunakonda Island Museum', district: 'Palnadu', category: 'Heritage & Spiritual' },
+      { name: 'Bhattiprolu Mahastupa', district: 'Bapatla', category: 'Heritage & Spiritual' },
+      { name: 'Ghantasala Buddhist Relic Stupa', district: 'Krishna', category: 'Heritage & Spiritual' },
+      { name: 'Phanigiri Buddhist Monastic Site', district: 'Suryapet', category: 'Heritage & Spiritual' }
+    ]
   },
   {
     id: 'kakatiya-deccan',
@@ -32,7 +40,14 @@ const SIGNATURE_CIRCUITS = [
     passPrice: 240,
     savings: '37% Savings',
     image: '/images/telangana/bhongir_fort.jpg',
-    description: 'Floating brick engineering, acoustic Golconda whispering porticos, and Warangal monolithic stone gateways.'
+    description: 'Floating brick engineering, acoustic Golconda whispering porticos, and Warangal monolithic stone gateways.',
+    places: [
+      { name: 'Ramappa Temple (Rudreshwara UNESCO)', district: 'Mulugu', category: 'Heritage & Spiritual' },
+      { name: 'Warangal Fort & Monolithic Toranas', district: 'Hanamkonda', category: 'Historical Forts & Monuments' },
+      { name: 'Thousand Pillar Temple', district: 'Hanamkonda', category: 'Heritage & Spiritual' },
+      { name: 'Bhongir Fort & Monolithic Rock', district: 'Yadadri Bhuvanagiri', category: 'Historical Forts & Monuments' },
+      { name: 'Golconda Fort & Whispering Portico', district: 'Hyderabad', category: 'Historical Forts & Monuments' }
+    ]
   },
   {
     id: 'godavari-delta',
@@ -45,7 +60,14 @@ const SIGNATURE_CIRCUITS = [
     passPrice: 220,
     savings: '37% Savings',
     image: '/images/aptourism/coringa_wildlife_sanctuary.jpg',
-    description: 'Second largest mangrove forest in India, serene backwaters of Dindi, and sacred river-ocean sangamam.'
+    description: 'Second largest mangrove forest in India, serene backwaters of Dindi, and sacred river-ocean sangamam.',
+    places: [
+      { name: 'Coringa Mangrove Sanctuary & Boardwalk', district: 'Kakinada', category: 'Nature & Wildlife' },
+      { name: 'Antarvedi Sri Lakshmi Narasimha Swamy & Sagar Sangamam', district: 'Dr. B.R. Ambedkar Konaseema', category: 'Heritage & Spiritual' },
+      { name: 'Dindi Riverfront Backwaters', district: 'Dr. B.R. Ambedkar Konaseema', category: 'Nature & Wildlife' },
+      { name: 'Draksharamam Bheemeshwara Temple', district: 'Konaseema', category: 'Heritage & Spiritual' },
+      { name: 'Pattiseema Veerabhadra Island Temple', district: 'East Godavari', category: 'Heritage & Spiritual' }
+    ]
   },
   {
     id: 'eastern-ghats',
@@ -58,7 +80,14 @@ const SIGNATURE_CIRCUITS = [
     passPrice: 310,
     savings: '32% Savings',
     image: '/images/aptourism/borra_caves.jpg',
-    description: 'Ancient million-year-old limestone caves, organic coffee gardens, and scenic misty hill valleys.'
+    description: 'Ancient million-year-old limestone caves, organic coffee gardens, and scenic misty hill valleys.',
+    places: [
+      { name: 'Borra Caves Underground Limestone Chambers', district: 'Alluri Sitharama Raju', category: 'Nature & Wildlife' },
+      { name: 'Araku Tribal Museum & Cultural Guild', district: 'Alluri Sitharama Raju', category: 'Artisans & Culture' },
+      { name: 'Araku Coffee Museum & GCC Roastery', district: 'Alluri Sitharama Raju', category: 'Artisans & Culture' },
+      { name: 'Katiki Waterfalls & Gosthani Gorge', district: 'Alluri Sitharama Raju', category: 'Nature & Wildlife' },
+      { name: 'Chaparai Water Cascades', district: 'Alluri Sitharama Raju', category: 'Nature & Wildlife' }
+    ]
   }
 ];
 
@@ -85,7 +114,14 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
               ? `${Math.round((1 - Number(c.discountedCircuitPrice) / Number(c.basePrice)) * 100)}% Savings` 
               : '35% Savings',
             image: c.coverImageUrl || '/images/telangana/bhongir_fort.jpg',
-            description: c.summary || c.description || 'Verified regional tourism corridor pass.'
+            description: c.summary || c.description || 'Verified regional tourism corridor pass.',
+            places: (c.circuitPlaces && Array.isArray(c.circuitPlaces) && c.circuitPlaces.length > 0)
+              ? c.circuitPlaces.map(cp => ({
+                  name: cp.place?.name || cp.name,
+                  district: cp.place?.district || 'Regional',
+                  category: cp.place?.category || 'Heritage'
+                }))
+              : (SIGNATURE_CIRCUITS.find(sc => sc.id === (c.slug || String(c.id)))?.places || [])
           }));
           setCircuits(mapped);
         }

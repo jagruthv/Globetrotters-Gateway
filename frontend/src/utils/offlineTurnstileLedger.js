@@ -8,7 +8,7 @@
  * 1. HMAC-SHA256 Cryptographic Signature Verification via Web Crypto API (crypto.subtle)
  *    Matching Spring Boot QrCodeService.java token format:
  *    GT_PASS:<ref>:<circuitId>:<userId>:<timestamp>:<base64url_hmac_sha256>
- * 2. Client-Side Anti-Passback Replay Defense (Local Bloom Session Cache)
+ * 2. Client-Side Anti-Passback Replay Defense (Local Session Gate Cache)
  * 3. Append-Only Turnstile Flash Ledger (Stored in browser LocalStorage / IndexedDB)
  * 4. End-of-Day Core Batch-Sync Pipeline (POST /api/verify/batch-sync)
  */

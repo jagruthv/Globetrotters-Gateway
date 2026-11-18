@@ -28,35 +28,66 @@ export default function HolographicGatePass({
   const [shareToast, setShareToast] = useState(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
 
-  // Retrieve booked pass from prop or localStorage
-  const activePass = (() => {
+  const allPasses = React.useMemo(() => {
+    const list = [];
     if (passData && passData.reference !== 'GT-PASS-DEMO' && !passData.token?.includes('e3b0c442')) {
-      return passData;
+      list.push(passData);
     }
     try {
       const stored = localStorage.getItem('globetrotter_passes');
       if (stored) {
-        const list = JSON.parse(stored);
-        if (Array.isArray(list) && list.length > 0) {
-          // Strictly reject any old unbooked dummy pass!
-          const clean = list.filter(p => 
-            p && 
-            p.reference !== 'GT-PASS-DEMO' && 
-            !p.token?.includes('e3b0c442')
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          const clean = parsed.filter(p => 
+            p && p.reference !== 'GT-PASS-DEMO' && !p.token?.includes('e3b0c442')
           );
-          if (clean.length !== list.length) {
-            localStorage.setItem('globetrotter_passes', JSON.stringify(clean));
-          }
-          if (clean.length > 0) {
-            return clean[0];
-          }
+          clean.forEach(p => {
+            if (!list.some(existing => existing.reference === p.reference)) {
+              list.push(p);
+            }
+          });
         }
       }
-      return null;
     } catch {
-      return null;
+      // ignore
     }
-  })();
+    return list;
+  }, [passData]);
+
+  const [selectedPassIndex, setSelectedPassIndex] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    const hash = window.location.hash;
+    const match = hash.match(/(?:pass|ref)=([A-Za-z0-9\-_]+)/i);
+    const targetRef = match ? match[1] : null;
+    if (targetRef) {
+      try {
+        const stored = localStorage.getItem('globetrotter_passes');
+        const list = stored ? JSON.parse(stored) : [];
+        const idx = list.findIndex(p => p?.reference?.toLowerCase() === targetRef.toLowerCase());
+        if (idx !== -1) return idx;
+      } catch {
+        // ignore
+      }
+    }
+    return 0;
+  });
+
+  // Synchronize with external browser hash navigation (#pass=APTG-XXXXX)
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash;
+      const match = hash.match(/(?:pass|ref)=([A-Za-z0-9\-_]+)/i);
+      const targetRef = match ? match[1] : null;
+      if (targetRef && allPasses.length > 0) {
+        const idx = allPasses.findIndex(p => p.reference?.toLowerCase() === targetRef.toLowerCase());
+        if (idx !== -1) setSelectedPassIndex(idx);
+      }
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, [allPasses]);
+
+  const activePass = allPasses[selectedPassIndex] || allPasses[0] || null;
 
   // Real Dynamic QR Code Generator (Encodes clean ticket verification URL or ticket reference)
   useEffect(() => {
@@ -79,25 +110,25 @@ export default function HolographicGatePass({
 
   const handleCopyShareLink = () => {
     if (!activePass) return;
-    const shareUrl = window.location.origin;
-    const shareText = `Official Entry Pass for ${activePass.circuitName}\nBooking ID: ${activePass.reference}\nBook passes at: ${shareUrl}`;
+    const shareUrl = `${window.location.origin}/#pass=${encodeURIComponent(activePass.reference)}`;
+    const shareText = `Official Entry Pass for ${activePass.circuitName}\nBooking ID: ${activePass.reference}\nView Digital Pass: ${shareUrl}`;
     
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareText);
       setIsCopied(true);
-      setShareToast('Pass details and link copied to clipboard.');
+      setShareToast('Pass link copied! Open on your mobile phone for gate entry.');
       setTimeout(() => {
         setIsCopied(false);
         setShareToast(null);
-      }, 3000);
+      }, 3500);
     }
   };
 
   const handleShareWhatsApp = () => {
     if (!activePass) return;
-    const shareUrl = window.location.origin;
+    const shareUrl = `${window.location.origin}/#pass=${encodeURIComponent(activePass.reference)}`;
     const shareText = encodeURIComponent(
-      `*Official Entry Pass - Globetrotter Gateway*\n\nTour: ${activePass.circuitName}\nTraveler: ${activePass.touristName}\nBooking ID: ${activePass.reference}\n\nDigital QR pass verification across Andhra Pradesh and Telangana.\nView details: ${shareUrl}`
+      `*Official Entry Pass - Globetrotter Gateway*\n\nTour: ${activePass.circuitName}\nTraveler: ${activePass.touristName}\nBooking ID: ${activePass.reference}\n\nDigital QR pass verification across Andhra Pradesh and Telangana.\nOpen your pass: ${shareUrl}`
     );
     window.open(`https://api.whatsapp.com/send?text=${shareText}`, '_blank');
   };
@@ -183,6 +214,26 @@ export default function HolographicGatePass({
           <div className="px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 font-sans-clean animate-in fade-in">
             <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{shareToast}</span>
+          </div>
+        )}
+
+        {/* Multi-Pass Switcher (When traveler holds multiple passes) */}
+        {allPasses.length > 1 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none w-full max-w-2xl px-2">
+            <span className="text-xs text-slate-400 font-sans-clean shrink-0">Passes ({allPasses.length}):</span>
+            {allPasses.map((p, idx) => (
+              <button
+                key={p.reference || idx}
+                onClick={() => setSelectedPassIndex(idx)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-sans-clean shrink-0 transition-all cursor-pointer ${
+                  selectedPassIndex === idx
+                    ? 'bg-amber-400 text-slate-950 font-bold shadow-md'
+                    : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+                }`}
+              >
+                {p.circuitName || p.destination || p.reference}
+              </button>
+            ))}
           </div>
         )}
 

@@ -454,7 +454,7 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
   const startDate = options.startDate || new Date().toISOString().split("T")[0];
   const partySize = options.partySize || 2;
 
-  // 1. Normalize every spot so coordinates, elevations, and fees are 100% verified
+  // 1. Normalize every spot so coordinates, elevations, and fees are validated
   const normalizedSpots = selectedSpots.map((s) => {
     const coords = resolveSpotCoordinates(s);
     const rawElev = parseInt(s.elevation || s.elevationMeters || '0', 10);

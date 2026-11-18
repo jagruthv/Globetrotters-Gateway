@@ -7,8 +7,6 @@ import {
   Mic, 
   MicOff, 
   X, 
-  Video, 
-  VideoOff, 
   Sparkles, 
   Volume2, 
   VolumeX, 
@@ -22,7 +20,7 @@ const HERITAGE_STORIES = [
     title: 'Ramappa Temple: 800-Year Floating Bricks',
     district: 'Mulugu, Telangana',
     duration: '1 min 45 sec',
-    image: '/images/telangana/bhongir_fort.jpg',
+    image: '/images/telangana/ramappa_temple.jpg',
     standout: 'UNESCO World Heritage Site',
     languages: {
       en: {
@@ -88,7 +86,7 @@ const HERITAGE_STORIES = [
     title: 'Lepakshi: The Mystery of the Hanging Pillar',
     district: 'Sri Sathya Sai, Andhra Pradesh',
     duration: '1 min 35 sec',
-    image: '/images/aptourism/coringa_wildlife_sanctuary.jpg',
+    image: '/images/aptourism/lepakshi.jpg',
     standout: 'Vijayanagara Monolithic Marvel',
     languages: {
       en: {
@@ -114,7 +112,6 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
   const [isListening, setIsListening] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isVideoActive, setIsVideoActive] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   const [lastUserPrompt, setLastUserPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState('');
@@ -130,14 +127,10 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
   // Refs
   const recognitionRef = useRef(null);
   const silenceTimerRef = useRef(null);
-  const videoRef = useRef(null);
-  const videoStreamRef = useRef(null);
-  const canvasRef = useRef(null);
 
   // Stop everything on close
   const handleClose = () => {
     stopLiveSession();
-    stopVideoStream();
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
@@ -145,56 +138,6 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     setActiveTab('stories');
     if (onClose) onClose();
   };
-
-  // ── Camera / Video Vision Handler ──────────────────────────────────────────
-  const toggleVideoStream = async () => {
-    if (isVideoActive) {
-      stopVideoStream();
-    } else {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
-        });
-        videoStreamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-        setIsVideoActive(true);
-      } catch (err) {
-        console.error('Camera access error:', err);
-        setLiveError('Camera access denied or unavailable: ' + err.message);
-      }
-    }
-  };
-
-  const stopVideoStream = () => {
-    if (videoStreamRef.current) {
-      videoStreamRef.current.getTracks().forEach(track => track.stop());
-      videoStreamRef.current = null;
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setIsVideoActive(false);
-  };
-
-  // Capture video frame snapshot for multimodal vision
-  const captureVideoFrame = useCallback(() => {
-    if (!isVideoActive || !videoRef.current) return null;
-    try {
-      const video = videoRef.current;
-      if (video.videoWidth === 0 || video.videoHeight === 0) return null;
-      const canvas = canvasRef.current || document.createElement('canvas');
-      canvas.width = Math.min(video.videoWidth, 640);
-      canvas.height = Math.min(video.videoHeight, 480);
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/jpeg', 0.7);
-    } catch (err) {
-      console.warn('Frame capture error:', err);
-      return null;
-    }
-  }, [isVideoActive]);
 
   // ── Speak AI Response with Natural Voice ───────────────────────────────────
   const speakResponse = (text) => {
@@ -227,8 +170,6 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     }
     setIsSpeaking(false);
 
-    const frameSnapshot = captureVideoFrame();
-
     try {
       // 1. Attempt Cloudflare Edge Proxy First
       let reply = null;
@@ -237,9 +178,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: cleanQuery,
-            image: frameSnapshot,
-            mimeType: 'image/jpeg'
+            message: cleanQuery
           })
         });
         if (edgeRes.ok) {
@@ -248,7 +187,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
           if (data.model) setActiveModel(data.model);
         }
       } catch (edgeErr) {
-        console.warn('Edge proxy bypassed, engaging direct Gemini 3.8 Flash:', edgeErr);
+        console.warn('Edge proxy bypassed, engaging direct Gemini Flash:', edgeErr);
       }
 
       // 2. Secondary Retry to /api/chat if initial attempt had network jitter
@@ -259,9 +198,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               message: cleanQuery,
-              prompt: cleanQuery,
-              image: frameSnapshot,
-              mimeType: 'image/jpeg'
+              prompt: cleanQuery
             })
           });
           if (retryRes.ok) {
@@ -283,7 +220,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     } finally {
       setIsThinking(false);
     }
-  }, [captureVideoFrame]);
+  }, []);
 
   // ── Speech Recognition Lifecycle (Live Continuous Listening) ───────────────
   const startLiveSession = () => {
@@ -492,32 +429,12 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Tab 1: Gemini Live Mode (Continuous Audio & Live Camera Vision) */}
+        {/* Tab 1: Voice Guide Mode */}
         {activeTab === 'live' && (
           <div className="relative z-10 flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
             
-            {/* Live Camera Viewfinder (if Video Active) */}
-            {isVideoActive && (
-              <div className="relative w-full aspect-video max-h-56 rounded-2xl overflow-hidden border border-amber-500/40 bg-black/60 shadow-lg">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-3 left-3 flex items-center gap-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-500/30 text-[10px] text-amber-300 font-sans-clean font-semibold">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span>Camera Active</span>
-                </div>
-                <div className="absolute bottom-3 right-3 text-[10px] text-slate-300 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm">
-                  Show monuments, tickets, or scenery
-                </div>
-              </div>
-            )}
-
             {/* Central Animated Orb & Live Status Visualizer */}
-            <div className="flex flex-col items-center justify-center py-4 px-2 bg-white/[0.02] border border-white/5 rounded-2xl relative overflow-hidden">
+            <div className="flex flex-col items-center justify-center py-6 px-2 bg-white/[0.02] border border-white/5 rounded-2xl relative overflow-hidden">
               <div className="relative flex items-center justify-center my-2">
                 {/* Outer Soundwaves */}
                 <motion.div
@@ -534,7 +451,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                 {/* Primary Mic Action Button */}
                 <button
                   onClick={toggleLiveSession}
-                  className={`relative z-10 w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-95 ${
+                  className={`relative z-10 w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-transform active:scale-95 cursor-pointer ${
                     isListening
                       ? 'bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 ring-4 ring-amber-400/30'
                       : isSpeaking
@@ -560,41 +477,29 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                     ? 'Guide is speaking (tap to pause)'
                     : isListening
                     ? 'Listening... speak anytime'
-                    : 'Tap microphone to start audio guide'}
+                    : 'Tap microphone to start voice guide'}
                 </span>
                 <span className="text-[11px] text-slate-400 text-center max-w-sm">
                   {isListening
                     ? 'Speak naturally to ask about monuments, timings, and history.'
-                    : 'Ask travel questions by voice or show sights with your camera.'}
+                    : 'Ask travel questions, monument history, or directions by voice.'}
                 </span>
 
-                {/* Live Controls: Camera Toggle & Reset */}
-                <div className="flex items-center gap-2 mt-2">
-                  <button
-                    onClick={toggleVideoStream}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                      isVideoActive
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
-                        : 'bg-white/5 text-slate-400 hover:text-slate-200 border border-white/10'
-                    }`}
-                  >
-                    {isVideoActive ? <Video className="w-3.5 h-3.5 text-amber-400" /> : <VideoOff className="w-3.5 h-3.5" />}
-                    <span>{isVideoActive ? 'Camera Vision Active' : 'Enable Live Camera'}</span>
-                  </button>
-
-                  {isSpeaking && (
+                {/* Live Controls: Audio Cancel */}
+                {isSpeaking && (
+                  <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => {
                         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
                         setIsSpeaking(false);
                       }}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-medium"
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-medium cursor-pointer"
                     >
                       <VolumeX className="w-3.5 h-3.5" />
                       <span>Stop Audio</span>
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 

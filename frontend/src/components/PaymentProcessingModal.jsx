@@ -13,6 +13,35 @@ const STATUS_MESSAGES = {
   0: 'Pass Verified! Issuing your digital ticket...'
 };
 
+function playBookingSuccessSound() {
+  try {
+    const soundPref = localStorage.getItem('gt_sound_enabled');
+    if (soundPref === 'false') return;
+
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    // Uplifting melodic booking confirmation chime (C5 -> E5 -> G5)
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.09);
+    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.18);
+
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.42);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.42);
+  } catch {
+    // Audio autoplay restrictions ignored
+  }
+}
+
 export default function PaymentProcessingModal({
   isOpen,
   onClose,
@@ -28,7 +57,19 @@ export default function PaymentProcessingModal({
     const circuitName = bookingDetails?.circuitName || 'Official Monument Pass';
     const touristName = bookingDetails?.touristName || 'Verified Visitor';
     const numTourists = bookingDetails?.touristCount || 1;
-    const amount = bookingDetails?.totalAmount || bookingDetails?.price || 40;
+    
+    // Accurately parse amount: free entry (0) must remain 0
+    const rawVal = bookingDetails?.totalAmount !== undefined ? bookingDetails.totalAmount : bookingDetails?.price;
+    let amount = 40;
+    if (rawVal !== undefined && rawVal !== null) {
+      if (rawVal === 0 || rawVal === '0' || rawVal === '₹0' || String(rawVal).toLowerCase().includes('free')) {
+        amount = 0;
+      } else {
+        const parsed = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
+        amount = Number.isFinite(parsed) ? parsed : 40;
+      }
+    }
+
     const refNumber = `GT-${new Date().getFullYear()}-${randomCode}`;
     const today = new Date().toISOString().split('T')[0];
 
@@ -46,7 +87,7 @@ export default function PaymentProcessingModal({
       circuitName: circuitName,
       touristName: touristName,
       touristCount: numTourists,
-      gateFeeTotal: typeof amount === 'number' ? `₹${amount}` : amount,
+      gateFeeTotal: amount === 0 ? 'Free Entry (₹0.00)' : `₹${amount}.00`,
       validFrom: today,
       validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       placesAllowed: destinations,
@@ -73,6 +114,7 @@ export default function PaymentProcessingModal({
     if (secondsRemaining <= 0) {
       const timer = setTimeout(() => {
         setPaymentFinished(true);
+        playBookingSuccessSound();
         try {
           confetti({
             particleCount: 70,
@@ -204,9 +246,14 @@ export default function PaymentProcessingModal({
             <div className="flex items-center justify-between pt-0.5">
               <span className="text-sm font-bold text-white">Total Amount</span>
               <span className="text-base font-extrabold text-amber-400 font-mono">
-                {typeof bookingDetails?.totalAmount === 'number'
-                  ? `₹${bookingDetails.totalAmount}`
-                  : (bookingDetails?.totalAmount || '₹40')}
+                {(() => {
+                  const t = bookingDetails?.totalAmount !== undefined ? bookingDetails.totalAmount : bookingDetails?.price;
+                  if (t === 0 || t === '0' || t === '₹0' || String(t).toLowerCase().includes('free')) {
+                    return 'Free (₹0)';
+                  }
+                  if (typeof t === 'number') return `₹${t}`;
+                  return t || '₹40';
+                })()}
               </span>
             </div>
           </div>

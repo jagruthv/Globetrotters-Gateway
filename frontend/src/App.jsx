@@ -19,7 +19,7 @@ import AuthModal from './components/AuthModal';
 import PaymentProcessingModal from './components/PaymentProcessingModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import { authService } from './services/api';
-import { Heart, ArrowRight } from 'lucide-react';
+import { Heart, ArrowRight, ShieldCheck } from 'lucide-react';
 
 const HASH_MAP = {
   '': 'home',
@@ -44,12 +44,21 @@ const TAB_TO_HASH = {
 const getInitialTab = () => {
   if (typeof window === 'undefined') return 'home';
   const raw = window.location.hash.replace('#/', '').replace('#', '').trim().toLowerCase();
+  if (raw.startsWith('pass=') || raw.startsWith('ref=')) return 'passes';
   return HASH_MAP[raw] || 'home';
 };
 
 export default function App() {
   const [activeTab, setActiveTabState] = useState(getInitialTab);
-  const [selectedPlaces, setSelectedPlaces] = useState([]);
+  const [selectedPlaces, setSelectedPlaces] = useState(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const saved = localStorage.getItem('globetrotter_staged_places');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   const [agentVerificationOpen, setAgentVerificationOpen] = useState(false);
@@ -174,6 +183,15 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Save selected trip places to localStorage so refreshing or switching tabs never loses state
+  useEffect(() => {
+    try {
+      localStorage.setItem('globetrotter_staged_places', JSON.stringify(selectedPlaces));
+    } catch (e) {
+      console.warn('Could not cache staged trip places:', e);
+    }
+  }, [selectedPlaces]);
+
   // Add / Toggle place in Trip Planner
   const handleSelectPlaceForTrip = (place, districtName) => {
     setSelectedPlaces((prev) => {
@@ -242,10 +260,20 @@ export default function App() {
 
   // Direct 1-click Fast-Pass booking from Hero
   const handleDirectBookPass = (passInfo) => {
+    let finalAmount = 40;
+    if (passInfo.price != null) {
+      const priceStr = String(passInfo.price).toLowerCase();
+      if (priceStr.includes('free') || priceStr === '0' || priceStr === '₹0') {
+        finalAmount = 0;
+      } else {
+        const parsed = parseFloat(priceStr.replace(/[^0-9.]/g, ''));
+        finalAmount = Number.isFinite(parsed) ? parsed : 40;
+      }
+    }
     handleInitiateBooking({
       circuitName: `${passInfo.destination} Official Gate Pass`,
       destinations: [passInfo.destination],
-      totalAmount: passInfo.price ? (parseFloat(String(passInfo.price).replace(/[^0-9.]/g, '')) || 40) : 40
+      totalAmount: finalAmount
     });
   };
 
@@ -394,6 +422,7 @@ export default function App() {
             >
               <AiFluidTripStudio
                 selectedPlaces={selectedPlaces}
+                onAddPlace={handleSelectPlaceForTrip}
                 onRemovePlace={handleRemovePlace}
                 onClearPlaces={handleClearPlaces}
                 onExploreMore={() => setActiveTab('explore')}
@@ -448,14 +477,19 @@ export default function App() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="pt-28 pb-16"
             >
-              <div className="max-w-md mx-auto text-center p-8 bg-[#0D121F] rounded-3xl border border-white/10 flex flex-col items-center gap-4">
-                <h3 className="text-xl font-bold text-white">Agent Mode Console</h3>
-                <p className="text-xs text-slate-400">Scan and verify tickets at attraction entrance gates.</p>
+              <div className="max-w-md mx-auto text-center p-8 bg-[#0D121F] rounded-3xl border border-white/10 flex flex-col items-center gap-4 shadow-xl">
+                <div className="w-12 h-12 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-white">Monument Gate Staff Portal</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Authorized checkpoint scanning terminal for offline turnstile verification at Borra Caves, Ramappa, Golconda, and Belum Caves.
+                </p>
                 <button
                   onClick={handleOpenAgentPortal}
-                  className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs cursor-pointer"
+                  className="px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs cursor-pointer shadow-md transition-all active:scale-95"
                 >
-                  Enter Agent Mode
+                  Launch Gate Scanner Terminal
                 </button>
               </div>
             </motion.div>
