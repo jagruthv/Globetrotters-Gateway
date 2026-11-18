@@ -11,7 +11,8 @@ import {
   ChevronRight,
   User,
   LogOut,
-  Settings
+  Settings,
+  Sparkles
 } from 'lucide-react';
 import AuthModal from './AuthModal';
 
@@ -19,7 +20,8 @@ export default function FloatingIslandNav({
   activeTab, 
   setActiveTab, 
   selectedPlacesCount = 0,
-  onOpenSettings
+  onOpenSettings,
+  onOpenCopilot
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -123,6 +125,17 @@ export default function FloatingIslandNav({
 
         {/* Right Action: Settings & Auth Button */}
         <div className="flex items-center gap-2 pr-1">
+          {/* Ask Copilot AI Button */}
+          <button
+            type="button"
+            onClick={onOpenCopilot}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 border border-emerald-500/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+            title="Ask Globetrotter Copilot (Ctrl+K)"
+          >
+            <Sparkles className="w-3.5 h-3.5 fill-emerald-400/30 text-emerald-400" />
+            <span className="hidden sm:inline">Copilot</span>
+          </button>
+
           {/* Settings & Preferences Button */}
           <button
             onClick={onOpenSettings}
@@ -264,6 +277,20 @@ export default function FloatingIslandNav({
                   </motion.button>
                 );
               })}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenCopilot) onOpenCopilot();
+                }}
+                className="w-full p-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-left flex items-center justify-between transition-colors text-emerald-200 cursor-pointer"
+              >
+                <div className="flex items-center gap-3.5">
+                  <Sparkles className="w-5 h-5 text-emerald-400" />
+                  <span className="font-semibold text-base">Ask Globetrotter Copilot</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-emerald-400" />
+              </button>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

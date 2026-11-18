@@ -10,7 +10,8 @@ import HolographicGatePass from './components/HolographicGatePass';
 import AgentPortalView from './components/AgentPortalView';
 import AgentVerificationModal from './components/AgentVerificationModal';
 import VoiceConciergeModal from './components/VoiceConciergeModal';
-import WhatsAppConcierge from './components/WhatsAppConcierge';
+import CopilotDrawer from './components/CopilotDrawer';
+import CopilotFloatingTrigger from './components/CopilotFloatingTrigger';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import SettingsModal from './components/SettingsModal';
 import SmsGatewayToast from './components/SmsGatewayToast';
@@ -69,6 +70,7 @@ export default function App() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [activeBookingForPayment, setActiveBookingForPayment] = useState(null);
   const [pendingBooking, setPendingBooking] = useState(null);
+  const [copilotOpen, setCopilotOpen] = useState(false);
 
   const [issuedPassData, setIssuedPassData] = useState(() => {
     try {
@@ -158,6 +160,18 @@ export default function App() {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [activeTab]);
+
+  // Global ⌘K / Ctrl+K keyboard shortcut to toggle Copilot from anywhere
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCopilotOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Add / Toggle place in Trip Planner
   const handleSelectPlaceForTrip = (place, districtName) => {
@@ -285,6 +299,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         selectedPlacesCount={selectedPlaces.length}
         onOpenSettings={() => setSettingsModalOpen(true)}
+        onOpenCopilot={() => setCopilotOpen(true)}
       />
 
       {/* Main Tab Views with Framer Motion Spring Transition */}
@@ -317,9 +332,11 @@ export default function App() {
                 onBookCircuit={handleBookCircuit}
               />
 
-              {/* Ready to Explore Corridor Callout */}
-              <section className="py-16 px-4 md:px-12 bg-black/40 border-t border-white/5 text-center">
-                <div className="max-w-3xl mx-auto flex flex-col items-center gap-5">
+              {/* Ready to Explore Corridor Callout with Luxury Ambient Lighting */}
+              <section className="relative py-20 px-4 md:px-12 overflow-hidden border-t border-white/5 text-center">
+                <div className="absolute inset-0 bg-gradient-to-b from-[#080A0F] via-amber-500/[0.02] to-[#080A0F] pointer-events-none" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-transparent rounded-full blur-[120px] pointer-events-none" />
+                <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center gap-5">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-amber-300 text-xs font-sans-clean font-medium">
                     Unified tourism corridors • AP & TG
                   </div>
@@ -382,6 +399,7 @@ export default function App() {
                 onProceedToPasses={() => setActiveTab('passes')}
                 onInitiateBooking={handleInitiateBooking}
                 onBookCustomPlan={handleBookCustomPlan}
+                onOpenCopilot={() => setCopilotOpen(true)}
               />
             </motion.div>
           )}
@@ -565,8 +583,21 @@ export default function App() {
       {/* Real-Time SMS & WhatsApp Simulated Gateway Alert Toast */}
       <SmsGatewayToast />
 
-      {/* Official 24/7 WhatsApp Tourist Support Concierge */}
-      <WhatsAppConcierge />
+      {/* Persistent Global Copilot AI Assistant Trigger & Drawer (GitHub Copilot Feel) */}
+      <CopilotFloatingTrigger
+        isOpen={copilotOpen}
+        onToggle={() => setCopilotOpen((prev) => !prev)}
+      />
+
+      <CopilotDrawer
+        isOpen={copilotOpen}
+        onClose={() => setCopilotOpen(false)}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onInitiateBooking={handleInitiateBooking}
+        selectedPlaces={selectedPlaces}
+        setSelectedPlaces={setSelectedPlaces}
+      />
 
       {/* DPDP Act 2023 & GDPR Granular Cookie Consent Banner */}
       <CookieConsentBanner />

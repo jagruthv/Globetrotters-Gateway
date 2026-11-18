@@ -421,7 +421,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
                   contents: [{ parts: contentsParts }],
                   systemInstruction: {
                     parts: [{
-                      text: "You are the Globetrotter Gateway Live Cultural Voice & Vision Concierge for Andhra Pradesh and Telangana. You provide concise, real-time, authentic travel intelligence across all 59 districts, monuments, heritage circuits, and local culture. Speak naturally like an engaging expert local guide. If an image is provided from the live camera, observe what is shown and provide vivid cultural context. Keep responses natural, concise (2-4 sentences for easy voice listening), and never give robotic disclaimer filler."
+                      text: body.systemInstruction || "You are the Globetrotter Gateway Live Cultural Voice & Vision Concierge for Andhra Pradesh and Telangana. You provide concise, real-time, authentic travel intelligence across all 59 districts, monuments, heritage circuits, and local culture. Speak naturally like an engaging expert local guide. If an image is provided from the live camera, observe what is shown and provide vivid cultural context. Keep responses natural, concise (2-4 sentences for easy voice listening), and never give robotic disclaimer filler."
                     }]
                   },
                   generationConfig: {

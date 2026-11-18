@@ -207,7 +207,7 @@ export default function FluidLiquidDropHero({
   return (
     <div className="relative min-h-[100dvh] lg:h-[100dvh] lg:max-h-[820px] w-full overflow-hidden bg-[#080A0F] flex flex-col justify-center pt-16 sm:pt-16 lg:pt-16 pb-3 sm:pb-4 px-4 md:px-8 lg:px-10 select-none">
       
-      {/* Cinematic Ambient Destination Photography Background - Vibrant, Bright & Clear */}
+      {/* Cinematic Ambient Destination Photography Background - High Vibrance, Bright & Vivid */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
           <motion.img
@@ -215,21 +215,24 @@ export default function FluidLiquidDropHero({
             src={activeDest.image}
             alt={activeDest.name}
             initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 0.84, scale: 1 }}
+            animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.01 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-full object-cover object-center brightness-105 contrast-105 saturate-110"
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full h-full object-cover object-center brightness-115 contrast-105 saturate-120"
           />
         </AnimatePresence>
 
-        {/* Asymmetric Directional Contrast Scrim: Solid Dark on Left for 100% Text Legibility, Bright & Clear on Right */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#080A0F] via-[#080A0F]/75 via-50% to-[#080A0F]/20 pointer-events-none" />
+        {/* Lightweight Feathered Scrim: Protects Left Text Without Darkening The Photograph */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#080A0F]/85 via-[#080A0F]/30 via-45% to-transparent pointer-events-none" />
 
-        {/* Soft bottom transition to merge smoothly into next section */}
-        <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-[#080A0F] via-[#080A0F]/60 to-transparent pointer-events-none" />
+        {/* Delicate Bottom Blend */}
+        <div className="absolute bottom-0 inset-x-0 h-20 bg-gradient-to-t from-[#080A0F] to-transparent pointer-events-none" />
 
-        {/* Subtle top clearance under floating island nav */}
-        <div className="absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-[#080A0F]/70 to-transparent pointer-events-none" />
+        {/* Soft Top Clearance Under Island Nav */}
+        <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#080A0F]/50 to-transparent pointer-events-none" />
+
+        {/* Golden-Hour Warmth Light Accent (Subtle & Non-Intrusive) */}
+        <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-amber-400/10 via-emerald-400/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
       </div>
 
       {/* Main Content Grid: Balanced Typography + Viewport-Disciplined Tourism Dock */}
@@ -286,7 +289,7 @@ export default function FluidLiquidDropHero({
 
           {/* Quick Booking Console */}
           <div className="w-full max-w-2xl rounded-2xl p-1 bg-white/[0.04] border border-white/10 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-            <div className="w-full rounded-xl bg-[#0B0F17]/95 border border-white/5 p-2.5 sm:p-3 flex flex-col gap-2">
+            <div className="w-full rounded-xl bg-[#06080D]/75 backdrop-blur-xl border border-white/10 p-2.5 sm:p-3 flex flex-col gap-2">
               
               {/* Row 1: Destination, Date, Visitors */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pb-2 border-b border-white/10">
@@ -447,7 +450,7 @@ export default function FluidLiquidDropHero({
         {/* Right Column: Luxury Travel Editorial Spotlight */}
         <div className="lg:col-span-5 flex flex-col items-center lg:items-end">
           <div className="w-full max-w-sm rounded-2xl p-1 bg-white/[0.04] border border-white/10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-            <div className="w-full rounded-xl bg-[#0B0F17]/95 border border-white/5 p-2.5 sm:p-3 flex flex-col gap-2">
+            <div className="w-full rounded-xl bg-[#06080D]/75 backdrop-blur-xl border border-white/10 p-2.5 sm:p-3 flex flex-col gap-2">
               
               {/* Destination Category & Rating */}
               <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
