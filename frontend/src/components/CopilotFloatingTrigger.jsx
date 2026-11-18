@@ -22,7 +22,7 @@ export default function CopilotFloatingTrigger({ isOpen, onToggle }) {
           <MessageSquare className="w-4 h-4 text-slate-950" />
         ) : (
           <>
-            <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+            <Sparkles className="w-4 h-4 text-amber-400" />
             <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400" />
           </>
         )}

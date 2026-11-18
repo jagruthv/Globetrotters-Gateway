@@ -17,6 +17,7 @@ import SettingsModal from './components/SettingsModal';
 import SmsGatewayToast from './components/SmsGatewayToast';
 import AuthModal from './components/AuthModal';
 import PaymentProcessingModal from './components/PaymentProcessingModal';
+import ErrorBoundary from './components/ErrorBoundary';
 import { authService } from './services/api';
 import { Heart, ArrowRight } from 'lucide-react';
 
@@ -304,7 +305,8 @@ export default function App() {
 
       {/* Main Tab Views with Framer Motion Spring Transition */}
       <main className="relative z-10">
-        <AnimatePresence mode="wait">
+        <ErrorBoundary fallbackTitle="Tourism View Interruption">
+          <AnimatePresence mode="wait">
           {activeTab === 'home' && (
             <motion.div
               key="home"
@@ -332,10 +334,9 @@ export default function App() {
                 onBookCircuit={handleBookCircuit}
               />
 
-              {/* Ready to Explore Corridor Callout with Luxury Ambient Lighting */}
+              {/* Ready to Explore Corridor Callout */}
               <section className="relative py-20 px-4 md:px-12 overflow-hidden border-t border-white/5 text-center">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#080A0F] via-amber-500/[0.02] to-[#080A0F] pointer-events-none" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-transparent rounded-full blur-[120px] pointer-events-none" />
                 <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center gap-5">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-amber-300 text-xs font-sans-clean font-medium">
                     Unified tourism corridors • AP & TG
@@ -480,6 +481,7 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
+        </ErrorBoundary>
       </main>
 
       {/* Voice Concierge Audio Companion Modal */}

@@ -30,12 +30,12 @@ const TAB_NAMES = {
 };
 
 const PROMPT_SUGGESTIONS = [
-  { label: '🎫 Book a Gate Pass', text: 'Book an official gate pass for Golconda Fort for 2 visitors' },
-  { label: '🗺️ Plan 2-Day Araku Trip', text: 'Plan a 2-day scenic nature trip to Araku Valley with waterfalls and coffee plantations' },
-  { label: '🎟️ Show My Passes', text: 'Show all my active booked passes and tickets' },
-  { label: '📍 Find Top Temples', text: 'Find top heritage temples in Warangal' },
-  { label: '⚡ Open Gate Scanner', text: 'Take me to the gate turnstile scanner' },
-  { label: '🛡️ Local Scam Warnings', text: 'What scams or fake purchases should I avoid in Ponduru Khadi?' }
+  { label: 'Book a gate pass', text: 'Book an official gate pass for Golconda Fort for 2 visitors' },
+  { label: 'Plan 2-day Araku trip', text: 'Plan a 2-day scenic nature trip to Araku Valley with waterfalls and coffee plantations' },
+  { label: 'Show my passes', text: 'Show all my active booked passes and tickets' },
+  { label: 'Find top temples', text: 'Find top heritage temples in Warangal' },
+  { label: 'Open gate scanner', text: 'Take me to the gate turnstile scanner' },
+  { label: 'Local scam warnings', text: 'What scams or fake purchases should I avoid in Ponduru Khadi?' }
 ];
 
 let msgCounter = 0;
@@ -741,7 +741,7 @@ export default function CopilotDrawer({
                 onClick={toggleVoiceListening}
                 className={`p-2 rounded-xl transition-colors cursor-pointer ${
                   isListening
-                    ? 'bg-rose-500 text-white animate-pulse'
+                    ? 'bg-rose-500 text-white'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
                 title={isListening ? 'Stop listening' : 'Speak your question'}
