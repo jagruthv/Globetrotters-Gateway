@@ -30,7 +30,7 @@ export default function HolographicGatePass({
 
   // Retrieve booked pass from prop or localStorage
   const activePass = (() => {
-    if (passData && passData.reference !== 'BMS-GT-89421' && !passData.token?.includes('e3b0c442')) {
+    if (passData && passData.reference !== 'GT-PASS-DEMO' && !passData.token?.includes('e3b0c442')) {
       return passData;
     }
     try {
@@ -41,7 +41,7 @@ export default function HolographicGatePass({
           // Strictly reject any old unbooked dummy pass!
           const clean = list.filter(p => 
             p && 
-            p.reference !== 'BMS-GT-89421' && 
+            p.reference !== 'GT-PASS-DEMO' && 
             !p.token?.includes('e3b0c442')
           );
           if (clean.length !== list.length) {
@@ -390,14 +390,14 @@ export default function HolographicGatePass({
             {/* Social Sharing & Promotion Actions Bar */}
             <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                {/* WhatsApp Share Button (Viral Promotion Loop) */}
+                {/* Digital Pass Share Button */}
                 <button
                   onClick={handleShareWhatsApp}
                   className="px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer font-sans-clean"
-                  title="Share your ticket with family or friends on WhatsApp"
+                  title="Share your digital pass with family or friends"
                 >
                   <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Share on WhatsApp</span>
+                  <span>Share Pass</span>
                   <ArrowUpRight className="w-3 h-3 text-emerald-400" />
                 </button>
 
