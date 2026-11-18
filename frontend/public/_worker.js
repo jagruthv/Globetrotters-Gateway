@@ -4,13 +4,8 @@
  */
 
 function getGeminiKey(env) {
-  if (env && env.GEMINI_API_KEY) return env.GEMINI_API_KEY;
-  try {
-    // Decoded from encrypted edge vault to prevent false positive git push protection triggers
-    return atob('QVEuQWI4Uk42SzJ1RURpYVBwNXU5YmNWc0R1eUhIR1lPUmxvazlkeVN1N0NfU3RGdU84RUE=');
-  } catch {
-    return '';
-  }
+  // Read exclusively from Cloudflare encrypted environment secrets vault
+  return (env && env.GEMINI_API_KEY) ? env.GEMINI_API_KEY : '';
 }
 
 export default {
