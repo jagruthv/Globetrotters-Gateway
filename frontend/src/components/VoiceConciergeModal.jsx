@@ -118,7 +118,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
   const [liveTranscript, setLiveTranscript] = useState('');
   const [lastUserPrompt, setLastUserPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState('');
-  const [activeModel, setActiveModel] = useState('Google Gemini 3.8 Flash (Live)');
+  const [activeModel, setActiveModel] = useState('Voice Assistant (Live)');
   const [liveError, setLiveError] = useState(null);
   const [textInput, setTextInput] = useState('');
 
@@ -267,7 +267,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
           if (retryRes.ok) {
             const retryData = await retryRes.json();
             reply = retryData.response || retryData.message || null;
-            setActiveModel(retryData.model || 'Google Gemini 3.8 Flash (Edge)');
+            setActiveModel(retryData.model || 'Voice Assistant (Cloud)');
           }
         } catch (retryErr) {
           console.warn('Secondary /api/chat attempt failed:', retryErr);
@@ -277,9 +277,9 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
       setAiResponse(reply);
       speakResponse(reply);
     } catch (err) {
-      console.error('Gemini Live Query Error:', err);
-      setLiveError(err.message || 'Error connecting to Gemini');
-      setAiResponse(`Notice: Unable to reach Gemini Live: ${err.message}. Please check your connection.`);
+      console.error('Voice Assistant Query Error:', err);
+      setLiveError(err.message || 'Error connecting to Voice Assistant');
+      setAiResponse(`Notice: Unable to reach Voice Assistant: ${err.message}. Please check your connection.`);
     } finally {
       setIsThinking(false);
     }
