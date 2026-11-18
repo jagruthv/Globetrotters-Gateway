@@ -111,7 +111,6 @@ export default function App() {
       <FloatingIslandNav
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenVoiceModal={() => setVoiceModalOpen(true)}
         selectedPlacesCount={selectedPlaces.length}
         onOpenSettings={() => setSettingsModalOpen(true)}
         isStaffMode={isStaffMode}
@@ -151,6 +150,7 @@ export default function App() {
               {/* Digital Entry Pass */}
               <HolographicGatePass
                 passData={issuedPassData}
+                onOpenAudioGuide={() => setVoiceModalOpen(true)}
               />
             </motion.div>
           )}
@@ -217,6 +217,7 @@ export default function App() {
             >
               <HolographicGatePass
                 passData={issuedPassData}
+                onOpenAudioGuide={() => setVoiceModalOpen(true)}
               />
             </motion.div>
           )}
@@ -277,7 +278,6 @@ export default function App() {
       <MobileAppBottomDock
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenVoiceModal={() => setVoiceModalOpen(true)}
         selectedPlacesCount={selectedPlaces.length}
       />
 

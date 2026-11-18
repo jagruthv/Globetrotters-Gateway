@@ -7,7 +7,6 @@ import {
   Ticket, 
   Menu, 
   X, 
-  Headphones,
   ShieldCheck,
   ChevronRight,
   User,
@@ -20,7 +19,6 @@ import AuthModal from './AuthModal';
 export default function FloatingIslandNav({ 
   activeTab, 
   setActiveTab, 
-  onOpenVoiceModal,
   selectedPlacesCount = 0,
   onOpenSettings,
   isStaffMode = false,
@@ -135,14 +133,6 @@ export default function FloatingIslandNav({
             </button>
           )}
 
-          <button
-            onClick={onOpenVoiceModal}
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer"
-            title="Launch Cultural Audio Guide"
-          >
-            <Headphones className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="hidden sm:inline font-sans-clean">Audio Guide</span>
-          </button>
 
           {/* Settings & Preferences Button */}
           <button

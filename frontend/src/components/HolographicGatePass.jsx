@@ -6,12 +6,14 @@ import {
   Sparkles, 
   CheckCircle, 
   Share2,
-  Printer
+  Printer,
+  Headphones
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function HolographicGatePass({ 
-  passData = null
+  passData = null,
+  onOpenAudioGuide
 }) {
   const [isCopied, setIsCopied] = useState(false);
 
@@ -187,6 +189,38 @@ export default function HolographicGatePass({
                 </span>
               </div>
 
+            </div>
+
+            {/* Audio Tour Guide Unlocked with Ticket */}
+            <div className="relative z-10 p-4 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-emerald-950/20 to-slate-900/40 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-400/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0">
+                  <Headphones className="w-5 h-5 text-cyan-300" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold uppercase tracking-wider font-sans-clean">
+                      Included with Pass
+                    </span>
+                    <span className="text-[11px] text-slate-400">English • తెలుగు • हिन्दी</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-white font-sans-clean mt-0.5">
+                    Monument Audio Guide Player
+                  </h4>
+                  <p className="text-xs text-slate-300 font-sans-clean">
+                    Listen to narrated historical stories & insights for attractions on your pass.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={onOpenAudioGuide}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 hover:opacity-95 transition-opacity shadow-md cursor-pointer shrink-0 font-sans-clean"
+                title="Launch Audio Guide Player"
+              >
+                <Headphones className="w-4 h-4 text-slate-950" />
+                <span>Play Audio Guide</span>
+              </button>
             </div>
 
             {/* Pass Actions Bar */}

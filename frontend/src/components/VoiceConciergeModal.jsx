@@ -108,7 +108,7 @@ const HERITAGE_STORIES = [
 ];
 
 export default function VoiceConciergeModal({ isOpen, onClose }) {
-  const [activeTab, setActiveTab] = useState('live'); // 'live' | 'stories'
+  const [activeTab, setActiveTab] = useState('stories'); // 'stories' | 'live'
   
   // Gemini Live States
   const [isListening, setIsListening] = useState(false);
@@ -142,6 +142,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
       window.speechSynthesis.cancel();
     }
     setIsPlayingStory(false);
+    setActiveTab('stories');
     if (onClose) onClose();
   };
 
@@ -439,26 +440,26 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
         <div className="relative z-10 flex items-center justify-between pb-4 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
-              <Sparkles className="w-4 h-4 animate-pulse" />
+              <Headphones className="w-4 h-4 text-cyan-300" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-white text-base font-sans-clean">
-                  Gemini Live Companion
+                  Tourist Audio Guide Player
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 font-mono font-semibold border border-cyan-500/30">
-                  {activeModel}
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-sans-clean font-semibold border border-emerald-500/30">
+                  {activeTab === 'live' ? activeModel : 'Included with Pass'}
                 </span>
               </div>
               <span className="text-[11px] text-slate-400">
-                Continuous voice & vision intelligence • Andhra Pradesh & Telangana
+                Official audio stories in English, Telugu, & Hindi • Live AI guide
               </span>
             </div>
           </div>
 
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
             aria-label="Close dialog"
           >
             <X className="w-4 h-4" />
@@ -468,26 +469,26 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
         {/* Mode Switcher Tabs */}
         <div className="relative z-10 flex items-center gap-2 pt-3 pb-4 shrink-0">
           <button
-            onClick={() => setActiveTab('live')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
-              activeTab === 'live'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                : 'bg-white/[0.03] text-slate-400 hover:text-slate-200 border border-white/5'
-            }`}
-          >
-            <Mic className="w-3.5 h-3.5" />
-            <span>Gemini Live (Voice & Vision)</span>
-          </button>
-          <button
             onClick={() => setActiveTab('stories')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
               activeTab === 'stories'
                 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
                 : 'bg-white/[0.03] text-slate-400 hover:text-slate-200 border border-white/5'
             }`}
           >
             <Headphones className="w-3.5 h-3.5" />
-            <span>State Monument Audio Guides</span>
+            <span>Monument Audio Player</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('live')}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              activeTab === 'live'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                : 'bg-white/[0.03] text-slate-400 hover:text-slate-200 border border-white/5'
+            }`}
+          >
+            <Mic className="w-3.5 h-3.5" />
+            <span>Ask Voice Guide (AI)</span>
           </button>
         </div>
 

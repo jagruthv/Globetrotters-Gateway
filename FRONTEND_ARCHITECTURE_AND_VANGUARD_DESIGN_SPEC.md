@@ -94,8 +94,11 @@ $$m \ddot{y} + c \dot{y} + k(y - y_{eq}) = 0$$
 ### 6. `GateScannerView.jsx`
 - Offline turnstile simulator with instant cryptographic token verification and real-time security audit log.
 
-### 7. `VoiceConciergeModal.jsx`
-- Groq Whisper Large V3 Turbo STT integration with animated soundwave visualizer.
+### 7. `VoiceConciergeModal.jsx` & Ticket Audio Player Interface
+- Unlocked directly on verified digital entry passes (`HolographicGatePass.jsx`) as an earned travel perk.
+- Removed from the initial landing navigation dock to prevent tourist cognitive overload and follow Jakob's Law.
+- Defaults directly to the Monument Audio Player with multilingual narration in Telugu (`te-IN`), English (`en-IN`), and Hindi (`hi-IN`).
+- Secondary tab provides conversational voice companion capabilities via Gemini 3.8 Flash with live camera vision support.
 
 ---
 

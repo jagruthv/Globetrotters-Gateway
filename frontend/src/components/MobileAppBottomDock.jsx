@@ -4,21 +4,20 @@ import {
   Map, 
   Layers, 
   Ticket, 
-  Mic 
+  Sparkles 
 } from 'lucide-react';
 
 export default function MobileAppBottomDock({ 
   activeTab, 
   setActiveTab, 
-  onOpenVoiceModal,
   selectedPlacesCount = 0 
 }) {
   const tabs = [
-    { id: 'explore', label: 'Explore', icon: Compass },
-    { id: 'planner', label: 'Tour Plan', icon: Map, badge: selectedPlacesCount > 0 ? selectedPlacesCount : null },
+    { id: 'home', label: 'Overview', icon: Compass },
+    { id: 'explore', label: 'Districts', icon: Map },
     { id: 'passes', label: 'Passes', icon: Ticket, isCenter: true },
-    { id: 'circuits', label: 'Tours', icon: Layers },
-    { id: 'voice', label: 'Voice Guide', icon: Mic, isAction: true },
+    { id: 'planner', label: 'Plan', icon: Layers, badge: selectedPlacesCount > 0 ? selectedPlacesCount : null },
+    { id: 'circuits', label: 'Tours', icon: Sparkles },
   ];
 
   return (
@@ -33,7 +32,7 @@ export default function MobileAppBottomDock({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab('passes')}
-                className="relative -top-4 w-13 h-13 rounded-full bg-cyan-500/20 border border-cyan-400/40 p-[1.5px] shadow-sm active:scale-[0.97] transition-transform duration-100"
+                className="relative -top-4 w-13 h-13 rounded-full bg-cyan-500/20 border border-cyan-400/40 p-[1.5px] shadow-sm active:scale-[0.97] transition-transform duration-100 cursor-pointer"
                 aria-label="Fast Pass Ticket"
               >
                 <div className="w-full h-full rounded-full bg-[#06080D] flex items-center justify-center">
@@ -43,25 +42,11 @@ export default function MobileAppBottomDock({
             );
           }
 
-          if (tab.isAction) {
-            return (
-              <button
-                key={tab.id}
-                onClick={onOpenVoiceModal}
-                className="flex flex-col items-center gap-1 py-1 px-2 text-slate-400 hover:text-cyan-300 transition-colors duration-150"
-                aria-label="Voice Concierge"
-              >
-                <Icon className="w-5 h-5 text-cyan-400" />
-                <span className="text-[10px] font-semibold font-telemetry">{tab.label}</span>
-              </button>
-            );
-          }
-
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative flex flex-col items-center gap-1 py-1 px-2 transition-colors duration-150 ${
+              className={`relative flex flex-col items-center gap-1 py-1 px-2 transition-colors duration-150 cursor-pointer ${
                 isActive ? 'text-cyan-300' : 'text-slate-400'
               }`}
             >
