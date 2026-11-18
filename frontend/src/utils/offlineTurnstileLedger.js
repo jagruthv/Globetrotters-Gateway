@@ -138,7 +138,7 @@ export function verifyPassOffline(passToken, placeId, gateTerminalId = 'Gate-Alp
   return {
     valid: true,
     status: 'OFFLINE_GRANTED',
-    message: 'Pass Verified • Turnstile Open (Offline Edge Ledger Active)',
+    message: 'Pass Verified • Gate Admitted (Offline Ledger Active)',
     bookingReference: ref,
     touristName: 'Verified Corridor Passholder',
     timestamp: newEntry.displayTime,
@@ -171,7 +171,7 @@ export async function syncLedgerToCentralCore() {
   if (pendingScans.length === 0) {
     return {
       syncedCount: 0,
-      message: 'No pending offline scans. Turnstile ledger is fully synchronized.'
+      message: 'No pending offline scans. All records are synchronized.'
     };
   }
 
@@ -204,7 +204,7 @@ export async function syncLedgerToCentralCore() {
       success: true,
       syncedCount: pendingScans.length,
       response,
-      message: `Successfully synchronized ${pendingScans.length} offline turnstile records with Gateway Core.`
+      message: `Successfully synchronized ${pendingScans.length} offline check-in records.`
     };
   } catch (error) {
     console.error('[Turnstile Ledger] Batch sync error:', error);
