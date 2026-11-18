@@ -58,11 +58,6 @@
   font-family: var(--font-sans);
 }
 
-.font-telemetry {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
 /* Typography from Reel 2: Identity & Logo Designer Fonts */
 .font-cetrinn {
   font-family: 'Cinzel', 'Playfair Display', serif;
@@ -206,5 +201,21 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* Holographic Optical Scanner Laser Keyframe */
+@keyframes scanLaser {
+  0% {
+    top: 5%;
+    opacity: 0.4;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.4;
   }
 }

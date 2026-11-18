@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
   Settings, 
-  Shield, 
   Volume2, 
   VolumeX, 
   User,

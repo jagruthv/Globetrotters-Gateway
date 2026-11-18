@@ -11,11 +11,12 @@ import {
   Phone,
   KeyRound,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Ticket
 } from 'lucide-react';
 import { authService } from '../services/api';
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = null }) {
   // 'email_otp' | 'password' | 'phone'
   const [activeMethod, setActiveMethod] = useState('email_otp');
   const [isRegister, setIsRegister] = useState(false);
@@ -309,6 +310,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 Access verified entry passes, digital tickets, and custom circuits across all 59 districts.
               </p>
             </div>
+
+            {/* Context Intent Banner (e.g. Booking Required Login) */}
+            {reason && (
+              <div className="p-3.5 rounded-2xl bg-amber-500/15 border border-amber-400/30 text-amber-200 text-xs font-sans-clean flex items-center gap-2.5 shadow-sm">
+                <Ticket className="w-4 h-4 text-amber-400 shrink-0" />
+                <span className="font-medium">{reason}</span>
+              </div>
+            )}
 
             {/* ── OPTION A: GOOGLE ONE-CLICK SIGN-IN (TOP PROMINENT) ── */}
             <div className="flex flex-col gap-2">

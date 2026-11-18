@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Scan, 
@@ -10,9 +10,15 @@ import {
   Volume2,
   VolumeX,
   MapPin,
-  Clock,
-  Users
+  Users,
+  Camera,
+  CameraOff,
+  RotateCcw,
+  FlipHorizontal,
+  Ticket,
+  AlertCircle
 } from 'lucide-react';
+import jsQR from 'jsqr';
 import { scannerService } from '../services/api';
 import { 
   verifyPassOffline, 
@@ -78,20 +84,50 @@ export default function AgentPortalView({
     return localStorage.getItem('gt_sound_enabled') !== 'false';
   });
 
-  const [scanStats, setScanStats] = useState({
-    total: 142,
-    approved: 139,
-    denied: 3
+  // Authentic Session Telemetry (Starts fresh or loads actual logged shift data)
+  const [scanStats, setScanStats] = useState(() => {
+    try {
+      const stored = localStorage.getItem('globetrotter_agent_shift_stats');
+      return stored ? JSON.parse(stored) : { total: 0, approved: 0, denied: 0 };
+    } catch {
+      return { total: 0, approved: 0, denied: 0 };
+    }
   });
 
-  const [recentScans, setRecentScans] = useState([
-    { id: 1, time: '10:04 AM', name: 'Rajesh Sharma', code: 'APTG-74129', success: true, checkpoint: 'Araku Tribal Museum' },
-    { id: 2, time: '09:58 AM', name: 'Pooja Reddy', code: 'APTG-63012', success: true, checkpoint: 'Araku Tribal Museum' },
-    { id: 3, time: '09:45 AM', name: 'Unknown Visitor', code: 'EXP-99201', success: false, checkpoint: 'Araku Tribal Museum' },
-    { id: 4, time: '09:30 AM', name: 'Ananya Rao', code: 'APTG-51204', success: true, checkpoint: 'Araku Tribal Museum' }
-  ]);
+  const [recentScans, setRecentScans] = useState(() => {
+    try {
+      const stored = localStorage.getItem('globetrotter_agent_recent_scans');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
-  // Keep token synced if a pass was booked in the session
+  // Real Camera Scanner State
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [cameraScanning, setCameraScanning] = useState(false);
+  const [cameraError, setCameraError] = useState(null);
+  const [facingMode, setFacingMode] = useState('environment');
+
+  const videoRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const scanAnimationRef = useRef(null);
+
+  // Retrieve active booked pass from localStorage if available (for easy 1-click test)
+  const activeBookedPass = (() => {
+    try {
+      const stored = localStorage.getItem('globetrotter_passes');
+      if (stored) {
+        const list = JSON.parse(stored);
+        if (Array.isArray(list) && list.length > 0) return list[0];
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  })();
+
+  // Keep token synced if a pass was passed in props
   const [prevToken, setPrevToken] = useState(passData?.token);
   if (passData?.token && passData.token !== prevToken) {
     setPrevToken(passData.token);
@@ -114,10 +150,172 @@ export default function AgentPortalView({
     };
   }, []);
 
+  // Cleanup camera stream when component unmounts
+  useEffect(() => {
+    return () => {
+      if (scanAnimationRef.current) {
+        cancelAnimationFrame(scanAnimationRef.current);
+      }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
+
+  // Start Camera
+  const startCamera = async (mode = facingMode) => {
+    setCameraError(null);
+    try {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: mode, width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      mediaStreamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setIsCameraActive(true);
+      setCameraScanning(true);
+    } catch (err) {
+      console.warn('Camera initiation notice:', err);
+      setCameraError('Camera access not available or permission denied. You can manually enter or paste the ticket code below.');
+      setIsCameraActive(false);
+      setCameraScanning(false);
+    }
+  };
+
+  // Stop Camera
+  const stopCamera = () => {
+    if (scanAnimationRef.current) {
+      cancelAnimationFrame(scanAnimationRef.current);
+    }
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      mediaStreamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraActive(false);
+    setCameraScanning(false);
+  };
+
+  // Flip Camera (environment <-> user)
+  const toggleFlipCamera = () => {
+    const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+    setFacingMode(nextMode);
+    startCamera(nextMode);
+  };
+
+  // Frame Processing Loop using jsQR
+  useEffect(() => {
+    if (!isCameraActive || !cameraScanning) return;
+
+    let active = true;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    const scanLoop = () => {
+      if (!active) return;
+      const video = videoRef.current;
+      if (video && video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'dontInvert'
+        });
+
+        if (code && code.data) {
+          let extracted = code.data.trim();
+          // If code is a URL, extract ?t= parameter
+          if (extracted.includes('?t=')) {
+            try {
+              const url = new URL(extracted);
+              extracted = url.searchParams.get('t') || extracted;
+            } catch {
+              const match = extracted.match(/[?&]t=([^&#]+)/);
+              if (match) extracted = match[1];
+            }
+          } else if (extracted.includes('/verify?t=')) {
+            const match = extracted.match(/t=([^&#]+)/);
+            if (match) extracted = match[1];
+          }
+
+          setTokenInput(extracted);
+          handleScanPass(extracted);
+
+          // Pause camera scanning for 3.5s to clearly display verdict
+          setCameraScanning(false);
+          setTimeout(() => {
+            if (active) setCameraScanning(true);
+          }, 3500);
+          return;
+        }
+      }
+      scanAnimationRef.current = requestAnimationFrame(scanLoop);
+    };
+
+    scanAnimationRef.current = requestAnimationFrame(scanLoop);
+
+    return () => {
+      active = false;
+      if (scanAnimationRef.current) {
+        cancelAnimationFrame(scanAnimationRef.current);
+      }
+    };
+  }, [isCameraActive, cameraScanning]);
+
   const handleToggleSound = () => {
     const nextVal = !soundEnabled;
     setSoundEnabled(nextVal);
     localStorage.setItem('gt_sound_enabled', String(nextVal));
+  };
+
+  const recordScanResult = (result, isOk, tokenToVerify, checkpointName) => {
+    setScanStats((prev) => {
+      const updated = {
+        total: prev.total + 1,
+        approved: isOk ? prev.approved + 1 : prev.approved,
+        denied: !isOk ? prev.denied + 1 : prev.denied
+      };
+      try {
+        localStorage.setItem('globetrotter_agent_shift_stats', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    setRecentScans((prev) => {
+      const updated = [
+        { 
+          id: Date.now(), 
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
+          name: result.touristName, 
+          code: tokenToVerify.slice(0, 16), 
+          success: isOk, 
+          checkpoint: checkpointName 
+        },
+        ...prev.slice(0, 9)
+      ];
+      try {
+        localStorage.setItem('globetrotter_agent_recent_scans', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleResetShiftStats = () => {
+    const emptyStats = { total: 0, approved: 0, denied: 0 };
+    setScanStats(emptyStats);
+    setRecentScans([]);
+    try {
+      localStorage.removeItem('globetrotter_agent_shift_stats');
+      localStorage.removeItem('globetrotter_agent_recent_scans');
+    } catch {}
   };
 
   const handleScanPass = async (overrideToken) => {
@@ -127,7 +325,7 @@ export default function AgentPortalView({
     setIsScanning(true);
     setVerdict(null);
 
-    const placeObj = CHECKPOINTS.find(c => c.id === Number(selectedPlaceId));
+    const placeObj = CHECKPOINTS.find((c) => c.id === Number(selectedPlaceId));
     const checkpointName = placeObj ? placeObj.name : 'Monument Gate';
 
     // 1. Local Offline Engine verification
@@ -147,24 +345,7 @@ export default function AgentPortalView({
         };
 
         setVerdict(result);
-        setScanStats(prev => ({
-          total: prev.total + 1,
-          approved: isOk ? prev.approved + 1 : prev.approved,
-          denied: !isOk ? prev.denied + 1 : prev.denied
-        }));
-
-        setRecentScans(prev => [
-          { 
-            id: Date.now(), 
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
-            name: result.touristName, 
-            code: tokenToVerify.slice(0, 14), 
-            success: isOk, 
-            checkpoint: checkpointName 
-          },
-          ...prev.slice(0, 6)
-        ]);
-
+        recordScanResult(result, isOk, tokenToVerify, checkpointName);
         setTimeout(() => setVerdict(null), 5000);
       }, 250);
       return;
@@ -188,26 +369,10 @@ export default function AgentPortalView({
       };
 
       setVerdict(result);
-      setScanStats(prev => ({
-        total: prev.total + 1,
-        approved: prev.approved + 1,
-        denied: prev.denied
-      }));
-
-      setRecentScans(prev => [
-        { 
-          id: Date.now(), 
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
-          name: result.touristName, 
-          code: tokenToVerify.slice(0, 14), 
-          success: true, 
-          checkpoint: checkpointName 
-        },
-        ...prev.slice(0, 6)
-      ]);
+      recordScanResult(result, true, tokenToVerify, checkpointName);
       setTimeout(() => setVerdict(null), 5000);
     } catch {
-      // Fallback to local ledger
+      // Fallback to local offline ledger
       const offRes = verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
       const isOk = offRes.valid;
       playScannerSound(isOk);
@@ -221,23 +386,7 @@ export default function AgentPortalView({
       };
 
       setVerdict(result);
-      setScanStats(prev => ({
-        total: prev.total + 1,
-        approved: isOk ? prev.approved + 1 : prev.approved,
-        denied: !isOk ? prev.denied + 1 : prev.denied
-      }));
-
-      setRecentScans(prev => [
-        { 
-          id: Date.now(), 
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), 
-          name: result.touristName, 
-          code: tokenToVerify.slice(0, 14), 
-          success: isOk, 
-          checkpoint: checkpointName 
-        },
-        ...prev.slice(0, 6)
-      ]);
+      recordScanResult(result, isOk, tokenToVerify, checkpointName);
       setTimeout(() => setVerdict(null), 5000);
     } finally {
       setIsScanning(false);
@@ -245,6 +394,7 @@ export default function AgentPortalView({
   };
 
   const handleRevokeAgentStatus = () => {
+    stopCamera();
     localStorage.removeItem('globetrotter_is_agent');
     window.dispatchEvent(new Event('agent-status-changed'));
     onExitAgentMode();
@@ -313,11 +463,14 @@ export default function AgentPortalView({
             <span className="font-mono text-[11px] font-semibold">Agent #AGT-8942</span>
           </div>
 
-          {/* RETURN TO TOURIST VIEW (CLEAR VISIBLE EXIT) */}
+          {/* RETURN TO TOURIST VIEW */}
           <button
-            onClick={onExitAgentMode}
+            onClick={() => {
+              stopCamera();
+              onExitAgentMode();
+            }}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors shadow-md cursor-pointer font-sans-clean"
-            title="Switch back to standard tourist exploration interface"
+            title="Switch back to tourist exploration interface"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-slate-950" />
             <span>Tourist View</span>
@@ -329,17 +482,17 @@ export default function AgentPortalView({
       {/* AGENT OPERATIONAL WORKSPACE BODY */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 md:p-8 flex flex-col gap-6">
 
-        {/* TOP SHIFT STATS */}
+        {/* AUTHENTIC SHIFT COUNTERS (STARTS AT 0 • ZERO FAKE DATA) */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
             <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-amber-400" />
-              Scans Today
+              Shift Scans
             </span>
             <span className="text-2xl font-extrabold text-white font-mono">
               {scanStats.total}
             </span>
-            <span className="text-[10px] text-emerald-400 font-sans-clean">Active Shift Gate Feed</span>
+            <span className="text-[10px] text-slate-400 font-sans-clean">Active Session Log</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
@@ -350,7 +503,7 @@ export default function AgentPortalView({
             <span className="text-2xl font-extrabold text-emerald-400 font-mono">
               {scanStats.approved}
             </span>
-            <span className="text-[10px] text-slate-400 font-sans-clean">97.9% Pass Rate</span>
+            <span className="text-[10px] text-emerald-400 font-sans-clean">Verified Gate Passes</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
@@ -364,15 +517,22 @@ export default function AgentPortalView({
             <span className="text-[10px] text-slate-400 font-sans-clean">Zero Passback Leaks</span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
-            <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
-              Avg Gate Speed
-            </span>
-            <span className="text-2xl font-extrabold text-amber-300 font-mono">
-              1.4s
-            </span>
-            <span className="text-[10px] text-amber-400 font-sans-clean">Instant Verification</span>
+          <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col justify-between gap-1 shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider flex items-center gap-1.5">
+                <Scan className="w-3.5 h-3.5 text-amber-400" />
+                Shift Reset
+              </span>
+            </div>
+            <button
+              onClick={handleResetShiftStats}
+              disabled={scanStats.total === 0}
+              className="mt-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40"
+              title="Reset shift verification counters"
+            >
+              <RotateCcw className="w-3 h-3 text-amber-400" />
+              <span>Reset Shift</span>
+            </button>
           </div>
         </div>
 
@@ -412,7 +572,7 @@ export default function AgentPortalView({
         </AnimatePresence>
 
         {/* PRIMARY GATE SCANNER CONSOLE */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0E121A] border border-amber-500/20 shadow-xl flex flex-col gap-5">
+        <div className="p-6 sm:p-8 rounded-3xl bg-[#0E121A] border border-amber-500/20 shadow-xl flex flex-col gap-6">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
             <div className="flex flex-col">
@@ -421,14 +581,14 @@ export default function AgentPortalView({
                 <span>Gate Pass Verification</span>
               </h2>
               <span className="text-xs text-slate-400 font-sans-clean">
-                Point barcode scanner at visitor phone or manually enter ticket code
+                Scan visitor QR ticket using your device camera or enter code manually
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-mono text-slate-400">Checkpoint:</span>
               <span className="text-xs font-semibold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
-                {CHECKPOINTS.find(c => c.id === selectedPlaceId)?.gate || 'Gate 01'}
+                {CHECKPOINTS.find((c) => c.id === selectedPlaceId)?.gate || 'Gate 01'}
               </span>
             </div>
           </div>
@@ -452,11 +612,95 @@ export default function AgentPortalView({
             </select>
           </div>
 
-          {/* Scanned Code / QR Token Input */}
-          <div className="flex flex-col gap-1.5">
+          {/* LIVE CAMERA SCANNER VIEWPORT */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono flex items-center gap-2">
+                <Camera className="w-4 h-4 text-amber-400" />
+                <span>Live Optical Camera Scanner</span>
+              </span>
+
+              {isCameraActive && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={toggleFlipCamera}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Flip camera"
+                  >
+                    <FlipHorizontal className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Flip Camera</span>
+                  </button>
+                  <button
+                    onClick={stopCamera}
+                    className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <CameraOff className="w-3.5 h-3.5" />
+                    <span>Close Camera</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {cameraError && (
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2 font-sans-clean">
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>{cameraError}</span>
+              </div>
+            )}
+
+            {isCameraActive ? (
+              <div className="relative w-full aspect-video sm:aspect-[21/9] max-h-72 rounded-2xl overflow-hidden bg-black border-2 border-amber-400/40 shadow-inner flex items-center justify-center">
+                <video
+                  ref={videoRef}
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Holographic Scanner Overlay */}
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                  {/* Viewfinder Target Frame */}
+                  <div className="relative w-48 h-48 sm:w-56 sm:h-56 border-2 border-amber-400/60 rounded-2xl shadow-lg">
+                    {/* Corner Guides */}
+                    <div className="absolute -top-1 -left-1 w-4 h-4 border-t-3 border-l-3 border-amber-400" />
+                    <div className="absolute -top-1 -right-1 w-4 h-4 border-t-3 border-r-3 border-amber-400" />
+                    <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-3 border-l-3 border-amber-400" />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-3 border-r-3 border-amber-400" />
+                    
+                    {/* Animated Scanning Laser Line */}
+                    <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent absolute top-0 animate-[scanLaser_2s_ease-in-out_infinite]" />
+                  </div>
+
+                  <span className="absolute bottom-3 text-[10px] font-mono text-amber-300 bg-black/60 px-3 py-1 rounded-full border border-white/10">
+                    Align visitor QR code inside target box
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => startCamera()}
+                className="w-full py-5 rounded-2xl border-2 border-dashed border-amber-500/30 hover:border-amber-400/60 bg-amber-500/[0.04] hover:bg-amber-500/[0.08] flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 group-hover:scale-105 transition-transform">
+                  <Camera className="w-6 h-6 text-amber-400" />
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm font-bold text-white font-sans-clean">
+                    Open Camera Scanner
+                  </span>
+                  <span className="text-xs text-slate-400 font-sans-clean">
+                    Point phone or webcam to instantly verify and admit visitors
+                  </span>
+                </div>
+              </button>
+            )}
+          </div>
+
+          {/* MANUAL TICKET REFERENCE INPUT (ALWAYS ACCESSIBLE FALLBACK) */}
+          <div className="flex flex-col gap-1.5 pt-2 border-t border-white/5">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">
-              <span>Scanned Ticket Reference / QR Token</span>
-              <span className="text-[10px] text-amber-400 lowercase font-mono">camera or optical reader ready</span>
+              <span>Manual Ticket Reference / Barcode Input</span>
+              <span className="text-[10px] text-amber-400 font-mono">enter code if camera is busy</span>
             </div>
             <div className="relative">
               <input
@@ -466,13 +710,13 @@ export default function AgentPortalView({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleScanPass();
                 }}
-                placeholder="Scan visitor QR code or enter code (e.g. APTG-89421)..."
+                placeholder="Enter or paste ticket code (e.g. APTG-89421 or GT-2026-XXXXX)..."
                 className="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-mono focus:outline-none focus:border-amber-400 pr-24"
               />
               {tokenInput && (
                 <button
                   onClick={() => setTokenInput('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 text-[10px] text-slate-400 hover:text-white bg-white/5 rounded-md font-mono"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 text-[10px] text-slate-400 hover:text-white bg-white/5 rounded-md font-mono cursor-pointer"
                 >
                   Clear
                 </button>
@@ -480,9 +724,23 @@ export default function AgentPortalView({
             </div>
           </div>
 
-          {/* Quick 1-Click Simulation Buttons */}
+          {/* 1-Click Test Chips */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="text-[11px] text-slate-400 font-mono">Quick Test:</span>
+            
+            {activeBookedPass && (
+              <button
+                onClick={() => {
+                  setTokenInput(activeBookedPass.reference);
+                  handleScanPass(activeBookedPass.reference);
+                }}
+                className="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 font-medium font-sans-clean transition-colors cursor-pointer flex items-center gap-1"
+              >
+                <Ticket className="w-3.5 h-3.5 text-amber-400" />
+                <span>Test Your Booked Ticket ({activeBookedPass.reference})</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 setTokenInput('APTG-89421');
@@ -492,6 +750,7 @@ export default function AgentPortalView({
             >
               Test Valid Pass (APTG-89421)
             </button>
+
             <button
               onClick={() => {
                 setTokenInput('INVALID-TKT-0000');
@@ -503,7 +762,7 @@ export default function AgentPortalView({
             </button>
           </div>
 
-          {/* Giant Scan Button */}
+          {/* Big Action Verify Button */}
           <button
             onClick={() => handleScanPass()}
             disabled={isScanning || !tokenInput.trim()}
@@ -520,46 +779,60 @@ export default function AgentPortalView({
           </button>
         </div>
 
-        {/* RECENT SCAN ACTIVITY LOG */}
+        {/* AUTHENTIC RECENT SCAN ACTIVITY LOG (NO FAKE NAMES) */}
         <div className="p-6 rounded-3xl bg-[#0E121A] border border-white/10 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider font-mono">
               Live Gate Scanner Feed
             </span>
-            <span className="text-[10px] text-amber-400 font-mono">Auto-Synced</span>
+            <span className="text-[10px] text-amber-400 font-mono">
+              {recentScans.length} Verified in Current Shift
+            </span>
           </div>
 
-          <div className="flex flex-col gap-2">
-            {recentScans.map((scan) => (
-              <div 
-                key={scan.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs font-sans-clean hover:bg-white/[0.04] transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`w-2.5 h-2.5 rounded-full ${scan.success ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-white">{scan.name}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">{scan.code} • {scan.checkpoint}</span>
+          {recentScans.length === 0 ? (
+            <div className="py-8 px-4 rounded-2xl bg-white/[0.01] border border-dashed border-white/10 flex flex-col items-center justify-center text-center gap-2">
+              <Scan className="w-8 h-8 text-slate-500" />
+              <span className="text-xs font-semibold text-slate-300 font-sans-clean">
+                No tickets scanned in this shift yet
+              </span>
+              <p className="text-[11px] text-slate-500 max-w-sm font-sans-clean">
+                Point the live camera at a visitor's QR code or enter their ticket code above to record admission.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {recentScans.map((scan) => (
+                <div 
+                  key={scan.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs font-sans-clean hover:bg-white/[0.04] transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`w-2.5 h-2.5 rounded-full ${scan.success ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-white">{scan.name}</span>
+                      <span className="text-[10px] text-slate-400 font-mono">{scan.code} • {scan.checkpoint}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md font-mono ${
+                      scan.success ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+                    }`}>
+                      {scan.success ? 'ADMITTED' : 'DENIED'}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono">{scan.time}</span>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md font-mono ${
-                    scan.success ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
-                  }`}>
-                    {scan.success ? 'ADMITTED' : 'DENIED'}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-mono">{scan.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* BOTTOM AGENT CONTROLS & EXIT */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#0E121A] border border-white/5 text-xs">
           <div className="flex items-center gap-2 text-slate-400 font-sans-clean">
-            <span>Logged in as Field Agent #AGT-8942</span>
+            <span>Field Terminal #AGT-8942</span>
             <span>•</span>
             <button
               onClick={handleRevokeAgentStatus}
@@ -571,7 +844,10 @@ export default function AgentPortalView({
           </div>
 
           <button
-            onClick={onExitAgentMode}
+            onClick={() => {
+              stopCamera();
+              onExitAgentMode();
+            }}
             className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold flex items-center gap-2 transition-colors cursor-pointer font-sans-clean"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-amber-400" />

@@ -24,7 +24,7 @@ export const EXACT_PLACE_PHOTOS = {
   "arvapally sri ramalingeshwara temple": "/images/candidates/suryapet/2022090955.jpg",
   "ashok sagar & rock garden": "/images/candidates/nizamabad/2018032490.jpg",
   "bapatla historic agricultural college campus (1906)": "/images/candidates/bapatla/2022033062.jpg",
-  "belum caves (subterranean karst limestone passages)": "/images/aptourism/belum_caves.jpg",
+  "belum caves (underground limestone passages)": "/images/aptourism/belum_caves.jpg",
   "bhadrachalam sri sita ramachandra swamy temple": "/images/telangana/bhadrachalam.jpg",
   "bhavani island tourism resort & water adventure sports": "/images/aptourism/bhavani_islands.jpg",
   "bhongir fort (bhuvanagiri monolithic citadel)": "/images/telangana/bhongir_fort.jpg",

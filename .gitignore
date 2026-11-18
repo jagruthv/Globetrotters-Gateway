@@ -15,7 +15,7 @@ output/
 .wrangler/
 
 # Database & Runtime State
-data/
+/data/
 backend/data/
 *.db
 *.mv.db
@@ -64,6 +64,7 @@ tools/__pycache__/
 tools/*.png
 tools/meta_screen.png
 tools/meta_status.json
+frontend/src/data/
 
 # Heavy Media Assets (Excluded from Git for Light / Fast Repo)
 frontend/public/images/

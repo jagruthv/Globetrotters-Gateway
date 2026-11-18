@@ -14,6 +14,9 @@ import WhatsAppConcierge from './components/WhatsAppConcierge';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import SettingsModal from './components/SettingsModal';
 import SmsGatewayToast from './components/SmsGatewayToast';
+import AuthModal from './components/AuthModal';
+import PaymentProcessingModal from './components/PaymentProcessingModal';
+import { authService } from './services/api';
 import { Heart, ArrowRight } from 'lucide-react';
 
 const HASH_MAP = {
@@ -53,6 +56,13 @@ export default function App() {
     const raw = window.location.hash.replace('#/', '').replace('#', '').trim().toLowerCase();
     return (raw === 'agent' || raw === 'scanner') && localStorage.getItem('globetrotter_is_agent') === 'true';
   });
+
+  // Ticket Checkout & Test Payment Gateway States
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalReason, setAuthModalReason] = useState('');
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [activeBookingForPayment, setActiveBookingForPayment] = useState(null);
+  const [pendingBooking, setPendingBooking] = useState(null);
 
   const [issuedPassData, setIssuedPassData] = useState(() => {
     try {

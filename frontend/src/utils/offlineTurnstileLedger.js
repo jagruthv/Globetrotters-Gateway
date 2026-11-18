@@ -1,7 +1,7 @@
 /**
  * Globetrotter Gateway • Edge Turnstile Offline Ledger Engine
  * 
- * Implements 0% Cellular Verification for Subterranean & Canyon Terminals
+ * Implements Offline Verification for Remote Underground & Canyon Gates
  * (Borra Caves, Belum Caves, Gandikota, Ramappa Temple).
  * 
  * Features:

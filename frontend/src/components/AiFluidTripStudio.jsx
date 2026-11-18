@@ -33,7 +33,8 @@ export default function AiFluidTripStudio({
   onClearPlaces, 
   onExploreMore,
   onProceedToPasses,
-  onBookCustomPlan 
+  onBookCustomPlan,
+  onInitiateBooking
 }) {
   // 'AUTO' allows the AI to calculate the optimal days based on spots count & elevation fatigue
   const [selectedDuration, setSelectedDuration] = useState('AUTO');
@@ -61,6 +62,41 @@ export default function AiFluidTripStudio({
   };
 
   const recommendedDays = calculateRecommendedDays();
+
+  // Calculate official gate fee total for selected places
+  const totalStagedFee = selectedPlaces.reduce((sum, p) => {
+    const fee = parseFloat(p.individualPrice) || parseFloat(p.price) || 0;
+    return sum + fee;
+  }, 0);
+  const stagedPassPrice = totalStagedFee > 0 ? totalStagedFee : (selectedPlaces.length * 40 || 320);
+
+  const handleBuyPass = (customPlan = null) => {
+    const targetPlan = customPlan || planResult;
+    const stops = targetPlan
+      ? (targetPlan.days || []).flatMap((d) => (d.stops || []).map((s) => s.name || s.placeName || s))
+      : selectedPlaces.map((p) => p.name);
+
+    const calculatedFees = selectedPlaces.reduce((sum, p) => {
+      const fee = parseFloat(p.individualPrice) || parseFloat(p.price) || 0;
+      return sum + fee;
+    }, 0);
+    const finalPrice = targetPlan?.packagePrice || (calculatedFees > 0 ? calculatedFees : (selectedPlaces.length * 40 || 320));
+
+    const bookingPayload = {
+      circuitName: targetPlan?.title || (selectedPlaces.length > 0 ? `${selectedPlaces[0].name} Consolidated Tour Pass` : 'Custom Curated Tour Pass'),
+      destinations: stops.length > 0 ? stops : selectedPlaces.map((p) => p.name),
+      totalAmount: finalPrice,
+      rawPlan: targetPlan
+    };
+
+    if (onInitiateBooking) {
+      onInitiateBooking(bookingPayload);
+    } else if (onBookCustomPlan) {
+      onBookCustomPlan(targetPlan || { title: bookingPayload.circuitName, packagePrice: finalPrice, days: [] });
+    } else if (onProceedToPasses) {
+      onProceedToPasses();
+    }
+  };
 
   // Generate plan using backend route planner or local route generator
   const handleGeneratePlan = async (overrideDays = null) => {
@@ -391,6 +427,38 @@ export default function AiFluidTripStudio({
               </span>
             </div>
 
+            {/* INSTANT PASS CHECKOUT CARD FOR SELECTED MONUMENTS */}
+            {selectedPlaces.length > 0 && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-stone-900/60 border border-amber-400/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
+                    <Ticket className="w-5 h-5 text-amber-300" />
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-white font-sans-clean">
+                        Consolidated Gate Pass
+                      </span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-semibold">
+                        {selectedPlaces.length} {selectedPlaces.length === 1 ? 'Attraction' : 'Attractions'}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-300 font-sans-clean">
+                      Skip counter queues with one digital QR gate pass
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleBuyPass()}
+                  className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer font-sans-clean active:scale-[0.98] transition-all shrink-0"
+                >
+                  <Ticket className="w-3.5 h-3.5 text-slate-950" />
+                  <span>Buy Entry Pass • ₹{stagedPassPrice}</span>
+                </button>
+              </div>
+            )}
+
             {selectedPlaces.length === 0 ? (
               <div className="p-12 rounded-3xl border border-dashed border-white/10 bg-white/[0.01] flex flex-col items-center justify-center text-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-slate-400">
@@ -582,11 +650,19 @@ export default function AiFluidTripStudio({
                 {/* Audio Guide & Pass Issue Actions */}
                 <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
                   <button
-                    onClick={() => setGeminiDrawerOpen(true)}
-                    className="px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean"
+                    onClick={() => handleBuyPass(planResult)}
+                    className="px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs flex items-center gap-2 transition-all shadow-md font-sans-clean cursor-pointer active:scale-[0.98]"
                   >
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    <span>Chat with Gemini to Modify Plan</span>
+                    <Ticket className="w-4 h-4 text-slate-950" />
+                    <span>Book Entry Pass • ₹{planResult.packagePrice || stagedPassPrice}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setGeminiDrawerOpen(true)}
+                    className="px-4 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Ask Gemini to Tweak Stops (Optional)</span>
                   </button>
 
                   <button
@@ -604,20 +680,6 @@ export default function AiFluidTripStudio({
                         <span>Listen to Audio Guide</span>
                       </>
                     )}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      if (onBookCustomPlan) {
-                        onBookCustomPlan(planResult);
-                      } else if (onProceedToPasses) {
-                        onProceedToPasses();
-                      }
-                    }}
-                    className="px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md font-sans-clean cursor-pointer active:scale-[0.98]"
-                  >
-                    <Ticket className="w-4 h-4" />
-                    <span>Proceed to Gate Passes</span>
                   </button>
                 </div>
               </div>
@@ -903,11 +965,8 @@ export default function AiFluidTripStudio({
           currentPlan={planResult}
           onUpdatePlan={(updated) => setPlanResult(updated)}
           onBookPass={(plan) => {
-            if (onBookCustomPlan) {
-              onBookCustomPlan(plan);
-            } else if (onProceedToPasses) {
-              onProceedToPasses();
-            }
+            setGeminiDrawerOpen(false);
+            handleBuyPass(plan);
           }}
         />
 
