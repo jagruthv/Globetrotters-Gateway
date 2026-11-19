@@ -333,7 +333,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     window.speechSynthesis.speak(utterance);
   }, [selectedLanguage]);
 
-  // ── Dispatch Query to Google Gemini 3.8 Flash (Edge + Direct Fallback) ──────
+  // ── Dispatch Query to Google Gemini 3.1 Flash Lite (Edge + Direct Fallback) ──────
   const sendToGemini = useCallback(async (userText) => {
     if (!userText || !userText.trim()) return;
     const cleanQuery = userText.trim();
