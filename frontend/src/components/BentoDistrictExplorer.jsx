@@ -663,7 +663,7 @@ export default function BentoDistrictExplorer({
             <span>
               Showing <strong className="text-white font-mono">{filteredDistricts.length}</strong> of 59 Districts
             </span>
-            <span className="hidden sm:inline text-slate-500">• Click any district to view verified dossiers</span>
+            <span className="hidden sm:inline text-slate-500">• Click any district to view attractions & fees</span>
           </div>
 
           <div className="flex items-center p-0.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] self-start sm:self-auto">
@@ -685,7 +685,7 @@ export default function BentoDistrictExplorer({
               }`}
             >
               <MapIcon className="w-3.5 h-3.5" />
-              <span>Interactive Corridor Map</span>
+              <span>Interactive Map</span>
             </button>
           </div>
         </div>
@@ -719,10 +719,10 @@ export default function BentoDistrictExplorer({
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
                 <div>
                   <h3 className="text-base font-bold text-white font-sans-clean">
-                    Regional Geospatial Corridor Map (Offline Vector)
+                    Interactive Regional Map
                   </h3>
                   <p className="text-xs text-slate-400 font-sans-clean">
-                    Click any district node to open full dossiers, transit advice, and spot pricing
+                    Tap any district to view its top attractions, routes, and entry fees
                   </p>
                 </div>
               </div>
@@ -1109,11 +1109,11 @@ export default function BentoDistrictExplorer({
                   onClick={onViewAllDistricts}
                   className="px-6 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all shadow-lg cursor-pointer active:scale-95 font-sans-clean"
                 >
-                  <span>Explore All 59 Districts & Interactive Vector Map</span>
+                  <span>Explore All 59 Districts & Map</span>
                   <ChevronRight className="w-4 h-4 text-slate-950" />
                 </button>
                 <span className="text-[11px] text-slate-400 font-sans-clean">
-                  Complete verified dossiers, transparent fees & authentic food guides across AP & TG
+                  Top sights, transparent entry fees & authentic food guides across AP & TG
                 </span>
               </div>
             ) : displayLimit < filteredDistricts.length ? (

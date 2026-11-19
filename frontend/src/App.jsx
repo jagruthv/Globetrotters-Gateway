@@ -418,7 +418,7 @@ export default function App() {
 
       {/* Main Tab Views with Framer Motion Spring Transition */}
       <main className="relative z-10">
-        <ErrorBoundary fallbackTitle="Tourism View Interruption">
+        <ErrorBoundary fallbackTitle="Unable to Display Section">
           <AnimatePresence mode="wait">
           {activeTab === 'home' && (
             <motion.div
@@ -607,7 +607,7 @@ export default function App() {
                       if (role === 'ROLE_ADMIN' || role === 'ROLE_STAFF' || role === 'ROLE_AGENT') {
                         setIsAgentPortalActive(true);
                       } else {
-                        setScannerAuthError('Access Denied (RBAC-403): Account lacks gate scanner authorization.');
+                        setScannerAuthError('Access Denied: This account is not authorized as a gate officer.');
                       }
                     } catch (err) {
                       setScannerAuthError(err?.message || 'Login failed. Please check credentials.');

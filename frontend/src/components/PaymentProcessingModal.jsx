@@ -198,18 +198,18 @@ export default function PaymentProcessingModal({
               <div className="flex flex-col gap-1.5">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 text-amber-300 text-[11px] font-mono mx-auto">
                   <FlaskConical className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
-                  <span>Test Mode • Payment Simulation Active</span>
+                  <span>Demo Mode • Instant Pass</span>
                 </div>
                 
                 <h3 className="text-xl font-bold tracking-tight text-white mt-1">
-                  Processing Payment...
+                  Processing Pass...
                 </h3>
 
                 <p className="text-xs text-slate-400 font-mono">
-                  {secondsLeft > 3 && 'Connecting to secure simulator...'}
-                  {secondsLeft === 3 && 'Simulating instant UPI authorization...'}
-                  {secondsLeft === 2 && 'Signing cryptographic HMAC-SHA256 pass...'}
-                  {secondsLeft === 1 && 'Finalizing digital entry credentials...'}
+                  {secondsLeft > 3 && 'Connecting to ticket gateway...'}
+                  {secondsLeft === 3 && 'Validating visitor credentials...'}
+                  {secondsLeft === 2 && 'Generating verified digital pass...'}
+                  {secondsLeft === 1 && 'Finalizing entry barcode...'}
                   {secondsLeft <= 0 && 'Verified! Issuing pass...'}
                 </p>
               </div>
@@ -231,7 +231,7 @@ export default function PaymentProcessingModal({
               </div>
 
               <div className="text-[11px] text-slate-500 bg-white/[0.02] border border-white/5 rounded-xl p-2.5 w-full">
-                Zero money will be deducted. Generating verified digital pass for gate turnstiles.
+                Demo mode: No money deducted. Generating official entry pass.
               </div>
             </div>
           ) : (
@@ -241,7 +241,7 @@ export default function PaymentProcessingModal({
               <div className="flex flex-col items-center text-center gap-1.5 pt-1">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 text-amber-300 text-[11px] font-semibold">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Simulated Fast Checkout • Test Mode</span>
+                  <span>Instant Booking • Demo Mode</span>
                 </div>
                 <h3 className="text-xl font-bold tracking-tight text-white mt-1">
                   {parsedAmount === 0 ? 'Official Free Admission Pass' : 'Confirm Entry Pass'}
@@ -249,7 +249,7 @@ export default function PaymentProcessingModal({
                 <p className="text-xs text-slate-400 max-w-xs">
                   {parsedAmount === 0 
                     ? 'Direct digital QR admission for public state heritage sights.'
-                    : 'Issue your verified gate ticket using fast simulated test checkout.'}
+                    : 'Confirm your ticket for direct gate entry.'}
                 </p>
               </div>
 
@@ -271,7 +271,7 @@ export default function PaymentProcessingModal({
                   <span className="text-sm font-bold text-white">Entry Fare</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                      Test Simulation
+                      Demo Mode
                     </span>
                     <span className="text-lg font-extrabold text-amber-400 font-mono">
                       {parsedAmount === 0 ? 'Free Entry (₹0)' : `₹${parsedAmount}.00`}
@@ -301,7 +301,7 @@ export default function PaymentProcessingModal({
                       className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.98]"
                     >
                       <CreditCard className="w-4 h-4" />
-                      <span>Pay ₹{parsedAmount} (Simulate 5s Test Checkout)</span>
+                      <span>Pay ₹{parsedAmount} • Instant Ticket</span>
                     </button>
 
                     <button

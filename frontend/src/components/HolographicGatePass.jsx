@@ -583,7 +583,7 @@ export default function HolographicGatePass({
               Department of Tourism & Archaeology • Official Gate Pass
             </div>
             <div className="text-[10px] text-slate-600 font-mono mt-1">
-              Verified Electronic Pass • NIST FIPS 198-1 HMAC-SHA256 Authenticated
+              Official Digital Pass • Verified Entry Ticket
             </div>
           </div>
 
@@ -676,7 +676,7 @@ export default function HolographicGatePass({
                 <span className="text-xs font-bold text-emerald-400 mt-1">
                   {activePass.gateFeeTotal}
                 </span>
-                <span className="text-[10px] text-slate-500">0% Convenience Fee</span>
+                <span className="text-[10px] text-slate-500">All Taxes Included</span>
               </div>
             </div>
 
@@ -893,8 +893,8 @@ export default function HolographicGatePass({
         <div className="print:hidden w-full max-w-2xl p-3.5 rounded-2xl bg-[#0B0F17] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300 font-sans-clean">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-            <span className="font-semibold text-white">Offline Scannable:</span>
-            <span className="text-slate-400">Pass is saved locally on your phone for offline gates.</span>
+            <span className="font-semibold text-white">Saved Offline:</span>
+            <span className="text-slate-400">Works without internet at monument gates.</span>
           </div>
           <div className="flex items-center gap-2.5 font-mono text-[11px] text-slate-400">
             <span className="text-emerald-300">112 (Police)</span>

@@ -54,10 +54,10 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                 </div>
                 <div>
                   <h3 id="pocket-dossier-title" className="text-sm sm:text-base font-bold text-white font-sans-clean">
-                    Pocket Travel Dossier
+                    Pocket Trip Guide
                   </h3>
                   <span className="text-[11px] text-slate-400 font-sans-clean">
-                    Print or save as 1-page PDF for offline road travel
+                    Print or save as 1-page PDF for your road trip
                   </span>
                 </div>
               </div>
@@ -75,7 +75,7 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                   type="button"
                   onClick={onClose}
                   className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  aria-label="Close dossier"
+                  aria-label="Close guide"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -90,7 +90,7 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] uppercase font-bold tracking-widest text-amber-400 print:text-amber-700">
-                      Official Tourist Itinerary & Safety Dossier
+                      Official Tourist Itinerary & Travel Guide
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-semibold print:border-emerald-700 print:text-emerald-800">
                       Verified AP & TG Tourism
@@ -268,8 +268,8 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
 
               {/* Print Footer Note */}
               <div className="text-[10px] text-slate-500 flex items-center justify-between pt-2 border-t border-white/5 print:text-gray-600 print:border-gray-300">
-                <span>Globetrotter Tourist Dossier • Valid for travel across Andhra Pradesh & Telangana</span>
-                <span>Carry valid Photo ID with this dossier at monument checkpoints.</span>
+                <span>Globetrotter Travel Guide • Valid for travel across Andhra Pradesh & Telangana</span>
+                <span>Carry valid Photo ID with your pass at monument checkpoints.</span>
               </div>
 
             </div>

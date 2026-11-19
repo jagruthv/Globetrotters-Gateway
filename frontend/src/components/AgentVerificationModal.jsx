@@ -50,7 +50,7 @@ export default function AgentVerificationModal({
 
       if (!isAuthorizedOfficer) {
         authService.logout();
-        setError('Access Denied (RBAC-403): This account does not possess Gate Staff or Tourism Officer credentials.');
+        setError('Access Denied: This account is not registered as a gate officer.');
         setLoading(false);
         return;
       }
@@ -214,14 +214,14 @@ export default function AgentVerificationModal({
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 font-sans-clean w-full justify-center">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="font-semibold">Security Clearance Confirmed (RBAC Valid)</span>
+                <span className="font-semibold">Staff Clearance Confirmed</span>
               </div>
             </div>
           )}
 
           {/* Footer note */}
           <div className="text-center text-[10px] text-slate-500 font-mono pt-1 border-t border-white/5">
-            Strict Server-Side Authorization • Zero Client-Only Bypass
+            Authorized tourism department personnel only.
           </div>
         </motion.div>
       </div>

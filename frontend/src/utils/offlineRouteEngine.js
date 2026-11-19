@@ -580,6 +580,7 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
 
         let legDist = 0;
         let driveMins = 0;
+        let isGhatLeg = false;
 
         // Walking / transfer check for adjacent spots (Tribal Museum & Coffee Museum are 150m apart)
         if (
@@ -594,11 +595,12 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
           legDist = Math.max(2.5, Math.round(dist * 1.45 * 10) / 10);
           const elevDelta = Math.abs((prev.elevationMeters || 100) - (spot.elevationMeters || 100));
           // Ghat descent velocity (26 km/h) on mountain curves vs regional highway velocity (48 km/h)
-          const isGhatLeg =
+          isGhatLeg = Boolean(
             (elevDelta >= 350 || (prev.elevationMeters || 0) > 650 || (spot.elevationMeters || 0) > 650) &&
             `${prev.name} ${spot.name} ${prev.district || ''} ${spot.district || ''}`
               .toLowerCase()
-              .match(/(araku|borra|lambasingi|horsley|srisailam|tirumala|ghat|paderu|nallamala)/);
+              .match(/(araku|borra|lambasingi|horsley|srisailam|tirumala|ghat|paderu|nallamala)/)
+          );
           const transitSpeed = isGhatLeg ? 26.0 : 48.0;
           driveMins = Math.round((legDist / transitSpeed) * 60) + 12; // drive time + parking buffer
         }
@@ -689,9 +691,16 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
         name: spot.name,
         spotName: spot.name,
         timings: spot.timings || `${spot.openingTime || '09:00 AM'} – ${spot.closingTime || '06:00 PM'}`,
+        timeSlot: `${arrivalTimeStr} – ${departureTimeStr}`,
         arrivalTime: arrivalTimeStr,
         departureTime: departureTimeStr,
         dwellMinutes: dwell,
+        whyThisTime: spotIdx === 0 
+          ? 'Morning opening hours provide cool temperatures, fewer crowds, and clear sunlight.'
+          : spotIdx === daySpots.length - 1
+          ? 'Golden hour light and gentle evening breezes provide ideal viewing conditions.'
+          : 'Optimally sequenced based on travel distance and daytime gate hours.',
+        bestTimeToVisit: spot.golden_hour || spot.goldenHour || spot.bestVisitingHoursStart || 'Morning',
         district: spot.district || 'Regional',
         category: spot.category || 'Heritage',
         elevation: spot.elevation || `${spot.elevationMeters}m`,

@@ -157,31 +157,37 @@ export default {
 Spot ${idx + 1}: ${p.name}
 - District: ${p.district}
 - Category: ${p.category || 'Heritage'}
-- Elevation: ${p.elevationMeters || 100}m
+- Opening Time: ${p.openingTime || '09:00 AM'}
+- Closing Time: ${p.closingTime || '06:00 PM'}
 - Operating Hours: ${p.timings || `${p.openingTime || '09:00 AM'} - ${p.closingTime || '06:00 PM'}`}
-- Best Time to Visit: ${p.bestTimeToVisit || 'Morning or late afternoon'}
+- Best Time to Visit (Golden Hour): ${p.bestTimeToVisit || 'Morning or late afternoon'}
+- Suggested Dwell Time: ${p.typicalDwellTime || '1.5 Hours'}
+- Elevation: ${p.elevationMeters || 100}m
 - Checkpost Curfew: ${p.checkpostCurfew || 'None'}
 - Culinary Specialty: ${p.culinarySpecialty || 'Local Andhra/Telangana cuisine'}
 - Entry Ticket: ₹${p.individualPrice || 0}
 `).join('\n');
 
           const systemPrompt = `You are the Lead Tourism & Route Architecture AI for Globetrotter Gateway (covering Andhra Pradesh & Telangana).
-Your goal is to create an authentic, topographically optimal, high-converting multi-day itinerary that delights tourists and eliminates travel fatigue on ghat roads.
-Factor in physical reality:
-1. Schedule caves, valleys, and viewpoints during safe daytime hours before evening fog or checkpost curfews.
-2. Pair spots located close to each other on the same day.
-3. Factor in realistic driving times and meal stops with regional culinary specialties.
-4. Calculate bundle pass savings compared to separate individual gate tickets.
+Your goal is to create an authentic, chronologically sound, topographically optimal multi-day itinerary.
 
-CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no prose outside JSON) with this schema:
+CRITICAL TIMING & SCHEDULING LAWS:
+1. Every stop on each day MUST have a distinct, chronologically advancing time slot. NEVER repeat the same arrival time across multiple stops.
+   - The first stop of the day must start in the morning (e.g. 08:30 AM or 09:00 AM).
+   - Subsequent stops must advance forward by realistic drive time + dwell time (e.g. Stop 1: 09:00 AM – 10:30 AM; Stop 2: 11:15 AM – 12:45 PM; Lunch break: 01:00 PM – 02:00 PM; Stop 3: 02:30 PM – 04:15 PM; Stop 4 / Sunset: 04:45 PM – 06:15 PM).
+2. Schedule stops strictly within their Operating Hours (Opening Time to Closing Time).
+3. Align viewpoints, lakes, and beaches with their Best Time to Visit (Golden Hour or Sunset).
+4. Include authentic regional meal halts with verified culinary specialties.
+
+CRITICAL FORMAT: Return ONLY valid raw JSON conforming strictly to this schema:
 {
   "title": "string (Compelling Tour Title)",
   "summary": "string (2-3 sentences explaining why this order is optimal)",
   "totalRoadKm": number,
-  "totalDriveHours": "string (e.g. 4.5 hrs)",
+  "totalDriveHours": "string (e.g. 3.5 hrs)",
   "packagePrice": number,
   "individualPriceTotal": number,
-  "savings": "string (e.g. Save ₹120 with Unified Circuit Pass)",
+  "savings": "string",
   "modelUsed": "AI Travel Engine",
   "days": [
     {
@@ -194,12 +200,15 @@ CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no
         {
           "name": "string",
           "district": "string",
-          "timeSlot": "string (e.g. 09:30 AM – 11:30 AM)",
-          "whyThisTime": "string (reason based on sunlight, temperature, or crowds)",
+          "arrivalTime": "string (e.g. 09:00 AM)",
+          "departureTime": "string (e.g. 10:30 AM)",
+          "timeSlot": "string (e.g. 09:00 AM – 10:30 AM)",
+          "whyThisTime": "string (concrete reason citing morning light, opening time, or sunset view)",
           "bestTimeToVisit": "string",
           "culinaryTip": "string (authentic dish to try nearby)",
           "curfewNote": "string or null",
-          "individualPrice": number
+          "individualPrice": number,
+          "dwellMinutes": number
         }
       ]
     }
@@ -224,7 +233,7 @@ CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no
                   systemInstruction: { parts: [{ text: systemPrompt }] },
                   generationConfig: {
                     temperature: 0.2,
-                    maxOutputTokens: 2500,
+                    maxOutputTokens: 3000,
                     responseMimeType: "application/json"
                   }
                 })
@@ -248,8 +257,17 @@ CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no
               headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
             });
           }
+
+          return new Response(JSON.stringify({ error: 'AI Route Engine temporary fallback', fallback: true }), {
+            status: 502,
+            headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+          });
         } catch (e) {
           console.error("Plan Generation Error:", e);
+          return new Response(JSON.stringify({ error: e.message, fallback: true }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+          });
         }
       }
     }

@@ -942,7 +942,7 @@ export default function AiFluidTripStudio({
                     </span>
                     <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/25 font-sans-clean font-semibold flex items-center gap-1">
                       <Sparkles className="w-3 h-3 text-amber-400" />
-                      <span>{planResult.modelUsed || 'Smart Travel Route'}</span>
+                      <span>Optimized Tour Route</span>
                     </span>
                     <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-white/[0.05] text-slate-300 border border-white/10 font-sans-clean font-medium">
                       Gate Timings & Rest Breaks Verified
@@ -974,10 +974,10 @@ export default function AiFluidTripStudio({
                   <button
                     onClick={() => setIsPocketDossierOpen(true)}
                     className="px-4 py-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/20 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean shadow-sm"
-                    title="Print or save 1-page pocket travel dossier for offline road trip"
+                    title="Print or save 1-page pocket travel guide for your road trip"
                   >
                     <Printer className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Pocket Dossier</span>
+                    <span>Print Guide (PDF)</span>
                   </button>
 
                   <button

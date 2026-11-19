@@ -54,15 +54,12 @@ export default class ErrorBoundary extends React.Component {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-[11px] font-sans-clean font-semibold text-amber-400">
-                Anti-silent failure protection
-              </span>
               <h2 className="text-xl sm:text-2xl font-bold text-white font-sans-clean">
-                {this.props.fallbackTitle || 'Section Encountered an Interruption'}
+                {this.props.fallbackTitle || 'Unable to load this section'}
               </h2>
               <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans-clean max-w-md mx-auto">
                 {this.props.fallbackMessage || 
-                  'A component encountered an issue rendering this view. Your booked passes, active itinerary, and account data remain intact.'}
+                  'Something went wrong while loading this page. Your booked passes and account data are completely safe.'}
               </p>
             </div>
 
@@ -74,7 +71,7 @@ export default class ErrorBoundary extends React.Component {
                 className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all shadow-md cursor-pointer font-sans-clean active:scale-95"
               >
                 <RotateCcw className="w-3.5 h-3.5 text-slate-950" />
-                <span>Try Reloading Section</span>
+                <span>Reload Page</span>
               </button>
 
               <button
@@ -83,21 +80,9 @@ export default class ErrorBoundary extends React.Component {
                 className="px-5 py-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white font-semibold text-xs border border-white/10 flex items-center gap-2 transition-all cursor-pointer font-sans-clean active:scale-95"
               >
                 <Home className="w-3.5 h-3.5 text-slate-300" />
-                <span>Return to Overview</span>
+                <span>Go to Home</span>
               </button>
             </div>
-
-            {/* Collapsible Technical Diagnostics for Transparency */}
-            {this.state.error && (
-              <details className="w-full text-left mt-2 p-3 rounded-xl bg-black/40 border border-white/5 text-[11px] text-slate-400 font-mono">
-                <summary className="cursor-pointer text-slate-400 hover:text-slate-300 select-none">
-                  Diagnostic details
-                </summary>
-                <div className="mt-2 text-rose-300 break-words whitespace-pre-wrap">
-                  {this.state.error.toString()}
-                </div>
-              </details>
-            )}
           </div>
         </section>
       );
