@@ -656,7 +656,7 @@ export default function AiFluidTripStudio({
     }
   };
 
-  // Audio Speech Synthesis for Itinerary Briefing
+  // Audio Speech Synthesis for Itinerary Briefing (Resilient & GC-Safe)
   const toggleSpeech = () => {
     if (!('speechSynthesis' in window)) {
       setChatMessages((prev) => [
@@ -673,25 +673,86 @@ export default function AiFluidTripStudio({
 
     if (isSpeaking) {
       window.speechSynthesis.cancel();
+      if (window._gtStudioUtterance) {
+        window._gtStudioUtterance.onstart = null;
+        window._gtStudioUtterance.onend = null;
+        window._gtStudioUtterance.onerror = null;
+        window._gtStudioUtterance = null;
+      }
       setIsSpeaking(false);
       return;
     }
 
-    if (!planResult) return;
+    let speechText = '';
 
-    const daysList = planResult.days || planResult.itinerary || [];
-    const speechText = `Welcome to your tour plan for ${daysList.length} days across Andhra Pradesh and Telangana. ${
-      daysList.map(d => `Day ${d.dayNumber || d.day}: ${d.summary || ''}. Stops include ${d.stops?.map(s => s.name || s.spotName).join(', ')}.`).join(' ')
-    }`;
+    if (planResult) {
+      const daysList = planResult.days || planResult.itinerary || [];
+      speechText = `Welcome to your tour plan for ${daysList.length} days across Andhra Pradesh and Telangana. ${
+        daysList.map(d => `Day ${d.dayNumber || d.day}: ${d.summary || ''}. Stops include ${d.stops?.map(s => s.name || s.spotName).join(', ')}.`).join(' ')
+      }`;
+    } else if (selectedPlaces.length > 0) {
+      const placeNames = selectedPlaces.map(p => p.name).join(', ');
+      speechText = `You have selected ${selectedPlaces.length} attractions in your travel itinerary: ${placeNames}. Click Generate Optimal Tour Plan to build your customized day-by-day route, travel schedule, and budget breakdown.`;
+    } else {
+      speechText = `Welcome to the Smart Tour Planner. Explore the 59 districts of Andhra Pradesh and Telangana, add destinations to your travel queue, and generate your customized itinerary with real-time transit times and budget estimates.`;
+    }
 
-    const utterance = new SpeechSynthesisUtterance(speechText);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    try {
+      window.speechSynthesis.cancel();
+      if (window._gtStudioUtterance) {
+        window._gtStudioUtterance.onstart = null;
+        window._gtStudioUtterance.onend = null;
+        window._gtStudioUtterance.onerror = null;
+        window._gtStudioUtterance = null;
+      }
 
-    window.speechSynthesis.speak(utterance);
-    setIsSpeaking(true);
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+
+      const utterance = new SpeechSynthesisUtterance(speechText);
+      window._gtStudioUtterance = utterance;
+
+      const voices = window.speechSynthesis.getVoices() || [];
+      const indianVoice = voices.find(v => v.lang.toLowerCase().includes('in') || v.name.toLowerCase().includes('india') || v.lang.toLowerCase().startsWith('en'));
+      if (indianVoice) {
+        utterance.voice = indianVoice;
+        utterance.lang = indianVoice.lang;
+      } else {
+        utterance.lang = 'en-IN';
+      }
+
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        window._gtStudioUtterance = null;
+      };
+      utterance.onerror = (e) => {
+        console.warn('Trip studio speech notice:', e.error);
+        setIsSpeaking(false);
+        window._gtStudioUtterance = null;
+      };
+
+      setTimeout(() => {
+        try {
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
+          window.speechSynthesis.speak(utterance);
+          setIsSpeaking(true);
+        } catch (err) {
+          console.warn('Speech synthesis call notice:', err);
+          setIsSpeaking(false);
+        }
+      }, 40);
+    } catch (err) {
+      console.warn('Audio guide setup notice:', err);
+      setIsSpeaking(false);
+    }
   };
 
   return (

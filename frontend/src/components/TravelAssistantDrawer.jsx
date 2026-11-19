@@ -114,32 +114,10 @@ export default function TravelAssistantDrawer({
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isThinking]);
 
-  // Voice speech-to-text recognition setup
-  useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const rec = new SpeechRecognition();
-      rec.continuous = false;
-      rec.interimResults = false;
-      rec.lang = 'en-IN';
-
-      rec.onresult = (e) => {
-        const transcript = e.results[0][0].transcript;
-        if (transcript) {
-          setInputQuery(transcript);
-        }
-        setIsListening(false);
-      };
-
-      rec.onerror = () => setIsListening(false);
-      rec.onend = () => setIsListening(false);
-
-      recognitionRef.current = rec;
-    }
-  }, []);
-
+  // Voice speech-to-text recognition handler (Fresh instance per session)
   const toggleVoiceListening = () => {
-    if (!recognitionRef.current) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
       setMessages((prev) => [
         ...prev,
         {
@@ -151,18 +129,65 @@ export default function TravelAssistantDrawer({
       ]);
       return;
     }
+
     if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      try {
-        recognitionRef.current.start();
-        setIsListening(true);
-      } catch {
-        setIsListening(false);
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch {}
+        recognitionRef.current = null;
       }
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+        recognitionRef.current = null;
+      }
+
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = 'en-IN';
+
+      rec.onstart = () => {
+        setIsListening(true);
+      };
+
+      rec.onresult = (e) => {
+        const transcript = e.results?.[0]?.[0]?.transcript;
+        if (transcript) {
+          setInputQuery(transcript);
+        }
+        setIsListening(false);
+      };
+
+      rec.onerror = (e) => {
+        console.warn('Microphone dictation notice:', e.error);
+        setIsListening(false);
+      };
+
+      rec.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = rec;
+      rec.start();
+      setIsListening(true);
+    } catch (err) {
+      console.warn('Speech recognition activation notice:', err);
+      setIsListening(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+        recognitionRef.current = null;
+      }
+    };
+  }, []);
 
   // Helper: flatten all atlas places
   const getAllAtlasPlaces = useCallback(() => {

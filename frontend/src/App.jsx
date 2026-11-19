@@ -236,6 +236,15 @@ export default function App() {
     return () => window.removeEventListener('open-auth-modal', handleOpenAuth);
   }, []);
 
+  // Listen for global audio guide modal request
+  useEffect(() => {
+    const handleOpenAudioGuide = () => {
+      setVoiceModalOpen(true);
+    };
+    window.addEventListener('open-audio-guide', handleOpenAudioGuide);
+    return () => window.removeEventListener('open-audio-guide', handleOpenAudioGuide);
+  }, []);
+
   // Save selected trip places to localStorage so refreshing or switching tabs never loses state
   useEffect(() => {
     try {
@@ -428,6 +437,7 @@ export default function App() {
         onOpenSettings={() => setSettingsModalOpen(true)}
         onOpenAssistant={handleOpenAssistant}
         onOpenSafetyModal={() => setSafetyModalOpen(true)}
+        onOpenAudioGuide={() => setVoiceModalOpen(true)}
       />
 
       {/* Main Tab Views with Framer Motion Spring Transition */}

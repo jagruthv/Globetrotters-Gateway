@@ -12,7 +12,8 @@ import {
   User,
   LogOut,
   Settings,
-  Sparkles
+  Sparkles,
+  Headphones
 } from 'lucide-react';
 import { logger } from '../utils/telemetryLogger';
 
@@ -22,7 +23,8 @@ export default function FloatingIslandNav({
   selectedPlacesCount = 0,
   onOpenSettings,
   onOpenAssistant,
-  onOpenSafetyModal
+  onOpenSafetyModal,
+  onOpenAudioGuide
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
@@ -127,6 +129,17 @@ export default function FloatingIslandNav({
           >
             <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
             <span className="font-mono text-[10px] tracking-wider font-bold">SOS</span>
+          </button>
+
+          {/* Audio Guide Companion Button */}
+          <button
+            type="button"
+            onClick={onOpenAudioGuide || (() => window.dispatchEvent(new CustomEvent('open-audio-guide')))}
+            className="w-8 h-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
+            title="Monument Audio Guide & Voice Concierge"
+            aria-label="Open Audio Guide"
+          >
+            <Headphones className="w-3.5 h-3.5 text-amber-400" />
           </button>
 
           {/* Desktop & Mobile Settings Button - Always accessible */}
@@ -288,6 +301,21 @@ export default function FloatingIslandNav({
                   <span className="font-semibold text-base">Ask Travel Assistant</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-emerald-400" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenAudioGuide) onOpenAudioGuide();
+                  else window.dispatchEvent(new CustomEvent('open-audio-guide'));
+                }}
+                className="w-full p-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 hover:bg-amber-500/20 text-left flex items-center justify-between transition-colors text-amber-200 cursor-pointer"
+              >
+                <div className="flex items-center gap-3.5">
+                  <Headphones className="w-5 h-5 text-amber-400" />
+                  <span className="font-semibold text-base">Monument Audio Guide</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-amber-400" />
               </button>
               <button
                 type="button"

@@ -122,12 +122,33 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     return filteredStories[0] || null;
   }, [filteredStories, selectedSpotId]);
 
-  // ── Stop All Audio & Recognition ───────────────────────────────────────────
+  // Preload and cache browser voices on mount
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) return;
+    const loadVoices = () => {
+      try {
+        window.speechSynthesis.getVoices();
+      } catch {}
+    };
+    loadVoices();
+    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    return () => {
+      window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+    };
+  }, []);
+
+  // Stop All Audio & Recognition
   const stopAllAudio = useCallback(() => {
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current.currentTime = 0;
       currentAudioRef.current = null;
+    }
+    if (window._gtActiveUtterance) {
+      window._gtActiveUtterance.onstart = null;
+      window._gtActiveUtterance.onend = null;
+      window._gtActiveUtterance.onerror = null;
+      window._gtActiveUtterance = null;
     }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
@@ -136,41 +157,124 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     setIsSpeaking(false);
   }, []);
 
-  // ── Speech Synthesis Fallback ──────────────────────────────────────────────
+  // ── Speech Synthesis Engine (Chromium GC-Safe & Resilient) ────────────────
   const speakWithSpeechSynthesis = useCallback((text, lang, onEndCallback) => {
     if (!('speechSynthesis' in window) || !text) {
       if (onEndCallback) onEndCallback();
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    try {
+      // 1. Cancel previous speech cleanly
+      window.speechSynthesis.cancel();
+      if (window._gtActiveUtterance) {
+        window._gtActiveUtterance.onstart = null;
+        window._gtActiveUtterance.onend = null;
+        window._gtActiveUtterance.onerror = null;
+        window._gtActiveUtterance = null;
+      }
 
-    if (lang === 'te') {
-      utterance.lang = 'te-IN';
-      utterance.rate = 0.95;
-    } else if (lang === 'hi') {
-      utterance.lang = 'hi-IN';
-      utterance.rate = 1.0;
-    } else {
-      utterance.lang = 'en-IN';
-      utterance.rate = 1.02;
+      // 2. Unpause engine if stuck
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+
+      // 3. Prevent Chromium V8 Garbage Collection of active utterance
+      const utterance = new SpeechSynthesisUtterance(text);
+      window._gtActiveUtterance = utterance;
+
+      // 4. Select voice safely
+      const voices = window.speechSynthesis.getVoices() || [];
+      let matchedVoice = null;
+
+      if (lang === 'te') {
+        matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith('te') || v.name.toLowerCase().includes('telugu'));
+        if (matchedVoice) {
+          utterance.voice = matchedVoice;
+          utterance.lang = matchedVoice.lang;
+        } else {
+          // Telugu voice pack not installed on this OS/device:
+          // Fall back to Indian English voice or Hindi voice to avoid Chrome's language-unavailable error
+          const indianVoice = voices.find(v => v.lang.toLowerCase().includes('in') || v.name.toLowerCase().includes('india'));
+          if (indianVoice) {
+            utterance.voice = indianVoice;
+            utterance.lang = indianVoice.lang;
+          } else {
+            utterance.lang = 'en-IN';
+          }
+        }
+        utterance.rate = 0.95;
+      } else if (lang === 'hi') {
+        matchedVoice = voices.find(v => v.lang.toLowerCase().startsWith('hi') || v.name.toLowerCase().includes('hindi'));
+        if (matchedVoice) {
+          utterance.voice = matchedVoice;
+          utterance.lang = matchedVoice.lang;
+        } else {
+          const indianVoice = voices.find(v => v.lang.toLowerCase().includes('in'));
+          if (indianVoice) {
+            utterance.voice = indianVoice;
+            utterance.lang = indianVoice.lang;
+          } else {
+            utterance.lang = 'hi-IN';
+          }
+        }
+        utterance.rate = 1.0;
+      } else {
+        matchedVoice = voices.find(v => v.lang.toLowerCase() === 'en-in' || v.name.toLowerCase().includes('india') || v.lang.toLowerCase().startsWith('en'));
+        if (matchedVoice) {
+          utterance.voice = matchedVoice;
+          utterance.lang = matchedVoice.lang;
+        } else {
+          utterance.lang = 'en-IN';
+        }
+        utterance.rate = 1.02;
+      }
+
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      utterance.onstart = () => {
+        setIsPlayingAudio(true);
+        setIsSpeaking(true);
+      };
+
+      utterance.onend = () => {
+        setIsPlayingAudio(false);
+        setIsSpeaking(false);
+        window._gtActiveUtterance = null;
+        if (onEndCallback) onEndCallback();
+      };
+
+      utterance.onerror = (e) => {
+        console.warn('Speech synthesis notice:', e.error);
+        setIsPlayingAudio(false);
+        setIsSpeaking(false);
+        window._gtActiveUtterance = null;
+        if (onEndCallback) onEndCallback();
+      };
+
+      // 5. Short tick before calling speak to allow cancel() to clear engine state
+      setTimeout(() => {
+        try {
+          if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+          }
+          window.speechSynthesis.speak(utterance);
+          setIsPlayingAudio(true);
+        } catch (err) {
+          console.warn('SpeechSynthesis invocation notice:', err);
+          setIsPlayingAudio(false);
+        }
+      }, 40);
+
+    } catch (err) {
+      console.warn('Speech synthesis setup failed:', err);
+      setIsPlayingAudio(false);
+      if (onEndCallback) onEndCallback();
     }
-
-    utterance.onstart = () => setIsPlayingAudio(true);
-    utterance.onend = () => {
-      setIsPlayingAudio(false);
-      if (onEndCallback) onEndCallback();
-    };
-    utterance.onerror = () => {
-      setIsPlayingAudio(false);
-      if (onEndCallback) onEndCallback();
-    };
-
-    window.speechSynthesis.speak(utterance);
   }, []);
 
-  // ── Play Destination Story (Dynamic Curated Walk + Gemini 3.8 Flash TTS) ───
+  // ── Play Destination Story (Instant, Gesture-Safe & Resilient) ─────────────
   const playDestinationStory = useCallback(async (spot, autoAdvance = false) => {
     if (!spot) return;
 
@@ -182,122 +286,97 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
 
     stopAllAudio();
     setSelectedSpotId(spot.id);
-    setIsLoadingStory(true);
+    setIsLoadingStory(false);
     setAudioError(null);
 
     const cacheKey = `${spot.id}_${selectedLanguage}`;
 
-    try {
-      // 1. Fetch Dynamic Story via Backend Edge Generator if not cached
-      let storyData = storyCacheRef.current[cacheKey];
-      if (!storyData) {
-        const walkRes = await fetch('/api/curated-walk', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            placeName: spot.name,
-            district: spot.district,
-            state: spot.state,
-            category: spot.category,
-            details: spot.description,
-            language: selectedLanguage
-          })
-        });
+    // 1. Instant local narrative generation for zero-latency, gesture-safe playback
+    let storyData = storyCacheRef.current[cacheKey];
+    if (!storyData) {
+      const langNotice = selectedLanguage === 'te'
+        ? `${spot.name} కు స్వాగతం. ${spot.district}, ${spot.state}. ${spot.description}. సందర్శన సమయాలు ${spot.timings}. ప్రవేశ రుసుము ${spot.fees}.`
+        : selectedLanguage === 'hi'
+        ? `${spot.name} में आपका स्वागत है। ${spot.district}, ${spot.state}। ${spot.description}। दर्शन का समय ${spot.timings}। प्रवेश शुल्क ${spot.fees}।`
+        : `Welcome to ${spot.name} in ${spot.district}, ${spot.state}. ${spot.description}. Visiting hours are ${spot.timings}. Entrance fee is ${spot.fees}. When visiting, be sure to experience ${spot.culinarySpecialty || 'authentic regional dishes'}.`;
 
-        if (walkRes.ok) {
-          storyData = await walkRes.json();
-          storyCacheRef.current[cacheKey] = storyData;
-        } else {
-          storyData = {
-            title: spot.name,
-            narrative: `Welcome to ${spot.name} in ${spot.district}, ${spot.state}. ${spot.description}. Visiting hours are ${spot.timings}. Entrance admission is ${spot.fees}.`,
-            highlights: ['Main architectural entrance', 'Historic walking paths'],
-            foodRecommendation: spot.culinarySpecialty || 'Authentic local regional dishes',
-            historicalFact: `Historic cultural destination in ${spot.district}.`
-          };
-        }
-      }
-
-      setActiveStory(storyData);
-
-      // 2. Fetch Gemini 3.8 Flash Neural Speech via /api/tts
-      let audioBlobUrl = audioBlobCacheRef.current[cacheKey];
-
-      if (!audioBlobUrl && storyData?.narrative) {
-        try {
-          const ttsRes = await fetch('/api/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              text: storyData.narrative,
-              voice: 'Puck',
-              language: selectedLanguage
-            })
-          });
-
-          if (ttsRes.ok) {
-            const ttsData = await ttsRes.json();
-            if (ttsData.audioBase64) {
-              const byteCharacters = atob(ttsData.audioBase64);
-              const byteNumbers = new Array(byteCharacters.length);
-              for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-              }
-              const byteArray = new Uint8Array(byteNumbers);
-              const blob = new Blob([byteArray], { type: ttsData.mimeType || 'audio/wav' });
-              audioBlobUrl = URL.createObjectURL(blob);
-              audioBlobCacheRef.current[cacheKey] = audioBlobUrl;
-            }
-          }
-        } catch (ttsErr) {
-          console.warn('Neural TTS network fallback:', ttsErr);
-        }
-      }
-
-      // 3. Audio Playback Completion Handler for Continuous Live Mode
-      const onEnded = () => {
-        setIsPlayingAudio(false);
-        if (isLiveWalkActive) {
-          const currentList = filteredStories;
-          if (currentList.length > 1) {
-            const currentIdx = currentList.findIndex(s => s.id === spot.id);
-            const nextIdx = (currentIdx + 1) % currentList.length;
-            const nextSpot = currentList[nextIdx];
-            if (nextSpot && playDestinationStoryRef.current) {
-              setTimeout(() => {
-                playDestinationStoryRef.current(nextSpot, true);
-              }, 1200);
-            }
-          }
-        }
+      storyData = {
+        title: spot.name,
+        narrative: langNotice,
+        highlights: [
+          `Main entrance and historic grounds in ${spot.district}`,
+          `Cultural heritage landmark of ${spot.state}`
+        ],
+        foodRecommendation: spot.culinarySpecialty || 'Authentic regional dishes',
+        historicalFact: `Historic cultural destination in ${spot.district}, ${spot.state}.`
       };
+      storyCacheRef.current[cacheKey] = storyData;
+    }
 
-      // 4. Playback: HTML5 Audio with Studio Voice or Web Speech API Fallback
-      if (audioBlobUrl) {
+    setActiveStory(storyData);
+
+    // 2. Playback Completion Handler for Continuous Live Walk
+    const onEnded = () => {
+      setIsPlayingAudio(false);
+      if (isLiveWalkActive) {
+        const currentList = filteredStories;
+        if (currentList.length > 1) {
+          const currentIdx = currentList.findIndex(s => s.id === spot.id);
+          const nextIdx = (currentIdx + 1) % currentList.length;
+          const nextSpot = currentList[nextIdx];
+          if (nextSpot && playDestinationStoryRef.current) {
+            setTimeout(() => {
+              playDestinationStoryRef.current(nextSpot, true);
+            }, 1000);
+          }
+        }
+      }
+    };
+
+    // 3. Check for cached neural audio blob
+    const audioBlobUrl = audioBlobCacheRef.current[cacheKey];
+    if (audioBlobUrl) {
+      try {
         const audio = new Audio(audioBlobUrl);
         currentAudioRef.current = audio;
-
         audio.onended = onEnded;
         audio.onerror = () => {
-          console.warn('Audio element playback error, falling back to Web Speech API');
           speakWithSpeechSynthesis(storyData.narrative, selectedLanguage, onEnded);
         };
-
         await audio.play();
         setIsPlayingAudio(true);
-      } else {
-        speakWithSpeechSynthesis(storyData.narrative, selectedLanguage, onEnded);
+        return;
+      } catch {
+        // Fallback to speech synthesis if audio play fails
       }
-    } catch (err) {
-      console.warn('Audio guide request error:', err);
-      setAudioError('Unable to generate live voice narration. Engaging local device audio.');
-      if (spot.description) {
-        speakWithSpeechSynthesis(spot.description, selectedLanguage, () => {
-          setIsPlayingAudio(false);
-        });
-      }
-    } finally {
-      setIsLoadingStory(false);
+    }
+
+    // 4. Instant, gesture-safe Web Speech API narration
+    speakWithSpeechSynthesis(storyData.narrative, selectedLanguage, onEnded);
+
+    // 5. Background progressive enhancement: fetch richer narrative without blocking playback
+    if (!storyCacheRef.current[`${cacheKey}_enhanced`]) {
+      fetch('/api/curated-walk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          placeName: spot.name,
+          district: spot.district,
+          state: spot.state,
+          category: spot.category,
+          details: spot.description,
+          language: selectedLanguage
+        })
+      })
+      .then(res => res.ok ? res.json() : null)
+      .then(enhanced => {
+        if (enhanced && enhanced.narrative) {
+          storyCacheRef.current[cacheKey] = enhanced;
+          storyCacheRef.current[`${cacheKey}_enhanced`] = true;
+          setActiveStory(enhanced);
+        }
+      })
+      .catch(() => {});
     }
   }, [activeSpot?.id, isPlayingAudio, selectedLanguage, isLiveWalkActive, filteredStories, stopAllAudio, speakWithSpeechSynthesis]);
 
@@ -334,41 +413,69 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     stopAllAudio();
 
     try {
-      const edgeRes = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: cleanQuery })
-      });
-
       let reply = null;
-      if (edgeRes.ok) {
-        const data = await edgeRes.json();
-        reply = data.response || data.message;
-      } else {
-        reply = 'I am currently operating in verified local offline mode. How can I help you navigate the 59 districts of Andhra Pradesh & Telangana?';
+      try {
+        const edgeRes = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: cleanQuery })
+        });
+        if (edgeRes.ok) {
+          const data = await edgeRes.json();
+          reply = data.response || data.message;
+        }
+      } catch (netErr) {
+        console.warn('Network call to /api/chat notice:', netErr);
+      }
+
+      // If backend was unreachable or returned empty, resolve locally from 59-district atlas
+      if (!reply) {
+        const q = cleanQuery.toLowerCase();
+        const matched = allAtlasDestinations.find(s =>
+          s.name.toLowerCase().includes(q) ||
+          q.includes(s.name.toLowerCase()) ||
+          s.district.toLowerCase().includes(q) ||
+          q.includes(s.district.toLowerCase())
+        );
+
+        if (matched) {
+          reply = `${matched.name} is located in ${matched.district}, ${matched.state}. ${matched.description}. Visiting hours are ${matched.timings}, and admission is ${matched.fees}. Local culinary specialty includes ${matched.culinarySpecialty || 'regional cuisine'}.`;
+        } else {
+          reply = `Welcome to Globetrotter Gateway. You asked about "${cleanQuery}". You can discover heritage destinations across 59 districts of Andhra Pradesh and Telangana, including Charminar, Tirupati, Warangal Fort, and Araku Valley. Select any destination in the Audio Guide tab to hear its live narration.`;
+        }
       }
 
       setAiResponse(reply);
       speakWithSpeechSynthesis(reply, 'en');
     } catch (err) {
-      setLiveError(err.message || 'Error connecting to Voice Guide');
-      setAiResponse(`Notice: Unable to reach online server (${err.message}). Using local verified travel guidance.`);
+      console.warn('Voice guide response notice:', err);
+      const fallbackReply = `I am your verified regional travel guide. Please ask about any destination or district across Andhra Pradesh and Telangana.`;
+      setAiResponse(fallbackReply);
+      speakWithSpeechSynthesis(fallbackReply, 'en');
     } finally {
       setIsThinking(false);
     }
-  }, [stopAllAudio, speakWithSpeechSynthesis]);
+  }, [allAtlasDestinations, stopAllAudio, speakWithSpeechSynthesis]);
 
-  // Speech Recognition Lifecycle
+  // Speech Recognition Lifecycle (Fresh Instance on Every Activation)
   const startLiveSession = () => {
+    stopAllAudio();
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setLiveError('Live voice recognition is not supported in this browser. Please use Chrome, Edge, or type your query below.');
+      setLiveError('Microphone speech recognition is not supported in this browser. You can type your query in the box below to hear the voice guide.');
       return;
     }
 
     try {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch {}
+        recognitionRef.current = null;
+      }
+
       const recognition = new SpeechRecognition();
-      recognition.continuous = true;
+      recognition.continuous = false;
       recognition.interimResults = true;
       recognition.lang = 'en-IN';
 
@@ -393,34 +500,28 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
         const currentSpeech = finalTrans || interim;
         setLiveTranscript(currentSpeech);
 
-        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        if (currentSpeech.trim().length > 2) {
-          silenceTimerRef.current = setTimeout(() => {
-            sendToGemini(currentSpeech);
-          }, 1300);
+        if (finalTrans.trim().length > 1) {
+          setIsListening(false);
+          sendToGemini(finalTrans.trim());
         }
       };
 
       recognition.onerror = (e) => {
+        setIsListening(false);
         if (e.error !== 'no-speech') {
-          setLiveError(`Microphone notice: ${e.error}`);
+          setLiveError(`Microphone notice: ${e.error}. You can also type your question.`);
         }
       };
 
       recognition.onend = () => {
-        if (isListening) {
-          try {
-            recognition.start();
-          } catch {
-            // Already active
-          }
-        }
+        setIsListening(false);
       };
 
       recognitionRef.current = recognition;
       recognition.start();
       setIsListening(true);
     } catch (err) {
+      setIsListening(false);
       setLiveError('Could not access microphone: ' + err.message);
     }
   };
