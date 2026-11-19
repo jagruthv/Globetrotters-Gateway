@@ -214,6 +214,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [activeStoryId, setActiveStoryId] = useState(HERITAGE_STORIES[0].id);
   const [isPlayingStory, setIsPlayingStory] = useState(false);
+  const [spokenCharIndex, setSpokenCharIndex] = useState(0);
   const [storySearchQuery, setStorySearchQuery] = useState('');
   const [storyFilter, setStoryFilter] = useState('ALL'); // 'ALL' | 'FEATURED' | 'AP' | 'TG'
 
@@ -303,13 +304,26 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     if (onClose) onClose();
   };
 
-  // ── Speak AI Response with Natural Voice ───────────────────────────────────
-  const speakResponse = (text) => {
-    if (!('speechSynthesis' in window)) return;
+  // ── Speak AI Response with Natural Voice & Dynamic Accent ──────────────────
+  const speakResponse = (text, langOverride = null) => {
+    if (!('speechSynthesis' in window) || !text) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-IN';
-    utterance.rate = 1.02;
+
+    const targetLang = langOverride || selectedLanguage;
+    const isTelugu = targetLang === 'te' || /[\u0C00-\u0C7F]/.test(text);
+    const isHindi = targetLang === 'hi' || /[\u0900-\u097F]/.test(text);
+
+    if (isTelugu) {
+      utterance.lang = 'te-IN';
+      utterance.rate = 0.95;
+    } else if (isHindi) {
+      utterance.lang = 'hi-IN';
+      utterance.rate = 1.0;
+    } else {
+      utterance.lang = 'en-IN';
+      utterance.rate = 1.02;
+    }
     utterance.pitch = 1.0;
 
     utterance.onstart = () => setIsSpeaking(true);
@@ -515,8 +529,20 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
       utterance.rate = 1.02;
     }
 
-    utterance.onend = () => setIsPlayingStory(false);
-    utterance.onerror = () => setIsPlayingStory(false);
+    utterance.onboundary = (event) => {
+      if (event.name === 'word' || event.name === 'sentence' || typeof event.charIndex === 'number') {
+        setSpokenCharIndex(event.charIndex || 0);
+      }
+    };
+
+    utterance.onend = () => {
+      setIsPlayingStory(false);
+      setSpokenCharIndex(0);
+    };
+    utterance.onerror = () => {
+      setIsPlayingStory(false);
+      setSpokenCharIndex(0);
+    };
 
     window.speechSynthesis.speak(utterance);
     setIsPlayingStory(true);
@@ -889,12 +915,20 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                       {isCurrentlyPlaying && (
                         <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5 animate-in fade-in">
                           <Volume2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 animate-pulse" />
-                          <div className="flex flex-col">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-300">
-                              Live Captions ({selectedLanguage === 'te' ? 'తెలుగు' : selectedLanguage === 'hi' ? 'हिन्दी' : 'English'}):
-                            </span>
-                            <p className="text-xs text-white mt-1 leading-relaxed font-medium">
-                              {langContent.narrative}
+                          <div className="flex flex-col w-full">
+                            <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider text-emerald-300">
+                              <span>Live Captions ({selectedLanguage === 'te' ? 'తెలుగు' : selectedLanguage === 'hi' ? 'हिन्दी' : 'English'}):</span>
+                              <span className="text-amber-300/90 lowercase font-normal flex items-center gap-1 font-sans-clean">
+                                <Headphones className="w-3 h-3 text-amber-400" /> earphones recommended in crowds
+                              </span>
+                            </div>
+                            <p className="text-xs mt-1.5 leading-relaxed">
+                              <span className="text-emerald-300 font-semibold bg-emerald-400/15 px-1 py-0.5 rounded">
+                                {langContent.narrative.slice(0, Math.max(30, spokenCharIndex + 30))}
+                              </span>
+                              <span className="text-slate-400">
+                                {langContent.narrative.slice(Math.max(30, spokenCharIndex + 30))}
+                              </span>
                             </p>
                           </div>
                         </div>

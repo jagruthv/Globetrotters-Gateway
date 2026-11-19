@@ -153,6 +153,14 @@ export default function AgentPortalView({
 
   // Cleanup camera stream when component unmounts
   useEffect(() => {
+    // Auto-boot camera immediately if officer navigated to #/scanner
+    if (typeof window !== 'undefined' && window.location.hash.includes('scanner')) {
+      const timer = setTimeout(() => {
+        startCamera();
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+
     return () => {
       if (scanAnimationRef.current) {
         cancelAnimationFrame(scanAnimationRef.current);

@@ -170,7 +170,9 @@ export default function TravelAssistantDrawer({
 
       const touristCountMatch = lower.match(/(\d+)\s*(people|person|tourist|ticket|pass|visitor)/i);
       const touristCount = touristCountMatch ? parseInt(touristCountMatch[1], 10) : 1;
-      const unitPrice = matchedPlace.individualPrice || 40;
+      const unitPrice = (matchedPlace.individualPrice !== undefined && matchedPlace.individualPrice !== null)
+        ? Number(matchedPlace.individualPrice)
+        : (matchedPlace.isTicketed === false ? 0 : 25);
       const totalAmount = unitPrice * touristCount;
 
       if (onInitiateBooking) {
@@ -696,7 +698,9 @@ export default function TravelAssistantDrawer({
                                     onInitiateBooking({
                                       circuitName: `${place.name} Official Pass`,
                                       destinations: [place.name],
-                                      totalAmount: place.individualPrice || 40
+                                      totalAmount: (place.individualPrice !== undefined && place.individualPrice !== null)
+                                        ? Number(place.individualPrice)
+                                        : (place.isTicketed === false ? 0 : 25)
                                     });
                                   }
                                 }}

@@ -117,15 +117,16 @@ export default function FloatingIslandNav({
 
         {/* Right Action: Tourist Safety & Auth Button */}
         <div className="flex items-center gap-1.5 sm:gap-2 pr-1 shrink-0">
-          {/* Tourist Safety & Emergency Helplines Button */}
+          {/* Persistent High-Visibility SOS Emergency Alert Trigger */}
           <button
             type="button"
             onClick={onOpenSafetyModal}
-            className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 text-slate-300 hover:text-rose-300 flex items-center justify-center transition-colors cursor-pointer shrink-0"
-            title="Tourist Safety & 24/7 Helplines (112, 108, 1363)"
-            aria-label="Tourist Safety & Helplines"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 hover:text-rose-200 transition-all cursor-pointer shrink-0 text-xs font-bold"
+            title="Emergency SOS & 24/7 Police / Ambulance (112, 108, 1363)"
+            aria-label="Emergency SOS & 24/7 Police Helplines"
           >
-            <ShieldCheck className="w-3.5 h-3.5" />
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+            <span className="font-mono text-[10px] tracking-wider font-extrabold text-rose-300">SOS</span>
           </button>
 
           {/* User Sign In / Account Avatar - No bulky text greeting */}

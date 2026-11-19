@@ -1025,15 +1025,34 @@ export default function BentoDistrictExplorer({
                       <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/5 text-xs">
                         <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-wider flex items-center justify-between">
                           <span>{searchQuery && searchMatchedSpots.length > 0 ? `Matched Sights (${searchMatchedSpots.length}):` : 'Top Attractions:'}</span>
-                          {searchMatchedSpots.length > 3 && (
-                            <span className="text-[10px] text-slate-400 font-mono font-normal">
-                              +{searchMatchedSpots.length - 3} more
-                            </span>
+                          {searchQuery && searchMatchedSpots.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedDistrict(district);
+                              }}
+                              className="text-[10px] text-amber-400 hover:text-amber-300 font-mono underline cursor-pointer"
+                            >
+                              Explore all {district.spots.length}
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedDistrict(district);
+                              }}
+                              className="text-[10px] text-slate-400 hover:text-white font-mono cursor-pointer"
+                            >
+                              +{district.spots.length - 3} more
+                            </button>
                           )}
                         </span>
                         <div className="flex flex-col gap-1">
-                          {(searchMatchedSpots.length > 0 ? searchMatchedSpots : orderedSpots).slice(0, 3).map((s) => {
+                          {(searchQuery && searchMatchedSpots.length > 0 ? searchMatchedSpots : orderedSpots.slice(0, 3)).map((s) => {
                             const isSelected = isPlaceSelected(s.name);
+                            const isFree = s.individualPrice === 0 || s.isTicketed === false;
                             return (
                               <div
                                 key={s.name}
@@ -1043,7 +1062,7 @@ export default function BentoDistrictExplorer({
                                 <span className="text-slate-300 truncate max-w-[180px]">{s.name}</span>
                                 <div className="flex items-center gap-1.5 flex-shrink-0">
                                   <span className="text-emerald-400 font-mono text-[10px]">
-                                    {s.individualPrice === 0 ? 'Free' : `₹${s.individualPrice || 40}`}
+                                    {isFree ? 'Free' : `₹${s.individualPrice || 25}`}
                                   </span>
                                   <button
                                     type="button"

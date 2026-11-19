@@ -79,7 +79,7 @@ export default function AiFluidTripStudio({
   const [showPackingList, setShowPackingList] = useState(false);
   const [checkedPackingItems, setCheckedPackingItems] = useState({});
 
-  const _handleScrollToConcierge = () => {
+  const handleScrollToConcierge = () => {
     const el = document.getElementById('trip-concierge-console');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });

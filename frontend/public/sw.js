@@ -15,7 +15,9 @@ const STATIC_PRECACHE = [
   '/manifest.webmanifest',
   '/favicon.svg',
   '/pwa-192.png',
-  '/pwa-512.png'
+  '/pwa-512.png',
+  '/fonts/plus-jakarta-sans.woff2',
+  '/fonts/cinzel-bold.woff2'
 ];
 
 // Handle direct skipWaiting commands from clients
@@ -69,7 +71,8 @@ self.addEventListener('fetch', (event) => {
     url.hostname.includes('razorpay.com') ||
     url.hostname.includes('google.com') ||
     url.hostname.includes('msg91.com') ||
-    url.hostname.includes('messagecentral.com')
+    url.hostname.includes('messagecentral.com') ||
+    url.hostname.includes('open-meteo.com')
   ) {
     return;
   }

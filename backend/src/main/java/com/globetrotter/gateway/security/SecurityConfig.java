@@ -81,8 +81,8 @@ public class SecurityConfig {
                     .requestMatchers("/actuator/health").permitAll()
                     // Turnstile scanner demo endpoints
                     .requestMatchers("/api/verify/**").permitAll()
-                    // Tourism officer audit report export (public for capstone evaluation demo)
-                    .requestMatchers("/api/admin/analytics/export-csv").permitAll()
+                    // Tourism officer audit report export (strictly restricted to verified administrators)
+                    .requestMatchers("/api/admin/analytics/export-csv").hasAuthority("ROLE_ADMIN")
                     // Payment endpoints — requires authenticated tourist
                     .requestMatchers("/api/payments/**").authenticated()
                     // Admin-only endpoints

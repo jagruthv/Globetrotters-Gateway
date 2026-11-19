@@ -18,6 +18,36 @@ export function isRazorpayLoaded() {
 }
 
 /**
+ * Dynamically loads the Razorpay Checkout SDK script on-demand.
+ * Prevents unnecessary script execution on static page loads and gracefully
+ * handles ad-blockers or network restrictions.
+ */
+export async function ensureRazorpayLoaded() {
+  if (isRazorpayLoaded()) return true;
+  if (typeof document === 'undefined') return false;
+
+  return new Promise((resolve) => {
+    const existing = document.querySelector('script[src*="checkout.razorpay.com"]');
+    if (existing) {
+      if (isRazorpayLoaded()) return resolve(true);
+      existing.addEventListener('load', () => resolve(isRazorpayLoaded()));
+      existing.addEventListener('error', () => resolve(false));
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve(isRazorpayLoaded());
+    script.onerror = () => {
+      console.warn('[Razorpay] checkout.js blocked or unavailable. Falling back to sandbox simulator.');
+      resolve(false);
+    };
+    document.head.appendChild(script);
+  });
+}
+
+/**
  * Checks if a given Razorpay key is a live or valid merchant key.
  */
 function isLiveRazorpayKey(key) {
@@ -243,7 +273,11 @@ export async function launchRazorpayCheckout({
     }
   };
 
-  // Step 3: If key is mock or unconfigured, launch Sandbox Simulator
+  // Step 3: Ensure SDK script is loaded if running in live mode, or fall back to Simulator
+  if (isLiveRazorpayKey(activeKey) && !isRazorpayLoaded()) {
+    await ensureRazorpayLoaded();
+  }
+
   if (!isLiveRazorpayKey(activeKey) || !isRazorpayLoaded()) {
     openRazorpaySandboxSimulator({
       bookingReference,

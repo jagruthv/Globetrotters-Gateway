@@ -56,6 +56,8 @@ const getInitialTab = () => {
   const raw = window.location.hash.replace('#/', '').replace('#', '').trim().toLowerCase();
   if (raw.startsWith('pass=') || raw.startsWith('ref=') || raw.startsWith('verify')) return 'passes';
   const base = raw.split('?')[0];
+  if (base.startsWith('district/') || base.startsWith('spot/')) return 'explore';
+  if (base.startsWith('circuit/') || base.startsWith('package/')) return 'circuits';
   return HASH_MAP[base] || HASH_MAP[raw] || 'home';
 };
 
@@ -120,13 +122,30 @@ export default function App() {
   });
   const shouldReduceMotion = useReducedMotion();
 
+  const updateMetaTitle = (tab) => {
+    if (typeof document === 'undefined') return;
+    const titles = {
+      home: 'Globetrotter Gateway • Official Smart Tourism Portal for Andhra Pradesh & Telangana',
+      explore: '59 Districts Cultural Atlas • Globetrotter Gateway',
+      planner: 'AI Trip Planner Studio • Globetrotter Gateway',
+      circuits: 'Signature Heritage Circuits • Globetrotter Gateway',
+      passes: 'Digital QR Entry Passes & Verification • Globetrotter Gateway'
+    };
+    if (titles[tab]) document.title = titles[tab];
+  };
+
   const setActiveTab = (tab) => {
     setActiveTabState(tab);
+    updateMetaTitle(tab);
     const targetHash = TAB_TO_HASH[tab] ? `#/${TAB_TO_HASH[tab]}` : '#/';
     if (window.location.hash !== targetHash) {
       window.history.pushState(null, '', targetHash);
     }
   };
+
+  useEffect(() => {
+    updateMetaTitle(activeTab);
+  }, [activeTab]);
 
   const handleOpenAgentPortal = () => {
     try {
