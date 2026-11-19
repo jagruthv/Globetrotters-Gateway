@@ -8,7 +8,6 @@ import {
   ChevronRight,
   ChevronLeft,
   ShieldCheck,
-  Clock,
   Ticket,
   Lock,
   X,
@@ -16,7 +15,6 @@ import {
   Headphones,
   AlertTriangle,
   FileText,
-  Landmark,
   Sparkles
 } from 'lucide-react';
 
