@@ -8,7 +8,7 @@
  * 4. Offline gate pass caching for remote entrance checkpoints
  */
 
-const CACHE_NAME = 'globetrotter-v2.3.0';
+const CACHE_NAME = 'globetrotter-v2.4.0';
 const STATIC_PRECACHE = [
   '/',
   '/index.html',
@@ -88,22 +88,35 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // A. Navigation (HTML document requests): Network-first with cache fallback
+// A. Navigation (HTML document requests): Stale-While-Revalidate with fast 2s timeout
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+      caches.open(CACHE_NAME).then((cache) => {
+        return cache.match('/index.html').then((cachedIndex) => {
+          // If cached index exists, return it immediately or with a tight 2000ms network race
+          const networkPromise = fetch(request)
+            .then((networkRes) => {
+              if (networkRes && networkRes.status === 200) {
+                cache.put('/index.html', networkRes.clone());
+                cache.put('/', networkRes.clone());
+              }
+              return networkRes;
+            })
+            .catch(() => null);
+
+          if (cachedIndex) {
+            // Background revalidation: update cache in background, serve instant cached shell to user
+            networkPromise.then(() => {});
+            return cachedIndex;
           }
-          return response;
-        })
-        .catch(() => {
-          return caches.match('/index.html').then((cached) => {
-            return cached || caches.match('/');
+
+          // If not cached yet (first visit), await network or fallback
+          return networkPromise.then((res) => {
+            if (res) return res;
+            return caches.match('/index.html');
           });
-        })
+        });
+      })
     );
     return;
   }

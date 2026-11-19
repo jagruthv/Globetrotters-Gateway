@@ -37,17 +37,6 @@ const MODULE_NOW = new Date();
 const MODULE_TODAY_ISO = MODULE_NOW.toISOString().split('T')[0];
 const MODULE_TOMORROW_ISO = new Date(MODULE_NOW.getTime() + 86400000).toISOString().split('T')[0];
 
-function getSummaryDateInfo(bookingDate) {
-  const start = (bookingDate && String(bookingDate).match(/^\d{4}-\d{2}-\d{2}$/))
-    ? String(bookingDate)
-    : (bookingDate === 'Tomorrow' ? MODULE_TOMORROW_ISO : MODULE_TODAY_ISO);
-  return {
-    summaryStartDate: start,
-    isDateToday: start === MODULE_TODAY_ISO,
-    isDateTomorrow: start === MODULE_TOMORROW_ISO
-  };
-}
-
 export default function PaymentProcessingModal({
   isOpen,
   onClose,
@@ -58,6 +47,26 @@ export default function PaymentProcessingModal({
   const [secondsLeft, setSecondsLeft] = useState(5);
   const [paymentFinished, setPaymentFinished] = useState(false);
   const timerRef = useRef(null);
+
+  const [selectedVisitDate, setSelectedVisitDate] = useState(() => {
+    if (bookingDetails?.date && String(bookingDetails.date).match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return String(bookingDetails.date);
+    }
+    if (bookingDetails?.date === 'Tomorrow') {
+      return MODULE_TOMORROW_ISO;
+    }
+    return MODULE_TODAY_ISO;
+  });
+
+  const [prevBookingDate, setPrevBookingDate] = useState(bookingDetails?.date);
+  if (bookingDetails?.date !== prevBookingDate) {
+    setPrevBookingDate(bookingDetails?.date);
+    if (bookingDetails?.date && String(bookingDetails.date).match(/^\d{4}-\d{2}-\d{2}$/)) {
+      setSelectedVisitDate(String(bookingDetails.date));
+    } else if (bookingDetails?.date === 'Tomorrow') {
+      setSelectedVisitDate(MODULE_TOMORROW_ISO);
+    }
+  }
 
   const rawVal = bookingDetails?.totalAmount !== undefined ? bookingDetails.totalAmount : bookingDetails?.price;
   let parsedAmount = 0;
@@ -93,14 +102,11 @@ export default function PaymentProcessingModal({
     const touristName = bookingDetails?.touristName || 'Verified Visitor';
     const numTourists = bookingDetails?.touristCount || 1;
     const refNumber = customRefNumber || `GT-${new Date().getFullYear()}-${randomCode}`;
-    const today = new Date().toISOString().split('T')[0];
     
-    // Calculate authentic trip validity window matching user-selected visit date and trip duration
-    const startDate = (bookingDetails?.date && String(bookingDetails.date).match(/^\d{4}-\d{2}-\d{2}$/))
-      ? String(bookingDetails.date)
-      : (bookingDetails?.date === 'Tomorrow'
-        ? new Date(Date.now() + 86400000).toISOString().split('T')[0]
-        : today);
+    // Confirmed visit date selected by user
+    const startDate = (selectedVisitDate && String(selectedVisitDate).match(/^\d{4}-\d{2}-\d{2}$/))
+      ? selectedVisitDate
+      : MODULE_TODAY_ISO;
 
     const durationDays = Math.max(1, parseInt(bookingDetails?.durationDays || bookingDetails?.days || 1, 10));
     const startMs = new Date(startDate + 'T00:00:00').getTime();
@@ -166,7 +172,7 @@ export default function PaymentProcessingModal({
         onPaymentSuccess(passPayload);
       }
     }, 600);
-  }, [bookingDetails, onPaymentSuccess, parsedAmount]);
+  }, [bookingDetails, onPaymentSuccess, parsedAmount, selectedVisitDate]);
 
   // Start 5-second simulated test payment
   const handleStartSimulatedPayment = () => {
@@ -200,8 +206,6 @@ export default function PaymentProcessingModal({
   if (!isOpen) return null;
 
   const progressPercent = Math.min(100, Math.max(0, ((5 - secondsLeft) / 5) * 100));
-
-  const { summaryStartDate, isDateToday, isDateTomorrow } = getSummaryDateInfo(bookingDetails?.date);
 
   return (
     <AnimatePresence>
@@ -276,18 +280,16 @@ export default function PaymentProcessingModal({
             /* ── STATE B: INITIAL SELECTION / CONFIRMATION ── */
             <>
               {/* Header */}
-              <div className="flex flex-col items-center text-center gap-1.5 pt-1">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 text-amber-300 text-[11px] font-semibold">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Instant Digital Pass</span>
+              <div className="flex flex-col items-center text-center gap-1 pt-1">
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/20 text-amber-300 text-[10px] font-semibold">
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span>Entry Pass</span>
                 </div>
-                <h3 className="text-xl font-bold tracking-tight text-white mt-1">
-                  {parsedAmount === 0 ? 'Official Free Admission Pass' : 'Confirm Entry Pass'}
+                <h3 className="text-lg font-bold tracking-tight text-white mt-0.5">
+                  {parsedAmount === 0 ? 'Free Entry Pass' : 'Confirm Pass'}
                 </h3>
-                <p className="text-xs text-slate-400 max-w-xs">
-                  {parsedAmount === 0 
-                    ? 'Direct digital admission pass for public heritage sights.'
-                    : 'Get your official entry pass instantly on your device.'}
+                <p className="text-xs text-slate-400">
+                  {parsedAmount === 0 ? 'Select your visit date to issue your pass.' : 'Choose your visit date to complete booking.'}
                 </p>
               </div>
 
@@ -300,20 +302,58 @@ export default function PaymentProcessingModal({
                   </span>
                 </div>
                 <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                  <span className="text-slate-400">Pass / Circuit</span>
+                  <span className="text-slate-400">Pass</span>
                   <span className="font-semibold text-emerald-400 truncate max-w-[200px]">
-                    {bookingDetails?.circuitName || 'Monument Entry Pass'}
+                    {bookingDetails?.circuitName || 'Monument Pass'}
                   </span>
                 </div>
-                <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                  <span className="text-slate-400">Visit Date</span>
-                  <span className="font-semibold text-white flex items-center gap-1.5 font-mono text-[11px]">
-                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{formatPassDate(summaryStartDate)}</span>
-                    {isDateToday && <span className="text-emerald-400 font-bold">(Today)</span>}
-                    {isDateTomorrow && <span className="text-amber-400 font-bold">(Tomorrow)</span>}
-                  </span>
+
+                {/* Interactive Date of Visit Selector */}
+                <div className="flex flex-col gap-2 border-b border-white/5 pb-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Date of Visit</span>
+                    <span className="text-amber-400 font-bold font-mono text-[11px] flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-amber-400" />
+                      <span>{formatPassDate(selectedVisitDate)}</span>
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedVisitDate(MODULE_TODAY_ISO)}
+                      className={`py-1 px-2 rounded-lg text-xs transition-colors cursor-pointer text-center ${
+                        selectedVisitDate === MODULE_TODAY_ISO
+                          ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                          : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                      }`}
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedVisitDate(MODULE_TOMORROW_ISO)}
+                      className={`py-1 px-2 rounded-lg text-xs transition-colors cursor-pointer text-center ${
+                        selectedVisitDate === MODULE_TOMORROW_ISO
+                          ? 'bg-amber-400 text-slate-950 font-bold shadow-sm'
+                          : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                      }`}
+                    >
+                      Tomorrow
+                    </button>
+                    <input
+                      type="date"
+                      min={MODULE_TODAY_ISO}
+                      value={selectedVisitDate}
+                      onChange={(e) => {
+                        if (e.target.value) setSelectedVisitDate(e.target.value);
+                      }}
+                      aria-label="Select custom date"
+                      className="py-1 px-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white text-[11px] font-mono border border-white/10 focus:outline-none focus:border-amber-400 cursor-pointer text-center"
+                    />
+                  </div>
                 </div>
+
                 <div className="flex items-center justify-between pt-0.5">
                   <span className="text-sm font-bold text-white">Entry Fare</span>
                   <span className="text-lg font-extrabold text-amber-400 font-mono">
@@ -332,7 +372,7 @@ export default function PaymentProcessingModal({
                     className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.98]"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Issue Free Digital Pass (₹0)</span>
+                    <span>Get Free Pass</span>
                   </button>
                 ) : (
                   <>
@@ -353,7 +393,7 @@ export default function PaymentProcessingModal({
                       className="w-full py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 border border-white/10 font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer font-sans-clean"
                     >
                       <Zap className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Reserve Pass • Pay at Counter</span>
+                      <span>Pay at Gate</span>
                     </button>
                   </>
                 )}

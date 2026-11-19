@@ -2,9 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Ticket,
-  Percent
+  Percent,
+  Calendar
 } from 'lucide-react';
 import { circuitService } from '../services/api';
+
+const MODULE_NOW = new Date();
+const MODULE_TODAY_ISO = MODULE_NOW.toISOString().split('T')[0];
+const MODULE_TOMORROW_ISO = new Date(MODULE_NOW.getTime() + 86400000).toISOString().split('T')[0];
 
 const SIGNATURE_CIRCUITS = [
   {
@@ -92,6 +97,7 @@ const SIGNATURE_CIRCUITS = [
 
 export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
   const [circuits, setCircuits] = useState(SIGNATURE_CIRCUITS);
+  const [circuitDates, setCircuitDates] = useState({});
 
   // Live Database Ingestion with Resilient Fallback (Anti-Silent Failure Protocol)
   useEffect(() => {
@@ -231,10 +237,25 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
                     </div>
                   </div>
 
+                  {/* Start Date Selector */}
+                  <div className="flex items-center justify-between text-xs bg-white/[0.02] border border-white/5 rounded-xl px-3 py-2 font-sans-clean">
+                    <span className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-amber-400" /> Start Date
+                    </span>
+                    <input
+                      type="date"
+                      min={MODULE_TODAY_ISO}
+                      value={circuitDates[circuit.id] || MODULE_TOMORROW_ISO}
+                      onChange={(e) => setCircuitDates(prev => ({ ...prev, [circuit.id]: e.target.value }))}
+                      aria-label={`Select start date for ${circuit.title}`}
+                      className="bg-white/5 hover:bg-white/10 text-white text-[11px] font-mono border border-white/10 rounded-lg px-2 py-1 focus:outline-none focus:border-amber-400 cursor-pointer text-center"
+                    />
+                  </div>
+
                   {/* Actions */}
-                  <div className="flex items-center gap-3 pt-2">
+                  <div className="flex items-center gap-3 pt-1">
                     <button
-                      onClick={() => onBookCircuit(circuit)}
+                      onClick={() => onBookCircuit(circuit, circuitDates[circuit.id] || MODULE_TOMORROW_ISO)}
                       className="flex-1 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors font-sans-clean cursor-pointer active:scale-[0.98]"
                     >
                       <Ticket className="w-3.5 h-3.5" />

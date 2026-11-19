@@ -20,13 +20,18 @@ import {
   ChevronDown,
   ChevronUp,
   Square,
-  CheckSquare
+  CheckSquare,
+  Calendar
 } from 'lucide-react';
 import { tripService, chatService } from '../services/api';
 import { offlineRouteFallback, resolveSpotCoordinates } from '../utils/offlineRouteEngine';
 import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
 import LiveWeatherBadge from './LiveWeatherBadge';
 import PocketDossierModal from './PocketDossierModal';
+
+const MODULE_NOW = new Date();
+const MODULE_TODAY_ISO = MODULE_NOW.toISOString().split('T')[0];
+const MODULE_TOMORROW_ISO = new Date(MODULE_NOW.getTime() + 86400000).toISOString().split('T')[0];
 
 // Module-level utility functions to isolate side-effect timings from React Compiler render scope
 const getNowTime = () => performance.now();
@@ -86,6 +91,7 @@ export default function AiFluidTripStudio({
   // 'AUTO' allows the AI to calculate the optimal days based on spots count & elevation fatigue
   const [selectedDuration, setSelectedDuration] = useState('AUTO');
   const [travelPace, setTravelPace] = useState('BALANCED');
+  const [selectedTripDate, setSelectedTripDate] = useState(MODULE_TOMORROW_ISO);
   const [isGenerating, setIsGenerating] = useState(false);
   const [planResult, setPlanResultState] = useState(() => {
     if (typeof window === 'undefined') return null;
@@ -313,13 +319,15 @@ export default function AiFluidTripStudio({
       circuitName: targetPlan?.title || (selectedPlaces.length > 0 ? `${selectedPlaces[0].name} Consolidated Tour Pass` : 'Custom Curated Tour Pass'),
       destinations: stops.length > 0 ? stops : selectedPlaces.map((p) => p.name),
       totalAmount: finalPrice,
+      date: selectedTripDate,
+      durationDays: (targetPlan?.days || []).length || 1,
       rawPlan: targetPlan
     };
 
     if (onInitiateBooking) {
       onInitiateBooking(bookingPayload);
     } else if (onBookCustomPlan) {
-      onBookCustomPlan(targetPlan || { title: bookingPayload.circuitName, packagePrice: finalPrice, days: [] });
+      onBookCustomPlan(targetPlan || { title: bookingPayload.circuitName, packagePrice: finalPrice, days: [] }, selectedTripDate);
     } else if (onProceedToPasses) {
       onProceedToPasses();
     }
@@ -794,13 +802,29 @@ export default function AiFluidTripStudio({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleBuyPass()}
-                  className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer font-sans-clean active:scale-[0.98] transition-colors shrink-0"
-                >
-                  <Ticket className="w-3.5 h-3.5 text-slate-950" />
-                  <span>{stagedPassPrice === 0 ? 'Get Free Pass' : `Get Pass • ₹${stagedPassPrice}`}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs font-sans-clean">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <input
+                      type="date"
+                      min={MODULE_TODAY_ISO}
+                      value={selectedTripDate}
+                      onChange={(e) => {
+                        if (e.target.value) setSelectedTripDate(e.target.value);
+                      }}
+                      aria-label="Select visit date for consolidated pass"
+                      className="bg-transparent text-white text-[11px] font-mono focus:outline-none cursor-pointer"
+                    />
+                  </div>
+
+                  <button
+                    onClick={() => handleBuyPass()}
+                    className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer font-sans-clean active:scale-[0.98] transition-colors shrink-0"
+                  >
+                    <Ticket className="w-3.5 h-3.5 text-slate-950" />
+                    <span>{stagedPassPrice === 0 ? 'Get Free Pass' : `Get Pass • ₹${stagedPassPrice}`}</span>
+                  </button>
+                </div>
               </div>
             )}
 
@@ -1041,26 +1065,41 @@ export default function AiFluidTripStudio({
                 </div>
 
                 {/* Audio Guide & Pass Issue Actions */}
-                <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-2.5 flex-shrink-0">
+                  <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-2 text-xs font-sans-clean">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span className="text-[11px] text-slate-400">Start Date:</span>
+                    <input
+                      type="date"
+                      min={MODULE_TODAY_ISO}
+                      value={selectedTripDate}
+                      onChange={(e) => {
+                        if (e.target.value) setSelectedTripDate(e.target.value);
+                      }}
+                      aria-label="Select tour start date"
+                      className="bg-transparent text-white text-[11px] font-mono focus:outline-none cursor-pointer"
+                    />
+                  </div>
+
                   <button
                     onClick={() => handleBuyPass(planResult)}
-                    className="px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs flex items-center gap-2 transition-all shadow-md font-sans-clean cursor-pointer active:scale-[0.98]"
+                    className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md font-sans-clean cursor-pointer active:scale-[0.98]"
                   >
                     <Ticket className="w-4 h-4 text-slate-950" />
                     <span>
                       {(typeof planResult.packagePrice === 'number' ? planResult.packagePrice : stagedPassPrice) === 0
-                        ? 'Get Free Entry Pass (₹0)'
-                        : `Book Entry Pass • ₹${typeof planResult.packagePrice === 'number' ? planResult.packagePrice : stagedPassPrice}`}
+                        ? 'Get Free Pass'
+                        : `Book Pass • ₹${typeof planResult.packagePrice === 'number' ? planResult.packagePrice : stagedPassPrice}`}
                     </span>
                   </button>
 
                   <button
                     onClick={() => setIsPocketDossierOpen(true)}
-                    className="px-4 py-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/20 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean shadow-sm"
+                    className="px-4 py-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/20 text-white font-medium text-xs flex items-center gap-1.5 transition-all cursor-pointer font-sans-clean shadow-sm"
                     title="Print or save 1-page pocket travel guide for your road trip"
                   >
                     <Printer className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Print Guide (PDF)</span>
+                    <span>Print PDF</span>
                   </button>
 
                   <button

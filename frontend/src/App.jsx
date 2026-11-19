@@ -283,7 +283,10 @@ export default function App() {
     }
 
     if (!user) {
-      setPendingBooking(bookingData);
+      setPendingBooking({
+        ...bookingData,
+        date: bookingData?.date || 'Tomorrow'
+      });
       setAuthModalReason('Please sign in or continue as Guest to issue your entry pass.');
       setAuthModalOpen(true);
       return;
@@ -291,6 +294,7 @@ export default function App() {
 
     setActiveBookingForPayment({
       ...bookingData,
+      date: bookingData?.date || 'Tomorrow',
       touristName: user.fullName || user.email || 'Guest Traveler',
       touristEmail: user.email || '',
       touristPhone: user.phoneNumber || ''
@@ -371,7 +375,7 @@ export default function App() {
       circuitName: `${passInfo.destination} Official Gate Pass`,
       destinations: [passInfo.destination],
       totalAmount: finalAmount,
-      date: passInfo.date,
+      date: passInfo.date || 'Tomorrow',
       touristCount: passInfo.travelers || 1,
       durationDays: passInfo.durationDays || 1
     });
@@ -392,25 +396,27 @@ export default function App() {
     setActiveTab('planner');
   };
 
-  const handleBookCircuit = (circuit) => {
+  const handleBookCircuit = (circuit, chosenDate = null) => {
     const durMatch = (circuit?.duration || '').match(/(\d+)\s*Day/i);
     const parsedDays = durMatch ? parseInt(durMatch[1], 10) : 2;
     handleInitiateBooking({
       circuitName: circuit.title || 'Curated Heritage Circuit Pass',
       destinations: circuit.places?.map(p => p.name) || [circuit.standout],
       totalAmount: circuit.passPrice || 480,
-      durationDays: parsedDays
+      durationDays: parsedDays,
+      date: chosenDate || 'Tomorrow'
     });
   };
 
-  const handleBookCustomPlan = (customPlan) => {
+  const handleBookCustomPlan = (customPlan, chosenDate = null) => {
     const allStops = (customPlan.days || []).flatMap(d => (d.stops || []).map(s => s.name || s.placeName || s));
     const tripDays = (customPlan.days || []).length || 1;
     handleInitiateBooking({
       circuitName: customPlan.title || 'Personalized Heritage Circuit Pass',
       destinations: allStops.length > 0 ? allStops : selectedPlaces.map(p => p.name),
       totalAmount: customPlan.packagePrice || 0,
-      durationDays: tripDays
+      durationDays: tripDays,
+      date: chosenDate || customPlan.startDate || 'Tomorrow'
     });
   };
 
