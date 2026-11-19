@@ -77,7 +77,7 @@ export default function TravelAssistantDrawer({
   const [inputQuery, setInputQuery] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [activeModelName, setActiveModelName] = useState('Gemini 3.1 Flash Lite');
+  const [activeModelName, setActiveModelName] = useState('Regional Guide');
   const chatBottomRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);

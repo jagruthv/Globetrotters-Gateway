@@ -410,7 +410,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
           // Primary: gemini-3.1-flash-lite (Fastest, High-Volume Free Tier)
           const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
           let replyText = null;
-          let usedModelName = "Gemini 3.1 Flash Lite";
+          let usedModelName = "AI Assistant";
 
           const apiKey = getGeminiKey(env);
           for (const modelId of modelsToTry) {
@@ -441,7 +441,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
                 } else if (geminiData.candidates[0].content.parts[0]?.text) {
                   replyText = geminiData.candidates[0].content.parts[0].text;
                 }
-                usedModelName = modelId.includes('3.1') ? "Gemini 3.1 Flash Lite" : "Gemini 2.5 Flash Lite";
+                usedModelName = "AI Assistant";
                 break; // Successfully got response
               } else if (geminiData?.error?.message) {
                 console.warn(`[Edge Cascade] ${modelId} error: ${geminiData.error.message}. Cascading...`);

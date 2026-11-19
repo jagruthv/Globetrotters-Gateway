@@ -206,7 +206,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
   const [liveTranscript, setLiveTranscript] = useState('');
   const [lastUserPrompt, setLastUserPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState('');
-  const [activeModel, setActiveModel] = useState('Gemini 3.1 Flash Lite');
+  const [activeModel, setActiveModel] = useState('Live Audio Guide');
   const [liveError, setLiveError] = useState(null);
   const [textInput, setTextInput] = useState('');
 
