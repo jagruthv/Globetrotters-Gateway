@@ -1058,7 +1058,7 @@ export default function BentoDistrictExplorer({
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedDistrict(district);
+                                setActiveDistrictModal(district);
                               }}
                               className="text-[10px] text-amber-400 hover:text-amber-300 font-mono underline cursor-pointer"
                             >
@@ -1069,7 +1069,7 @@ export default function BentoDistrictExplorer({
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedDistrict(district);
+                                setActiveDistrictModal(district);
                               }}
                               className="text-[10px] text-slate-400 hover:text-white font-mono cursor-pointer"
                             >

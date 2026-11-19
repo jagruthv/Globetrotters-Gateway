@@ -15,7 +15,9 @@ import {
   Headphones,
   AlertTriangle,
   FileText,
-  Sparkles
+  Sparkles,
+  Clock,
+  Utensils
 } from 'lucide-react';
 
 // Curated authentic showcase destinations with verified government status & real local photography
@@ -482,36 +484,45 @@ export default function FluidLiquidDropHero({
               </div>
             </div>
 
-            {/* Timings and Guidelines */}
-            <div className="grid grid-cols-2 gap-2 text-xs font-sans-clean">
-              <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex flex-col">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wide">Visiting Hours</span>
-                  {activeDest.earlyEntry && (
-                    <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-300 font-bold">
-                      Early Entry
-                    </span>
-                  )}
-                </div>
-                <span className="text-slate-200 font-medium text-xs mt-0.5">{activeDest.bestHours}</span>
+            {/* Visiting Hours & Timings */}
+            <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/[0.02] border border-white/5 text-xs font-sans-clean">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Clock className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                <span className="text-[11px] text-slate-300 truncate">{activeDest.bestHours}</span>
               </div>
-              <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex flex-col">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wide">Authority</span>
-                <span className="text-slate-200 font-medium text-xs mt-0.5 truncate">{activeDest.authority}</span>
-              </div>
+              {activeDest.earlyEntry && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold uppercase tracking-wider flex-shrink-0 ml-1">
+                  Early Entry
+                </span>
+              )}
             </div>
 
-            {/* Advisory */}
-            <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex items-start gap-2 text-xs text-slate-300">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-              <span className="text-[11px] leading-relaxed">{activeDest.advisory}</span>
-            </div>
+            {/* Authentic Food Highlight */}
+            {activeDest.foodTip && (
+              <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/[0.04] border border-amber-500/15 text-xs text-amber-200/90 font-sans-clean">
+                <Utensils className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <span className="text-[11px] leading-relaxed line-clamp-2">
+                  <strong className="text-amber-300 font-semibold">Local Food: </strong>
+                  {activeDest.foodTip}
+                </span>
+              </div>
+            )}
 
-            {/* Navigation controls */}
+            {/* Navigation controls with slide dots */}
             <div className="pt-1.5 border-t border-white/10 flex items-center justify-between text-xs">
-              <span className="text-[11px] text-slate-400">
-                {activeIdx + 1} of {HERO_DESTINATIONS.length}
-              </span>
+              <div className="flex items-center gap-1.5">
+                {HERO_DESTINATIONS.map((dest, i) => (
+                  <button
+                    key={dest.id}
+                    type="button"
+                    onClick={() => handleSelectDestination(i)}
+                    aria-label={`View ${dest.name}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                      i === activeIdx ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/20 hover:bg-white/40'
+                    }`}
+                  />
+                ))}
+              </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleSelectDestination((activeIdx - 1 + HERO_DESTINATIONS.length) % HERO_DESTINATIONS.length)}
