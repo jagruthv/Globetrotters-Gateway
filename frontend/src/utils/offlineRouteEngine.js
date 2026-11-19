@@ -476,11 +476,28 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
   const totalCount = normalizedSpots.length;
   const elevs = normalizedSpots.map((s) => s.elevationMeters);
   const elevationSpan = Math.max(...elevs) - Math.min(...elevs);
-  const isMountainCorridor = elevationSpan >= 500 || normalizedSpots.some(s => (s.district || '').toLowerCase().includes('alluri'));
+  
+  // Real-world terrain check: only trigger mountain ghat protocols if destinations
+  // actually sit in designated hill or ghat tracts (Eastern Ghats, Nallamala, Seshachalam).
+  const hasGhatTerrain = normalizedSpots.some((s) => {
+    const text = `${s.district || ''} ${s.name || ''} ${s.mandal || ''}`.toLowerCase();
+    return (
+      text.includes('alluri') ||
+      text.includes('araku') ||
+      text.includes('lambasingi') ||
+      text.includes('horsley') ||
+      text.includes('srisailam') ||
+      text.includes('nallamala') ||
+      text.includes('maredumilli') ||
+      text.includes('tirumala') ||
+      text.includes('paderu')
+    );
+  });
+  const isMountainCorridor = hasGhatTerrain && elevationSpan >= 400;
 
   // 2. Intelligent & Safe Days Partitioning:
-  // In mountain/ghat terrain with >500m elevation drop, max 3-4 spots per day to guarantee
-  // arrival before gate closures (caves/lighthouse at 5 PM) and prevent dangerous night ghat driving.
+  // In true mountain/ghat corridors, cap at 3 spots/day for safe daylight driving and closing hours.
+  // In plains/urban corridors, allow up to 4 spots/day.
   const maxSafeSpotsPerDay = isMountainCorridor ? 3 : 4;
   const minSafeDays = Math.max(1, Math.ceil(totalCount / maxSafeSpotsPerDay));
 
@@ -494,7 +511,9 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
     targetDays = parseInt(targetDays, 10);
     if (targetDays < minSafeDays) {
       daysAdjustedForSafety = true;
-      safetyNotice = `Your ${totalCount} destinations span ${elevationSpan}m elevation change. Structured across ${minSafeDays} days to ensure arrival during open monument hours (e.g. caves & lighthouse before 5:00 PM) and safe daylight mountain driving.`;
+      safetyNotice = isMountainCorridor
+        ? `Your ${totalCount} destinations include mountain terrain with an elevation span of ${elevationSpan}m. Structured across ${minSafeDays} days to ensure arrival during open hours and safe daylight mountain driving.`
+        : `Your ${totalCount} destinations cover considerable travel distance. Structured across ${minSafeDays} days to ensure arrival during daylight visiting hours without hurried highway driving.`;
       targetDays = minSafeDays;
     }
   }
@@ -574,8 +593,13 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
           // Regional road winding factor
           legDist = Math.max(2.5, Math.round(dist * 1.45 * 10) / 10);
           const elevDelta = Math.abs((prev.elevationMeters || 100) - (spot.elevationMeters || 100));
-          // Ghat descent velocity (24 km/h) vs standard highway (45 km/h)
-          const transitSpeed = (elevDelta >= 400 || (prev.elevationMeters || 0) > 600 || (spot.elevationMeters || 0) > 600) ? 24.0 : 45.0;
+          // Ghat descent velocity (26 km/h) on mountain curves vs regional highway velocity (48 km/h)
+          const isGhatLeg =
+            (elevDelta >= 350 || (prev.elevationMeters || 0) > 650 || (spot.elevationMeters || 0) > 650) &&
+            `${prev.name} ${spot.name} ${prev.district || ''} ${spot.district || ''}`
+              .toLowerCase()
+              .match(/(araku|borra|lambasingi|horsley|srisailam|tirumala|ghat|paderu|nallamala)/);
+          const transitSpeed = isGhatLeg ? 26.0 : 48.0;
           driveMins = Math.round((legDist / transitSpeed) * 60) + 12; // drive time + parking buffer
         }
 

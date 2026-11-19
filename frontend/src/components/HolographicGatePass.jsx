@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, 
   CheckCircle, 
   Share2, 
-  Printer, 
+  Download, 
   Headphones, 
   Calendar, 
   Clock, 
@@ -15,7 +15,8 @@ import {
   Compass,
   ArrowRight,
   Sun,
-  X
+  X,
+  History
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import QRCode from 'qrcode';
@@ -30,6 +31,7 @@ export default function HolographicGatePass({
   const [shareToast, setShareToast] = useState(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [sunlightScanMode, setSunlightScanMode] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const allPasses = React.useMemo(() => {
     const list = [];
@@ -232,11 +234,24 @@ export default function HolographicGatePass({
         
         {/* Pass Header */}
         <div className="print:hidden flex flex-col items-center text-center gap-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-            <Ticket className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-emerald-300 font-sans-clean">
-              Digital Entry Pass • Instant Verification
-            </span>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <Ticket className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-emerald-300 font-sans-clean">
+                Digital Entry Pass • Instant Verification
+              </span>
+            </div>
+            {allPasses.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowHistoryModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs text-slate-300 hover:text-white transition-colors cursor-pointer font-sans-clean"
+                title="View all your active and past gate passes"
+              >
+                <History className="w-3.5 h-3.5 text-amber-400" />
+                <span>Pass History ({allPasses.length})</span>
+              </button>
+            )}
           </div>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white font-sans-clean">
             Curated Monument Entry Pass
@@ -550,12 +565,15 @@ export default function HolographicGatePass({
                 </button>
 
                 <button
-                  onClick={() => window.print()}
-                  className="px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-200 text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer font-sans-clean"
-                  title="Print or Save as PDF"
+                  onClick={() => {
+                    document.title = `Globetrotter-Gate-Pass-${activePass.reference}`;
+                    window.print();
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 text-amber-300 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer font-sans-clean shadow-sm"
+                  title="Download clean printable PDF pass receipt"
                 >
-                  <Printer className="w-3.5 h-3.5" />
-                  <span>Print Ticket</span>
+                  <Download className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Download PDF Receipt</span>
                 </button>
               </div>
             </div>
@@ -659,6 +677,124 @@ export default function HolographicGatePass({
           </div>
         </div>
       )}
+
+      {/* Booking History & Account Pass Wallet Modal */}
+      <AnimatePresence>
+        {showHistoryModal && (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            onClick={() => setShowHistoryModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-2xl bg-[#0B0F17] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-2xl text-white font-sans-clean flex flex-col gap-5 max-h-[85vh] overflow-hidden"
+            >
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                    <History className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white">My Pass Wallet & Booking History</h3>
+                    <p className="text-xs text-slate-400">Verified offline tickets across Andhra Pradesh & Telangana</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowHistoryModal(false)}
+                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto space-y-3 pr-1 scrollbar-none flex-1">
+                {allPasses.length === 0 ? (
+                  <p className="text-xs text-slate-400 text-center py-8">No booking history available yet.</p>
+                ) : (
+                  allPasses.map((pass, idx) => {
+                    const isSelected = selectedPassIndex === idx;
+                    return (
+                      <div
+                        key={pass.reference || idx}
+                        className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                          isSelected
+                            ? 'bg-amber-400/10 border-amber-400/40 text-white'
+                            : 'bg-white/[0.02] border-white/5 hover:border-white/15'
+                        }`}
+                      >
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-white">
+                              {pass.circuitName || pass.destination || 'Corridor Gate Pass'}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-amber-300">
+                              {pass.reference}
+                            </span>
+                          </div>
+                          <div className="text-xs text-slate-400 flex flex-wrap items-center gap-2 font-mono">
+                            <span>Admit: {pass.touristName}</span>
+                            <span>•</span>
+                            <span>Valid: {pass.validFrom} to {pass.validUntil}</span>
+                            <span>•</span>
+                            <span className="text-emerald-400 font-semibold">{pass.gateFeeTotal}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedPassIndex(idx);
+                              setShowHistoryModal(false);
+                            }}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer font-sans-clean ${
+                              isSelected
+                                ? 'bg-amber-400 text-slate-950 shadow-md'
+                                : 'bg-white/10 text-white hover:bg-white/20'
+                            }`}
+                          >
+                            {isSelected ? 'Viewing Pass' : 'View Pass'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedPassIndex(idx);
+                              setShowHistoryModal(false);
+                              setTimeout(() => {
+                                document.title = `Globetrotter-Gate-Pass-${pass.reference}`;
+                                window.print();
+                              }, 200);
+                            }}
+                            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                            title="Download PDF"
+                          >
+                            <Download className="w-3.5 h-3.5 text-amber-400" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-slate-400 font-sans-clean">
+                <span>Total Bookings: {allPasses.length}</span>
+                <button
+                  type="button"
+                  onClick={() => setShowHistoryModal(false)}
+                  className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+                >
+                  Close History
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

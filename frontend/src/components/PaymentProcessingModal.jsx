@@ -1,18 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheck, X, CheckCircle2, Zap, CreditCard, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { generateCryptographicPassToken } from '../utils/cryptoPassService';
 import { launchRazorpayCheckout } from '../utils/razorpayClient';
-
-const STATUS_MESSAGES = {
-  5: 'Connecting to state tourism payment gateway...',
-  4: 'Simulating instant UPI payment authorization...',
-  3: 'Payment verified • Creating digital entry pass...',
-  2: 'Registering pass with corridor gate authority...',
-  1: 'Generating official offline QR entry code...',
-  0: 'Pass Verified! Issuing your digital ticket...'
-};
 
 function playBookingSuccessSound() {
   try {
@@ -49,30 +40,27 @@ export default function PaymentProcessingModal({
   bookingDetails,
   onPaymentSuccess
 }) {
-  const [secondsRemaining, setSecondsRemaining] = useState(5);
   const [paymentFinished, setPaymentFinished] = useState(false);
   const [isPayingWithRazorpay, setIsPayingWithRazorpay] = useState(false);
   const [paymentNotice, setPaymentNotice] = useState(null);
 
-  const completeBooking = useCallback(async () => {
+  const rawVal = bookingDetails?.totalAmount !== undefined ? bookingDetails.totalAmount : bookingDetails?.price;
+  let parsedAmount = 40;
+  if (rawVal !== undefined && rawVal !== null) {
+    if (rawVal === 0 || rawVal === '0' || rawVal === '₹0' || String(rawVal).toLowerCase().includes('free')) {
+      parsedAmount = 0;
+    } else {
+      const parsed = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
+      parsedAmount = Number.isFinite(parsed) ? parsed : 40;
+    }
+  }
+
+  const completeBooking = useCallback(async (paymentMethod = 'PAID_ONLINE') => {
     const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
     const destinations = bookingDetails?.destinations || ['Cultural Heritage Gate'];
     const circuitName = bookingDetails?.circuitName || 'Official Monument Pass';
     const touristName = bookingDetails?.touristName || 'Verified Visitor';
     const numTourists = bookingDetails?.touristCount || 1;
-    
-    // Accurately parse amount: free entry (0) must remain 0
-    const rawVal = bookingDetails?.totalAmount !== undefined ? bookingDetails.totalAmount : bookingDetails?.price;
-    let amount = 40;
-    if (rawVal !== undefined && rawVal !== null) {
-      if (rawVal === 0 || rawVal === '0' || rawVal === '₹0' || String(rawVal).toLowerCase().includes('free')) {
-        amount = 0;
-      } else {
-        const parsed = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
-        amount = Number.isFinite(parsed) ? parsed : 40;
-      }
-    }
-
     const refNumber = `GT-${new Date().getFullYear()}-${randomCode}`;
     const today = new Date().toISOString().split('T')[0];
 
@@ -84,17 +72,24 @@ export default function PaymentProcessingModal({
       signedToken = refNumber;
     }
 
+    const isCounterPay = paymentMethod === 'PAY_AT_COUNTER';
+    const feeLabel = parsedAmount === 0 
+      ? 'Free Public Entry (₹0.00)' 
+      : isCounterPay 
+        ? `₹${parsedAmount}.00 (Pay at Gate)` 
+        : `₹${parsedAmount}.00 (Paid Online)`;
+
     const passPayload = {
       reference: refNumber,
       token: signedToken,
       circuitName: circuitName,
       touristName: touristName,
       touristCount: numTourists,
-      gateFeeTotal: amount === 0 ? 'Free Entry (₹0.00)' : `₹${amount}.00`,
+      gateFeeTotal: feeLabel,
       validFrom: today,
       validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       placesAllowed: destinations,
-      status: 'ACTIVE_AUTHENTICATED'
+      status: isCounterPay ? 'PENDING_GATE_PAYMENT' : 'ACTIVE_AUTHENTICATED'
     };
 
     try {
@@ -106,53 +101,35 @@ export default function PaymentProcessingModal({
       console.warn('Failed to persist pass:', e);
     }
 
+    setPaymentFinished(true);
+    playBookingSuccessSound();
+    try {
+      confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
+    } catch {
+      // Fallback
+    }
+
     if (onPaymentSuccess) {
       onPaymentSuccess(passPayload);
     }
-  }, [bookingDetails, onPaymentSuccess]);
+  }, [bookingDetails, onPaymentSuccess, parsedAmount]);
 
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
-      setSecondsRemaining(5);
       setPaymentFinished(false);
       setIsPayingWithRazorpay(false);
       setPaymentNotice(null);
     }
   }
 
-  useEffect(() => {
-    if (!isOpen || paymentFinished || isPayingWithRazorpay) return;
+  const handlePayAtCounter = () => {
+    completeBooking('PAY_AT_COUNTER');
+  };
 
-    if (secondsRemaining <= 0) {
-      const timer = setTimeout(() => {
-        setPaymentFinished(true);
-        playBookingSuccessSound();
-        try {
-          confetti({
-            particleCount: 70,
-            spread: 60,
-            origin: { y: 0.6 }
-          });
-        } catch {
-          // Fallback
-        }
-        completeBooking();
-      }, 50);
-
-      return () => clearTimeout(timer);
-    }
-
-    const interval = setTimeout(() => {
-      setSecondsRemaining((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearTimeout(interval);
-  }, [isOpen, secondsRemaining, paymentFinished, isPayingWithRazorpay, completeBooking]);
-
-  const handleInstantSkip = () => {
-    setSecondsRemaining(0);
+  const handleFreePassIssuance = () => {
+    completeBooking('FREE_PASS');
   };
 
   const handleRazorpayPayment = async () => {
@@ -160,38 +137,21 @@ export default function PaymentProcessingModal({
     setIsPayingWithRazorpay(true);
     const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
     const refNumber = `GT-${new Date().getFullYear()}-${randomCode}`;
-    const rawVal = bookingDetails?.totalAmount !== undefined ? bookingDetails.totalAmount : bookingDetails?.price;
-    let amount = 40;
-    if (rawVal !== undefined && rawVal !== null) {
-      if (rawVal === 0 || rawVal === '0' || rawVal === '₹0' || String(rawVal).toLowerCase().includes('free')) {
-        amount = 0;
-      } else {
-        const parsed = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
-        amount = Number.isFinite(parsed) ? parsed : 40;
-      }
-    }
 
     await launchRazorpayCheckout({
       bookingReference: refNumber,
       circuitTitle: bookingDetails?.circuitName || 'Official Corridor Pass',
-      amount: amount,
+      amount: parsedAmount,
       customerName: bookingDetails?.touristName || 'Verified Visitor',
       customerEmail: bookingDetails?.touristEmail || '',
       customerPhone: bookingDetails?.touristPhone || '',
       onSuccess: () => {
         setIsPayingWithRazorpay(false);
-        setPaymentFinished(true);
-        playBookingSuccessSound();
-        try {
-          confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-        } catch {
-          // confetti fallback
-        }
-        completeBooking();
+        completeBooking('PAID_ONLINE');
       },
       onError: (err) => {
         setIsPayingWithRazorpay(false);
-        setPaymentNotice(err?.message || 'Payment interrupted. You can continue with instant pass mode.');
+        setPaymentNotice(err?.message || 'Online payment could not be completed. You can reserve and pay at the gate counter instead.');
       },
       onDismiss: () => {
         setIsPayingWithRazorpay(false);
@@ -200,10 +160,6 @@ export default function PaymentProcessingModal({
   };
 
   if (!isOpen) return null;
-
-  const currentMsg = STATUS_MESSAGES[secondsRemaining] || STATUS_MESSAGES[0];
-  const progressPercent = ((5 - secondsRemaining) / 5) * 100;
-  const strokeDashoffset = 283 - (283 * progressPercent) / 100;
 
   return (
     <AnimatePresence>
@@ -227,13 +183,15 @@ export default function PaymentProcessingModal({
           <div className="flex flex-col items-center text-center gap-1.5 pt-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-[11px] font-semibold">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Official Tourism Gateway • Instant Issuance</span>
+              <span>Official Tourism Checkout • Zero Convenience Fees</span>
             </div>
             <h3 className="text-xl font-bold tracking-tight text-white mt-1">
-              Processing Entry Pass
+              {parsedAmount === 0 ? 'Official Free Admission Pass' : 'Confirm Your Entry Pass'}
             </h3>
             <p className="text-xs text-slate-400 max-w-xs">
-              Simulating fast-track digital gate verification and pass generation.
+              {parsedAmount === 0 
+                ? 'Direct digital QR admission for public state heritage sights.'
+                : 'Choose secure online payment or pay at the monument turnstile counter.'}
             </p>
           </div>
 
@@ -255,56 +213,6 @@ export default function PaymentProcessingModal({
             </div>
           )}
 
-          {/* Countdown & Status Ring */}
-          <div className="flex flex-col items-center justify-center py-1">
-            <div className="relative w-32 h-32 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke="rgba(255, 255, 255, 0.08)"
-                  strokeWidth="6"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke="#10B981"
-                  strokeWidth="6"
-                  strokeDasharray="283"
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  className="transition-all duration-700 ease-linear"
-                />
-              </svg>
-
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                {paymentFinished ? (
-                  <CheckCircle2 className="w-10 h-10 text-emerald-400 transition-transform duration-300" />
-                ) : (
-                  <>
-                    <span className="text-3xl font-bold text-white font-mono leading-none">
-                      {secondsRemaining}s
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-sans-clean mt-1">
-                      Verifying
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-3 text-center">
-              <span className="inline-flex items-center gap-2 text-xs font-medium text-slate-300 font-sans-clean">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span>{currentMsg}</span>
-              </span>
-            </div>
-          </div>
-
           {/* Booking Summary Box */}
           <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/5 flex flex-col gap-2.5 text-xs">
             <div className="flex items-center justify-between border-b border-white/5 pb-2">
@@ -314,58 +222,62 @@ export default function PaymentProcessingModal({
               </span>
             </div>
             <div className="flex items-center justify-between border-b border-white/5 pb-2">
-              <span className="text-slate-400">Pass Details</span>
+              <span className="text-slate-400">Pass / Circuit</span>
               <span className="font-semibold text-emerald-400 truncate max-w-[200px]">
                 {bookingDetails?.circuitName || 'Monument Entry Pass'}
               </span>
             </div>
             <div className="flex items-center justify-between pt-0.5">
-              <span className="text-sm font-bold text-white">Total Amount</span>
-              <span className="text-base font-extrabold text-amber-400 font-mono">
-                {(() => {
-                  const t = bookingDetails?.totalAmount !== undefined ? bookingDetails.totalAmount : bookingDetails?.price;
-                  if (t === 0 || t === '0' || t === '₹0' || String(t).toLowerCase().includes('free')) {
-                    return 'Free (₹0)';
-                  }
-                  if (typeof t === 'number') return `₹${t}`;
-                  return t || '₹40';
-                })()}
+              <span className="text-sm font-bold text-white">Official Fare</span>
+              <span className="text-lg font-extrabold text-amber-400 font-mono">
+                {parsedAmount === 0 ? 'Free Entry (₹0)' : `₹${parsedAmount}.00`}
               </span>
             </div>
           </div>
 
-          {/* Quick Actions Footer */}
-          <div className="flex items-center justify-between gap-3 pt-1">
+          {/* Actions depending on free vs paid */}
+          <div className="flex flex-col gap-2.5 pt-1">
+            {parsedAmount === 0 ? (
+              <button
+                type="button"
+                onClick={handleFreePassIssuance}
+                disabled={paymentFinished}
+                className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.98]"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Issue Free Digital Gate Pass (₹0)</span>
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleRazorpayPayment}
+                  disabled={paymentFinished || isPayingWithRazorpay}
+                  className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.98]"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>{isPayingWithRazorpay ? 'Opening Razorpay Gateway...' : `Pay ₹${parsedAmount} Online (UPI / Cards)`}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePayAtCounter}
+                  disabled={paymentFinished || isPayingWithRazorpay}
+                  className="w-full py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 border border-white/10 font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer font-sans-clean"
+                >
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Reserve Pass • Pay at Monument Counter</span>
+                </button>
+              </>
+            )}
+
             <button
               onClick={onClose}
               disabled={paymentFinished}
-              className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-30"
+              className="py-1 text-slate-400 hover:text-white text-xs font-medium transition-colors cursor-pointer text-center"
             >
               Cancel
             </button>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleInstantSkip}
-                disabled={paymentFinished || isPayingWithRazorpay}
-                className="px-3.5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-                title="Issue pass instantly in fast-track demo mode"
-              >
-                <Zap className="w-3.5 h-3.5 text-amber-400 fill-current" />
-                <span>Instant Pass</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleRazorpayPayment}
-                disabled={paymentFinished || isPayingWithRazorpay}
-                className="px-4 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer disabled:opacity-50"
-                title="Pay securely with Razorpay (UPI, Cards, Netbanking)"
-              >
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>{isPayingWithRazorpay ? 'Connecting...' : 'Pay with Razorpay'}</span>
-              </button>
-            </div>
           </div>
         </motion.div>
       </div>

@@ -23,7 +23,9 @@ import {
   Award,
   Mountain,
   Waves,
-  ShieldCheck
+  ShieldCheck,
+  LayoutGrid,
+  Map as MapIcon
 } from 'lucide-react';
 import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
 import { getAuthenticPlacePhoto, getOfflineImageFallback } from '../utils/authenticPlacePhotos';
@@ -37,6 +39,36 @@ if (ALL_59_DISTRICTS) {
     DISTRICT_COORDS[d.name.toLowerCase()] = { lat: d.lat, lng: d.lng };
     if (d.hq) DISTRICT_COORDS[d.hq.toLowerCase()] = { lat: d.lat, lng: d.lng };
   });
+}
+
+// Clear guidance on district reorganization boundaries (Issue 25)
+const BIFURCATED_DISTRICT_NOTES = {
+  'anakapalli': 'Formed from undivided Visakhapatnam (2022) • Coastal & Jaggery Hub',
+  'alluri sitharama raju': 'Formed from Visakhapatnam & East Godavari tracts (2022) • Araku Valley',
+  'konaseema': 'Formed from East Godavari (2022) • Godavari Delta Coconut Corridor',
+  'dr. b.r. ambedkar konaseema': 'Formed from East Godavari (2022) • Godavari Delta',
+  'eluru': 'Formed from West Godavari & Krishna mandals (2022) • Kolleru Lake Basin',
+  'ntr': 'Formed from undivided Krishna District (2022) • Vijayawada Commercial Hub',
+  'bapatla': 'Formed from Guntur & Prakasam mandals (2022) • Suryalanka Beach Corridor',
+  'palnadu': 'Formed from Guntur upland mandals (2022) • Nagarjunakonda & Kotappakonda',
+  'nandyal': 'Formed from undivided Kurnool (2022) • Srisailam & Mahanandi Shrine Hub',
+  'sri sathya sai': 'Formed from Anantapur (2022) • Puttaparthi & Lepakshi Heritage',
+  'annamayya': 'Formed from Kadapa & Chittoor mandals (2022) • Horsley Hills & Tallapaka',
+  'tirupati': 'Formed from Chittoor & Nellore mandals (2022) • Tirumala & Chandragiri',
+  'mulugu': 'Formed from Jayashankar Bhupalpally (2019) • Ramappa UNESCO & Laknavaram',
+  'jayashankar bhupalpally': 'Formed from Warangal (2016) • Bogatha Falls & Kaleshwaram',
+  'bhadradri kothagudem': 'Formed from Khammam (2016) • Bhadrachalam Temple Hub',
+  'komaram bheem asifabad': 'Formed from Adilabad (2016) • Tribal Forest Corridor'
+};
+
+function projectCoordsToSvg(lat, lng, width = 720, height = 540) {
+  const minLat = 12.3;
+  const maxLat = 19.9;
+  const minLng = 76.8;
+  const maxLng = 84.8;
+  const x = ((lng - minLng) / (maxLng - minLng)) * (width - 80) + 40;
+  const y = height - (((lat - minLat) / (maxLat - minLat)) * (height - 80) + 40);
+  return { x: Math.round(x), y: Math.round(y) };
 }
 
 // High-level State Toggles
@@ -217,6 +249,8 @@ export default function BentoDistrictExplorer({
   const [isLocating, setIsLocating] = useState(false);
   const [sortByDistance, setSortByDistance] = useState(false);
   const [locationMessage, setLocationMessage] = useState(null);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'map'
+  const [hoveredMapDistrict, setHoveredMapDistrict] = useState(null);
 
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -606,14 +640,37 @@ export default function BentoDistrictExplorer({
           </div>
         </div>
 
-        {/* Results Summary Bar */}
-        <div className="flex items-center justify-between text-xs text-slate-400 font-sans-clean">
-          <span>
-            Showing <strong className="text-white font-mono">{filteredDistricts.length}</strong> of 59 Districts
-          </span>
-          <span className="hidden sm:inline text-slate-500">
-            Click any district to view places to visit, ticket fees, and travel tips
-          </span>
+        {/* Results Summary Bar & View Mode Toggle */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-400 font-sans-clean">
+          <div className="flex items-center gap-2">
+            <span>
+              Showing <strong className="text-white font-mono">{filteredDistricts.length}</strong> of 59 Districts
+            </span>
+            <span className="hidden sm:inline text-slate-500">• Click any district to view verified dossiers</span>
+          </div>
+
+          <div className="flex items-center p-0.5 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`px-3 py-1 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
+                viewMode === 'grid' ? 'bg-amber-400 text-slate-950 font-bold shadow-sm' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Bento Grid</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('map')}
+              className={`px-3 py-1 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer ${
+                viewMode === 'map' ? 'bg-amber-400 text-slate-950 font-bold shadow-sm' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <MapIcon className="w-3.5 h-3.5" />
+              <span>Interactive Corridor Map</span>
+            </button>
+          </div>
         </div>
 
         {/* Zero Results Diagnostic Recovery */}
@@ -636,6 +693,176 @@ export default function BentoDistrictExplorer({
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset All Filters</span>
             </button>
+          </div>
+        ) : viewMode === 'map' ? (
+          /* Interactive Regional Geospatial Corridor Map */
+          <div className="relative w-full rounded-3xl bg-[#090D14] border border-white/10 p-4 md:p-6 overflow-hidden flex flex-col gap-4 shadow-2xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                <div>
+                  <h3 className="text-base font-bold text-white font-sans-clean">
+                    Regional Geospatial Corridor Map (Offline Vector)
+                  </h3>
+                  <p className="text-xs text-slate-400 font-sans-clean">
+                    Click any district node to open full dossiers, transit advice, and spot pricing
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-xs font-mono">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-amber-400/80 border border-amber-300" />
+                  <span className="text-amber-300">Andhra Pradesh (26)</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-cyan-400/80 border border-cyan-300" />
+                  <span className="text-cyan-300">Telangana (33)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Map Canvas with SVG Vector Overlay */}
+            <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[620px] bg-slate-950/80 rounded-2xl border border-white/5 overflow-hidden flex items-center justify-center">
+              <svg
+                viewBox="0 0 840 600"
+                className="w-full h-full select-none"
+                style={{ filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.5))' }}
+              >
+                <defs>
+                  <radialGradient id="apGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+                  </radialGradient>
+                  <radialGradient id="tgGlow" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+
+                {/* Major Transit Corridor Arteries */}
+                {/* NH-16: Coastal AP Corridor */}
+                <polyline
+                  points="750,110 680,180 570,250 490,290 440,370 410,480 390,520"
+                  fill="none"
+                  stroke="#f59e0b"
+                  strokeWidth="2"
+                  strokeDasharray="4 4"
+                  opacity="0.35"
+                />
+                {/* NH-44: North-South TG Corridor */}
+                <polyline
+                  points="250,50 215,120 255,225 210,340 180,440"
+                  fill="none"
+                  stroke="#06b6d4"
+                  strokeWidth="2"
+                  strokeDasharray="4 4"
+                  opacity="0.35"
+                />
+                {/* NH-65: Central Connecting Highway */}
+                <polyline
+                  points="255,225 360,255 490,290"
+                  fill="none"
+                  stroke="#e2e8f0"
+                  strokeWidth="2"
+                  strokeDasharray="3 3"
+                  opacity="0.3"
+                />
+
+                {/* State Regional Group Labels */}
+                <text x="210" y="80" fill="#06b6d4" fillOpacity="0.15" fontSize="36" fontWeight="bold" fontFamily="monospace">
+                  TELANGANA
+                </text>
+                <text x="480" y="440" fill="#f59e0b" fillOpacity="0.15" fontSize="36" fontWeight="bold" fontFamily="monospace">
+                  ANDHRA PRADESH
+                </text>
+
+                {/* District Pins */}
+                {filteredDistricts.map((dist) => {
+                  const nameKey = dist.name.toLowerCase();
+                  const hqKey = (dist.hq || '').toLowerCase();
+                  const coords = DISTRICT_COORDS[nameKey] || DISTRICT_COORDS[hqKey] || {
+                    lat: dist.spots[0]?.latitude,
+                    lng: dist.spots[0]?.longitude
+                  };
+                  if (!coords || coords.lat == null || coords.lng == null) return null;
+                  const pt = projectCoordsToSvg(coords.lat, coords.lng, 840, 600);
+                  const isAP = dist.state === 'Andhra Pradesh';
+                  const isHovered = hoveredMapDistrict?.name === dist.name;
+
+                  return (
+                    <g
+                      key={dist.name}
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHoveredMapDistrict(dist)}
+                      onClick={() => setActiveDistrictModal(dist)}
+                    >
+                      {/* Outer halo on hover */}
+                      {isHovered && (
+                        <circle
+                          cx={pt.x}
+                          cy={pt.y}
+                          r={22}
+                          fill={isAP ? 'url(#apGlow)' : 'url(#tgGlow)'}
+                        />
+                      )}
+                      {/* Main Node Circle */}
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r={isHovered ? 9 : 6.5}
+                        fill={isAP ? '#f59e0b' : '#06b6d4'}
+                        stroke="#0f172a"
+                        strokeWidth="2"
+                      />
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r={isHovered ? 3.5 : 2}
+                        fill="#ffffff"
+                      />
+                      {/* Label */}
+                      <text
+                        x={pt.x}
+                        y={pt.y + 16}
+                        textAnchor="middle"
+                        fontSize={isHovered ? "11" : "9.5"}
+                        fontWeight={isHovered ? "bold" : "normal"}
+                        fill={isHovered ? "#ffffff" : "#94a3b8"}
+                        className="pointer-events-none drop-shadow font-sans-clean select-none"
+                      >
+                        {dist.name.replace(' District', '')}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+
+              {/* Floating Hover Dossier Preview Card */}
+              {hoveredMapDistrict && (
+                <div className="absolute bottom-4 right-4 max-w-xs p-4 rounded-2xl bg-black/90 backdrop-blur-xl border border-white/20 shadow-2xl text-left pointer-events-none">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[10px] font-mono font-bold text-amber-300">
+                      {hoveredMapDistrict.state === 'Andhra Pradesh' ? 'AP' : 'TG'} • HQ: {hoveredMapDistrict.hq}
+                    </span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-white">
+                      {hoveredMapDistrict.spots.length} Sights
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-white font-sans-clean">
+                    {hoveredMapDistrict.name.replace(' District', '')}
+                  </h4>
+                  <p className="text-xs text-amber-300/90 font-medium mt-1 truncate">
+                    ⭐ {hoveredMapDistrict.spots[0]?.name || 'Flagship Sight'}
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
+                    {hoveredMapDistrict.spots[0]?.description || 'Historic monuments, scenic views, and cultural landmarks.'}
+                  </p>
+                  <div className="mt-2 text-[10px] text-emerald-400 font-mono">
+                    Click node to view all sights & transit guide →
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           /* Asymmetrical Authentic Bento Box Grid */
@@ -731,9 +958,16 @@ export default function BentoDistrictExplorer({
                     <div className="p-5 flex flex-col gap-3.5 flex-1 justify-between">
                       <div>
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
-                            {district.name.replace(' District', '')}
-                          </h3>
+                          <div>
+                            <h3 className="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
+                              {district.name.replace(' District', '')}
+                            </h3>
+                            {BIFURCATED_DISTRICT_NOTES[district.name.toLowerCase().replace(' district', '').trim()] && (
+                              <span className="text-[10px] text-amber-300/80 font-medium block mt-0.5">
+                                ℹ️ {BIFURCATED_DISTRICT_NOTES[district.name.toLowerCase().replace(' district', '').trim()]}
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center gap-1.5 flex-shrink-0">
                             {/* Wishlist Heart Button */}
                             <button
@@ -873,6 +1107,11 @@ export default function BentoDistrictExplorer({
                   <h3 className="text-xl md:text-2xl font-bold text-white mt-1">
                     {activeDistrictModal.name}
                   </h3>
+                  {BIFURCATED_DISTRICT_NOTES[activeDistrictModal.name.toLowerCase().replace(' district', '').trim()] && (
+                    <span className="text-[11px] text-amber-300 font-medium mt-0.5">
+                      ℹ️ {BIFURCATED_DISTRICT_NOTES[activeDistrictModal.name.toLowerCase().replace(' district', '').trim()]}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-3">

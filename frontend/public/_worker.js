@@ -478,6 +478,107 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
       }
     }
 
+    // ── 3.5. Message Central CPaaS: Verified Mobile SMS Gateway ──
+    const MESSAGE_CENTRAL_CUSTOMER_ID = 'C-CFD2EA355C434D2';
+    const MESSAGE_CENTRAL_KEY_BASE64 = 'TmV3X1Bhc3N3b3JkQDk5MTM=';
+
+    async function getMessageCentralToken() {
+      try {
+        const params = new URLSearchParams({
+          customerId: MESSAGE_CENTRAL_CUSTOMER_ID,
+          key: MESSAGE_CENTRAL_KEY_BASE64,
+          scope: 'NEW',
+          country: '91'
+        });
+        const res = await fetch(`https://cpaas.messagecentral.com/auth/v1/authentication/token?${params}`, {
+          headers: { accept: '*/*', 'User-Agent': 'Mozilla/5.0' }
+        });
+        const data = await res.json();
+        return data?.token || null;
+      } catch (err) {
+        console.error('Edge MC token error:', err);
+        return null;
+      }
+    }
+
+    if (url.pathname === '/api/auth/otp/send-phone' && request.method === 'POST') {
+      try {
+        const body = await request.clone().json();
+        const rawPhone = String(body.phoneNumber || body.phone || '');
+        const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+        if (cleanPhone.length === 10) {
+          const token = await getMessageCentralToken();
+          if (token) {
+            const sendParams = new URLSearchParams({
+              countryCode: '91',
+              customerId: MESSAGE_CENTRAL_CUSTOMER_ID,
+              flowType: 'SMS',
+              mobileNumber: cleanPhone,
+              otpLength: '4'
+            });
+            const sendResp = await fetch(`https://cpaas.messagecentral.com/verification/v3/send?${sendParams}`, {
+              method: 'POST',
+              headers: { authToken: token, accept: '*/*', 'User-Agent': 'Mozilla/5.0' }
+            });
+            const sendData = await sendResp.json();
+            if (sendData && sendData.responseCode === 200 && sendData.data) {
+              return new Response(JSON.stringify({
+                success: true,
+                phone: cleanPhone,
+                verificationId: sendData.data.verificationId,
+                message: 'Official verification SMS dispatched via Message Central.'
+              }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Edge Message Central Send Error:', err);
+      }
+    }
+
+    if (url.pathname === '/api/auth/otp/verify-phone' && request.method === 'POST') {
+      try {
+        const body = await request.clone().json();
+        const rawPhone = String(body.phoneNumber || body.phone || '');
+        const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+        const code = String(body.otp || body.code || '').trim();
+        const verificationId = body.verificationId;
+
+        if (verificationId && code && code.length >= 4) {
+          const token = await getMessageCentralToken();
+          if (token) {
+            const valParams = new URLSearchParams({ verificationId, code });
+            const valResp = await fetch(`https://cpaas.messagecentral.com/verification/v3/validateOtp?${valParams}`, {
+              headers: { authToken: token, accept: '*/*', 'User-Agent': 'Mozilla/5.0' }
+            });
+            const valData = await valResp.json();
+            if (valData && (valData.responseCode === 200 || (valData.data && valData.data.verificationStatus === 'VERIFICATION_COMPLETED'))) {
+              const jwtToken = `gt_jwt_mc_${cleanPhone}_${Date.now()}`;
+              const userData = {
+                id: `usr_mob_${cleanPhone}`,
+                fullName: `Traveler +91 ${cleanPhone.slice(0, 5)}...`,
+                phoneNumber: `+91 ${cleanPhone}`,
+                email: `traveler_${cleanPhone}@phone.globetrotter.in`,
+                role: 'ROLE_TOURIST',
+                token: jwtToken,
+                provider: 'mobile',
+                isPhoneVerified: true
+              };
+              return new Response(JSON.stringify(userData), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Edge Message Central Verify Error:', err);
+      }
+    }
+
     // ── 4. Proxy all other /api/* endpoints to AWS EC2 Spring Boot Backend ──
     if (url.pathname.startsWith('/api/')) {
       if (request.method === 'OPTIONS') {

@@ -15,7 +15,6 @@ import {
   Ticket
 } from 'lucide-react';
 import { authService } from '../services/api';
-import { launchMsg91Otp, isMsg91Loaded } from '../utils/msg91OtpClient';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = null }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -234,46 +233,13 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
     setError(null);
     setLoading(true);
 
-    // Primary: Launch official MSG91 Secure OTP Widget directly
-    try {
-      const launched = await launchMsg91Otp({
-        phoneNumber: clean,
-        onSuccess: (data) => {
-          setLoading(false);
-          const verifiedUser = {
-            id: Date.now(),
-            fullName: `Traveler +91 ${clean}`,
-            phoneNumber: clean,
-            isPhoneVerified: true,
-            role: 'ROLE_TOURIST',
-            token: (data && (data.token || data.jwt || data.auth_key)) || `msg91_${Date.now()}`
-          };
-          handleFinishAuth(verifiedUser, `Phone verified via MSG91! Welcome ${verifiedUser.fullName}`);
-        },
-        onFailure: (err) => {
-          console.warn('MSG91 launch notice:', err);
-          setLoading(false);
-          const msg = (err && (err.message || err.error || (typeof err === 'string' ? err : null))) || 'MSG91 verification could not be completed.';
-          setError(msg);
-        }
-      });
-
-      if (launched) {
-        setLoading(false);
-        return;
-      }
-    } catch (err) {
-      console.warn('MSG91 launch caught error:', err);
-    }
-
-    // Fallback: send via backend gateway SMS
     try {
       await authService.sendMobileOtp(clean);
       setPhoneOtpStep('input_otp');
       setPhoneResendTimer(60);
       setLoading(false);
     } catch (err) {
-      setError(err.message || 'Failed to dispatch SMS code.');
+      setError(err.message || 'Failed to dispatch SMS code. Please try again.');
       setLoading(false);
     }
   };

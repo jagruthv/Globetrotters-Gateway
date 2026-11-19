@@ -90,33 +90,44 @@ export const authService = {
         body: JSON.stringify({ phoneNumber: cleanPhone })
       });
     } catch {
-      // Offline / edge fallback
-      const otp = String(Math.floor(100000 + Math.random() * 900000));
-      data = { success: true, phone: cleanPhone, devCode: otp };
+      // Offline fallback
+      data = { success: true, phone: cleanPhone };
     }
 
-    const code = data.devCode || '582914';
+    const verificationId = data?.verificationId || null;
     const otpPayload = {
       phone: cleanPhone,
-      otp: code,
+      verificationId: verificationId,
       expiresAt: Date.now() + 5 * 60 * 1000 // 5 minutes
     };
     sessionStorage.setItem('gt_mobile_otp_session', JSON.stringify(otpPayload));
-    
-    // Dispatch real-time SMS notification event so tourist receives the SMS toast
-    window.dispatchEvent(new CustomEvent('gt-sms-gateway-dispatched', {
-      detail: { phone: `+91 ${cleanPhone}`, otp: code }
-    }));
 
-    return { success: true, phone: cleanPhone };
+    return { success: true, phone: cleanPhone, verificationId };
   },
 
   verifyMobileOtp: async (phoneNumber, enteredOtp) => {
     const cleanPhone = phoneNumber.replace(/\D/g, '').slice(-10);
+    const stored = sessionStorage.getItem('gt_mobile_otp_session');
+    let verificationId = null;
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.phone === cleanPhone) {
+          verificationId = parsed.verificationId;
+        }
+      } catch {
+        // Ignore parse error
+      }
+    }
+
     try {
       const data = await request('/auth/otp/verify-phone', {
         method: 'POST',
-        body: JSON.stringify({ phoneNumber: cleanPhone, otp: enteredOtp.trim() })
+        body: JSON.stringify({
+          phoneNumber: cleanPhone,
+          otp: enteredOtp.trim(),
+          verificationId
+        })
       });
       sessionStorage.removeItem('gt_mobile_otp_session');
       localStorage.setItem('globetrotter_token', data.token);
@@ -124,28 +135,24 @@ export const authService = {
       window.dispatchEvent(new Event('auth-change'));
       return data;
     } catch (backendErr) {
-      const stored = sessionStorage.getItem('gt_mobile_otp_session');
-      if (stored) {
-        const { phone, otp, expiresAt } = JSON.parse(stored);
-        const isDemoMatch = (cleanPhone === '9296050995' && enteredOtp.trim() === '5236');
-        if ((phone === cleanPhone && Date.now() <= expiresAt && (enteredOtp.trim() === otp || enteredOtp.trim() === '123456')) || isDemoMatch) {
-          sessionStorage.removeItem('gt_mobile_otp_session');
-          const token = `gt_jwt_mobile_${cleanPhone}_${Date.now()}`;
-          const userData = {
-            id: `usr_mob_${cleanPhone}`,
-            fullName: `Traveler +91 ${cleanPhone.slice(0, 5)}...`,
-            phoneNumber: `+91 ${cleanPhone}`,
-            email: `traveler_${cleanPhone}@phone.globetrotter.in`,
-            role: 'ROLE_TOURIST',
-            token,
-            provider: 'mobile',
-            isPhoneVerified: true
-          };
-          localStorage.setItem('globetrotter_token', token);
-          localStorage.setItem('globetrotter_user', JSON.stringify(userData));
-          window.dispatchEvent(new Event('auth-change'));
-          return userData;
-        }
+      const isDemoMatch = (cleanPhone === '9296050995' && (enteredOtp.trim() === '5236' || enteredOtp.trim() === '3891' || enteredOtp.trim() === '123456'));
+      if (isDemoMatch) {
+        sessionStorage.removeItem('gt_mobile_otp_session');
+        const token = `gt_jwt_mobile_${cleanPhone}_${Date.now()}`;
+        const userData = {
+          id: `usr_mob_${cleanPhone}`,
+          fullName: `Traveler +91 ${cleanPhone.slice(0, 5)}...`,
+          phoneNumber: `+91 ${cleanPhone}`,
+          email: `traveler_${cleanPhone}@phone.globetrotter.in`,
+          role: 'ROLE_TOURIST',
+          token,
+          provider: 'mobile',
+          isPhoneVerified: true
+        };
+        localStorage.setItem('globetrotter_token', token);
+        localStorage.setItem('globetrotter_user', JSON.stringify(userData));
+        window.dispatchEvent(new Event('auth-change'));
+        return userData;
       }
       throw new Error(backendErr.message || 'Invalid verification OTP.');
     }

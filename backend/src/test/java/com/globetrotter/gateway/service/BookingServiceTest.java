@@ -41,6 +41,9 @@ class BookingServiceTest {
     @Mock
     private QrCodeService qrCodeService;
 
+    @Mock
+    private MailService mailService;
+
     @InjectMocks
     private BookingService bookingService;
 

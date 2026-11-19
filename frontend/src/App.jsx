@@ -524,22 +524,67 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="pt-28 pb-16"
+              className="pt-28 pb-16 px-4"
             >
-              <div className="max-w-md mx-auto text-center p-8 bg-[#0D121F] rounded-3xl border border-white/10 flex flex-col items-center gap-4 shadow-xl">
-                <div className="w-12 h-12 rounded-full bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400">
-                  <ShieldCheck className="w-6 h-6" />
+              <div className="max-w-md mx-auto p-6 sm:p-8 bg-[#0D121F] rounded-3xl border border-white/10 flex flex-col gap-5 shadow-2xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-white font-sans-clean">Monument Gate Scanner</h3>
+                    <p className="text-xs text-slate-400">Turnstile checkpoint authentication for official staff</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-white">Monument Gate Staff Portal</h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Authorized checkpoint scanning terminal for offline turnstile verification at Borra Caves, Ramappa, Golconda, and Belum Caves.
-                </p>
-                <button
-                  onClick={handleOpenAgentPortal}
-                  className="px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs cursor-pointer shadow-md transition-all active:scale-95"
+
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const email = e.target.officerEmail.value.trim();
+                    const pass = e.target.officerPassword.value.trim();
+                    if (!email || !pass) return;
+                    try {
+                      const data = await authService.login(email, pass);
+                      const role = data?.role || '';
+                      if (role === 'ROLE_ADMIN' || role === 'ROLE_STAFF' || role === 'ROLE_AGENT') {
+                        setIsAgentPortalActive(true);
+                      } else {
+                        alert('Access Denied (RBAC-403): Account lacks gate scanner authorization.');
+                      }
+                    } catch (err) {
+                      alert(err?.message || 'Login failed. Please check credentials.');
+                    }
+                  }}
+                  className="flex flex-col gap-3.5 font-sans-clean"
                 >
-                  Launch Gate Scanner Terminal
-                </button>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-slate-300 font-medium">Officer Email</label>
+                    <input
+                      name="officerEmail"
+                      type="email"
+                      required
+                      placeholder="staff@globetrotter.com"
+                      className="px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-amber-400 font-sans-clean"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-slate-300 font-medium">Security Passkey</label>
+                    <input
+                      name="officerPassword"
+                      type="password"
+                      required
+                      placeholder="••••••••"
+                      className="px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-amber-400 font-sans-clean"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-[0.98] mt-1 font-sans-clean"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Authorize & Launch Scanner Feed</span>
+                  </button>
+                </form>
               </div>
             </motion.div>
           )}

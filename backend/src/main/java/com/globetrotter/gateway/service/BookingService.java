@@ -28,6 +28,7 @@ public class BookingService {
     private final UserRepository userRepository;
     private final TicketRedemptionRepository redemptionRepository;
     private final QrCodeService qrCodeService;
+    private final MailService mailService;
 
     /**
      * Creates a PENDING booking with no QR token.
@@ -115,6 +116,11 @@ public class BookingService {
                     .build();
             redemptionRepository.save(redemption);
             savedBooking.getRedemptions().add(redemption);
+        }
+
+        // Dispatch email confirmation receipt with inline QR pass
+        if ("PAID".equals(savedBooking.getPaymentStatus()) && savedBooking.getUser() != null) {
+            mailService.sendBookingConfirmation(savedBooking);
         }
 
         return mapToResponse(savedBooking);

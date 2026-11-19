@@ -10,7 +10,9 @@ import {
   Phone, 
   RotateCcw,
   Check,
-  Shield
+  Shield,
+  Bus,
+  ExternalLink
 } from 'lucide-react';
 import { authService } from '../services/api';
 
@@ -592,7 +594,74 @@ export default function SettingsModal({
               </div>
             </div>
 
-            {/* SECTION 4: AGENT MODE (Staff turnstile access) */}
+            {/* SECTION 4: OFFICIAL REGIONAL TRANSIT & BUS TRACKING */}
+            <div className="flex flex-col gap-3 pt-2 border-t border-white/10">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-400 font-sans-clean">
+                  State Transit & Bus Tracking
+                </span>
+                <span className="text-[10px] font-mono text-amber-300/80 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+                  APSRTC & TSRTC Portals
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-400/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+                    <Bus className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col gap-1 text-xs">
+                    <span className="font-semibold text-white font-sans-clean">
+                      Live Highway & Intercity Bus Portals
+                    </span>
+                    <p className="text-[11px] text-slate-400 font-sans-clean leading-relaxed">
+                      APSRTC and TSRTC operate verified GPS fleet trackers across all 59 districts. Use these official links and hotlines for live bus schedules and seat booking:
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  <a
+                    href="https://www.apsrtconline.in/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 flex items-center justify-between text-xs text-slate-200 transition-colors group"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-bold text-amber-300">APSRTC Live Portal</span>
+                      <span className="text-[10px] text-slate-400">Andhra Pradesh Buses</span>
+                    </div>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-300 transition-colors" />
+                  </a>
+
+                  <a
+                    href="https://tsrtconline.in/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 flex items-center justify-between text-xs text-slate-200 transition-colors group"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-bold text-cyan-300">TSRTC Gamyam Tracker</span>
+                      <span className="text-[10px] text-slate-400">Telangana Live Tracking</span>
+                    </div>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-300 transition-colors" />
+                  </a>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/5 text-[11px] text-slate-400 font-sans-clean">
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="w-3 h-3 text-slate-500" />
+                    <span>APSRTC Helpline: <a href="tel:08662570005" className="text-amber-300 hover:underline font-mono">0866-2570005</a></span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="w-3 h-3 text-slate-500" />
+                    <span>TSRTC Helpline: <a href="tel:04069440000" className="text-cyan-300 hover:underline font-mono">040-69440000</a></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 5: AGENT MODE (Staff turnstile access) */}
             <div className="flex flex-col gap-3 pt-2 border-t border-white/10">
               <span className="text-xs font-semibold text-slate-400 font-sans-clean">
                 Gate conductor

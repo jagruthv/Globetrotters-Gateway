@@ -453,15 +453,74 @@ export default function AiFluidTripStudio({
     } catch (err) {
       console.warn('Live AI chat unavailable, using grounded local domain co-pilot:', err.message);
       
-      const lower = query.toLowerCase();
+      const lower = query.toLowerCase().trim();
       let aiReply = '';
       let actionSuggestion = null;
 
-      if (lower.includes('why') || lower.includes('sequence') || lower.includes('order')) {
-        const firstStop = planResult?.days?.[0]?.stops?.[0]?.name || planResult?.days?.[0]?.legs?.[0]?.spotName || 'the first spot';
-        aiReply = `I prioritized ${firstStop} in the morning because morning sunlight and moderate temperatures provide the best visiting conditions before midday heat. Moving topographically prevents climbing winding ghat roads during nighttime fog and truck hours.`;
-      } else if (lower.includes('hectic') || lower.includes('tired') || lower.includes('relax') || lower.includes('senior') || lower.includes('elderly')) {
-        aiReply = `Understood! With ${selectedPlaces.length} destinations across high elevation differences, a tight schedule can feel tiring. I recommend expanding your trip to ${Math.min(5, currentDays + 1)} days to ensure plenty of relaxed, leisurely time at each sight without rushing.`;
+      // 1. Direct Destination Search: Match against current trip or all 646 atlas destinations
+      const placeInTrip = selectedPlaces.find((p) => p.name && lower.includes(p.name.toLowerCase()));
+      let targetPlace = placeInTrip;
+
+      if (!targetPlace && MASTER_ATLAS_DATA) {
+        const allDistricts = [
+          ...(MASTER_ATLAS_DATA['Andhra Pradesh'] || []),
+          ...(MASTER_ATLAS_DATA['Telangana'] || [])
+        ];
+        for (const dist of allDistricts) {
+          const match = (dist.spots || []).find((s) => s.name && lower.includes(s.name.toLowerCase()));
+          if (match) {
+            targetPlace = { ...match, district: dist.name };
+            break;
+          }
+        }
+      }
+
+      if (targetPlace) {
+        const feeText = targetPlace.individualPrice === 0 || (targetPlace.fees && String(targetPlace.fees).toLowerCase().includes('free'))
+          ? 'Free Public Entry'
+          : `₹${targetPlace.individualPrice || targetPlace.fees || 40}`;
+        const timing = targetPlace.timings || '9:00 AM – 5:30 PM';
+        const hazards = targetPlace.rules_and_hazards || targetPlace.rulesAndHazards || 'Modest attire recommended. Carry drinking water and sun protection.';
+        const food = targetPlace.culinarySpecialty ? `Verified local specialty: ${targetPlace.culinarySpecialty}.` : '';
+        
+        aiReply = `📍 **${targetPlace.name}** (${targetPlace.district || 'Regional Hub'}):\n• **Official Entry Fee:** ${feeText}\n• **Visiting Hours:** ${timing}\n• **Visitor Advice & Rules:** ${hazards}\n${food ? `• **Regional Cuisine:** ${food}\n` : ''}\n${targetPlace.description ? `*${targetPlace.description}*` : ''}`;
+      } else if (lower.includes('cost') || lower.includes('fee') || lower.includes('price') || lower.includes('budget') || lower.includes('ticket') || lower.includes('pass')) {
+        // 2. Budget & Ticket Fees
+        let totalPassCost = 0;
+        const feeBreakdown = selectedPlaces.map((p) => {
+          const price = typeof p.individualPrice === 'number' ? p.individualPrice : (parseFloat(p.price) || 0);
+          totalPassCost += price;
+          return `• **${p.name}**: ${price === 0 ? 'Free Entry' : `₹${price}`}`;
+        });
+
+        aiReply = `🎫 **Estimated Monument & Attraction Entry Fees:**\n${
+          feeBreakdown.length > 0 ? feeBreakdown.join('\n') : 'No attractions selected yet.'
+        }\n\n**Total Estimated Entry Cost:** ${totalPassCost === 0 ? '₹0 (Free Public Sightseeing)' : `₹${totalPassCost} per adult`}.\n\n*Note: Globetrotter Gate Passes bundle verified admissions with zero convenience charges.*`;
+      } else if (lower.includes('elevation') || lower.includes('ghat') || lower.includes('road') || lower.includes('drive') || lower.includes('hill') || lower.includes('altitude')) {
+        // 3. Elevation, Ghat Roads & Driving Safety
+        const highSpots = selectedPlaces.filter((p) => {
+          const desc = ((p.description || '') + ' ' + (p.name || '')).toLowerCase();
+          return desc.includes('hill') || desc.includes('ghat') || desc.includes('valley') || desc.includes('caves') || (p.elevation && p.elevation > 500);
+        });
+
+        aiReply = `⛰️ **Terrain & Driving Advisory:**\n${
+          highSpots.length > 0
+            ? `Your route passes through elevated terrain near **${highSpots.map((s) => s.name).join(', ')}**.\n• Keep driving speed under 35 km/h on hairpin bends.\n• Avoid overtaking on blind curves and sound horn before turns.\n• Avoid night driving through forest ghat roads after 6:30 PM due to fog and wildlife crossings.`
+            : `Your selected stops are primarily located in plains and urban valleys with gentle road grades. Standard highway speeds of 60–80 km/h apply on four-lane national highways (NH-16 / NH-44 / NH-65).`
+        }`;
+      } else if (lower.includes('hectic') || lower.includes('tired') || lower.includes('relax') || lower.includes('senior') || lower.includes('elderly') || lower.includes('stair') || lower.includes('steps')) {
+        // 4. Senior Citizens & Accessibility
+        const steepSpots = selectedPlaces.filter((p) => {
+          const str = ((p.name || '') + ' ' + (p.description || '') + ' ' + (p.rules_and_hazards || '')).toLowerCase();
+          return str.includes('step') || str.includes('stair') || str.includes('cave') || str.includes('fort') || str.includes('climb');
+        });
+
+        aiReply = `🚶 **Comfort & Accessibility Review:**\n${
+          steepSpots.length > 0
+            ? `Note: **${steepSpots.map((s) => s.name).join(', ')}** require climbing stone steps. For senior travelers, take regular breathers and carry walking assistance or an umbrella.`
+            : `Your current stops feature level footpaths and moderate walking requirements.`
+        }\n\nTo keep pacing leisurely, I suggest spreading this trip over ${Math.min(5, currentDays + 1)} days so you can enjoy relaxing breaks between stops.`;
+        
         actionSuggestion = {
           label: `Expand Trip to ${Math.min(5, currentDays + 1)} Days`,
           action: () => {
@@ -470,34 +529,41 @@ export default function AiFluidTripStudio({
             handleGeneratePlan(nextDays);
           }
         };
-      } else if (lower.includes('food') || lower.includes('eat') || lower.includes('lunch') || lower.includes('breakfast') || lower.includes('dinner')) {
-        const foodSpots = selectedPlaces.filter(p => p.culinarySpecialty);
+      } else if (lower.includes('food') || lower.includes('eat') || lower.includes('lunch') || lower.includes('breakfast') || lower.includes('dinner') || lower.includes('restaurant')) {
+        // 5. Authentic Regional Food
+        const foodSpots = selectedPlaces.filter((p) => p.culinarySpecialty);
         if (foodSpots.length > 0) {
-          const list = foodSpots.map(p => `• **${p.name}** (${p.district || 'Regional'}): ${p.culinarySpecialty}`).join('\n');
-          aiReply = `Verified culinary specialties along your route:\n${list}\n\nTip: Drink sealed bottled water along interior highway stretches and remote ghat roads.`;
+          const list = foodSpots.map((p) => `• **${p.name}** (${p.district || 'Regional'}): ${p.culinarySpecialty}`).join('\n');
+          aiReply = `🍲 **Verified Local Culinary Specialties Along Your Route:**\n${list}\n\n*Health Tip: Consume freshly prepared hot meals and stick to sealed bottled water during long road journeys.*`;
         } else {
-          aiReply = `Along your route, look for certified local restaurants and heritage dhabas offering hot Andhra & Telangana meals, freshly steamed idlis, and regional filter coffee.`;
-        }
-      } else if (lower.includes('golden') || lower.includes('sunset') || lower.includes('sunrise') || lower.includes('photo')) {
-        const photoSpots = selectedPlaces.filter(p => p.goldenHour || p.golden_hour);
-        if (photoSpots.length > 0) {
-          const list = photoSpots.map(p => `• **${p.name}**: Best light at ${p.goldenHour || p.golden_hour}`).join('\n');
-          aiReply = `Recommended golden hours for photography along your trip:\n${list}`;
-        } else {
-          aiReply = `For optimal photography and mild temperatures, plan visits to viewpoints and temple courtyards between 6:30 AM – 8:30 AM or 4:30 PM – 6:00 PM.`;
+          aiReply = `Along the Andhra & Telangana tourism corridors, prioritize government-sanctioned APTDC Haritha and TSTDC Haritha resort restaurants for clean restrooms and hygienic regional vegetarian/non-vegetarian thali meals.`;
         }
       } else if (lower.includes('time') || lower.includes('timing') || lower.includes('hour') || lower.includes('open') || lower.includes('close')) {
-        const timingSpots = selectedPlaces.filter(p => p.timings);
+        // 6. Gate Timings
+        const timingSpots = selectedPlaces.filter((p) => p.timings);
         if (timingSpots.length > 0) {
-          const list = timingSpots.map(p => `• **${p.name}**: ${p.timings}`).join('\n');
-          aiReply = `Official gate timings for your attractions:\n${list}`;
+          const list = timingSpots.map((p) => `• **${p.name}**: ${p.timings}`).join('\n');
+          aiReply = `🕒 **Official Gate Timings:**\n${list}`;
         } else {
-          aiReply = `Most heritage sites and museums open from 9:00 AM to 5:30 PM. Temples typically close briefly from 12:30 PM to 4:00 PM for afternoon sevas.`;
+          aiReply = `Most ASI archaeological monuments and state museums open from 9:00 AM to 5:30 PM. Major temples open early (6:00 AM) and observe afternoon breaks between 1:00 PM and 4:00 PM.`;
         }
-      } else if (lower.includes('remove') || lower.includes('drop') || lower.includes('swap')) {
-        aiReply = `You can remove any place from your list by clicking its trash icon, or use the quick-search bar above to add new attractions before generating your tour plan.`;
+      } else if (lower.includes('golden') || lower.includes('sunset') || lower.includes('sunrise') || lower.includes('photo') || lower.includes('camera')) {
+        // 7. Photography & Golden Hour
+        const photoSpots = selectedPlaces.filter((p) => p.goldenHour || p.golden_hour);
+        if (photoSpots.length > 0) {
+          const list = photoSpots.map((p) => `• **${p.name}**: Best light at ${p.goldenHour || p.golden_hour}`).join('\n');
+          aiReply = `📸 **Recommended Photography Hours:**\n${list}\n\n*Drone advisory: Unlicensed drone photography is strictly prohibited at all ASI protected monuments.*`;
+        } else {
+          aiReply = `For outdoor architectural photography, aim for morning sunlight (6:30 AM – 8:30 AM) or gentle evening light (4:30 PM – 5:45 PM) to capture warm stone textures without harsh overhead shadows.`;
+        }
+      } else if (lower.includes('why') || lower.includes('sequence') || lower.includes('order') || lower.includes('first')) {
+        // 8. Sequencing Logic
+        const firstStop = planResult?.days?.[0]?.stops?.[0]?.name || planResult?.days?.[0]?.legs?.[0]?.spotName || selectedPlaces[0]?.name || 'the first spot';
+        aiReply = `🗺️ **Route Sequencing Rationale:**\nWe placed **${firstStop}** first because morning visiting hours offer pleasant temperatures and minimal queue congestion. The sequence minimizes zig-zag highway backtracking and avoids negotiating steep mountain roads after dark.`;
       } else {
-        aiReply = `I sequenced your selected stops by road distance and terrain. Morning hours are reserved for major monuments before peak heat, and driving legs include realistic travel buffers. Ask me about food, timings, photography, or pacing!`;
+        // 9. Grounded Route Overview
+        const stopNames = selectedPlaces.map((s) => s.name).join(' → ');
+        aiReply = `🧭 **Offline Route Concierge Active:**\nYour current plan covers ${selectedPlaces.length} attractions: **${stopNames || 'No destinations selected yet'}**.\n\nAsk me about official entry fees, temple timings, local Andhra/Telangana delicacies, driving terrain, or golden hour photography recommendations for any of your stops!`;
       }
 
       setChatMessages((prev) => [
