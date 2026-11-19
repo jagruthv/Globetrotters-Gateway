@@ -848,7 +848,7 @@ export default function App() {
               108 (Ambulance)
             </a>
             <span>•</span>
-            <a href="tel:1033" className="hover:text-sky-300 font-mono text-slate-200 transition-colors">
+            <a href="tel:1033" className="hover:text-amber-300 font-mono text-slate-200 transition-colors">
               1033 (NHAI Highway Help)
             </a>
           </div>

@@ -411,7 +411,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <Lock className="w-3.5 h-3.5 text-sky-400" />
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
                 <span>Password Account</span>
               </button>
             </div>
@@ -764,7 +764,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-md font-sans-clean active:scale-[0.98] mt-1"
+                  className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-md font-sans-clean active:scale-[0.98] mt-1"
                 >
                   {loading ? <span>Authenticating...</span> : <span>{isRegister ? 'Create Account' : 'Sign In with Password'}</span>}
                 </button>

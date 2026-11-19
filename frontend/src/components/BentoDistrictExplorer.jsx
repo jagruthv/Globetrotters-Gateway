@@ -585,7 +585,7 @@ export default function BentoDistrictExplorer({
               title="Sort 59 districts by distance to your current location"
             >
               <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
-              <span>{isLocating ? 'Detecting GPS...' : (sortByDistance ? 'Nearest to Me (Active)' : '📍 Sights Near Me')}</span>
+              <span>{isLocating ? 'Detecting GPS...' : (sortByDistance ? 'Nearest to Me (Active)' : 'Sights Near Me')}</span>
             </button>
           </div>
 
@@ -744,8 +744,8 @@ export default function BentoDistrictExplorer({
                   <span className="text-amber-300">Andhra Pradesh (26)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-cyan-400/80 border border-cyan-300" />
-                  <span className="text-cyan-300">Telangana (33)</span>
+                  <span className="w-3 h-3 rounded-full bg-orange-500/80 border border-orange-400" />
+                  <span className="text-orange-300">Telangana (33)</span>
                 </div>
               </div>
             </div>
@@ -763,8 +763,8 @@ export default function BentoDistrictExplorer({
                     <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
                   </radialGradient>
                   <radialGradient id="tgGlow" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+                    <stop offset="0%" stopColor="#ea580c" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#ea580c" stopOpacity="0" />
                   </radialGradient>
                 </defs>
 
@@ -782,7 +782,7 @@ export default function BentoDistrictExplorer({
                 <polyline
                   points="250,50 215,120 255,225 210,340 180,440"
                   fill="none"
-                  stroke="#06b6d4"
+                  stroke="#ea580c"
                   strokeWidth="2"
                   strokeDasharray="4 4"
                   opacity="0.35"
@@ -798,7 +798,7 @@ export default function BentoDistrictExplorer({
                 />
 
                 {/* State Regional Group Labels */}
-                <text x="210" y="80" fill="#06b6d4" fillOpacity="0.15" fontSize="36" fontWeight="bold" fontFamily="monospace">
+                <text x="210" y="80" fill="#ea580c" fillOpacity="0.15" fontSize="36" fontWeight="bold" fontFamily="monospace">
                   TELANGANA
                 </text>
                 <text x="480" y="440" fill="#f59e0b" fillOpacity="0.15" fontSize="36" fontWeight="bold" fontFamily="monospace">
@@ -839,7 +839,7 @@ export default function BentoDistrictExplorer({
                         cx={pt.x}
                         cy={pt.y}
                         r={isHovered ? 9 : 6.5}
-                        fill={isAP ? '#f59e0b' : '#06b6d4'}
+                        fill={isAP ? '#f59e0b' : '#ea580c'}
                         stroke="#0f172a"
                         strokeWidth="2"
                       />
@@ -996,7 +996,7 @@ export default function BentoDistrictExplorer({
                             </h3>
                             {BIFURCATED_DISTRICT_NOTES[district.name.toLowerCase().replace(' district', '').trim()] && (
                               <span className="text-[10px] text-amber-300/80 font-medium block mt-0.5">
-                                ℹ️ {BIFURCATED_DISTRICT_NOTES[district.name.toLowerCase().replace(' district', '').trim()]}
+                                {BIFURCATED_DISTRICT_NOTES[district.name.toLowerCase().replace(' district', '').trim()]}
                               </span>
                             )}
                           </div>
@@ -1198,7 +1198,7 @@ export default function BentoDistrictExplorer({
                   </h3>
                   {BIFURCATED_DISTRICT_NOTES[activeDistrictModal.name.toLowerCase().replace(' district', '').trim()] && (
                     <span className="text-[11px] text-amber-300 font-medium mt-0.5">
-                      ℹ️ {BIFURCATED_DISTRICT_NOTES[activeDistrictModal.name.toLowerCase().replace(' district', '').trim()]}
+                      {BIFURCATED_DISTRICT_NOTES[activeDistrictModal.name.toLowerCase().replace(' district', '').trim()]}
                     </span>
                   )}
                 </div>

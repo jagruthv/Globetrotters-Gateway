@@ -258,11 +258,11 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                     <span className="text-[10px] text-slate-400 print:text-gray-700">Tourist Infoline</span>
                   </div>
                   <div className="p-2 rounded-lg bg-white/[0.02] border border-white/5 print:border print:border-gray-300">
-                    <strong className="block text-purple-400 print:text-black">1091</strong>
+                    <strong className="block text-rose-400 print:text-black">1091</strong>
                     <span className="text-[10px] text-slate-400 print:text-gray-700">Women Helpline</span>
                   </div>
                   <div className="p-2 rounded-lg bg-white/[0.02] border border-white/5 print:border print:border-gray-300">
-                    <strong className="block text-blue-400 print:text-black">1033</strong>
+                    <strong className="block text-amber-400 print:text-black">1033</strong>
                     <span className="text-[10px] text-slate-400 print:text-gray-700">Highway Help</span>
                   </div>
                 </div>

@@ -64,7 +64,7 @@ export default function AgentVerificationModal({
           particleCount: 80,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#00F2FE', '#10B981', '#F59E0B'],
+          colors: ['#F59E0B', '#10B981', '#EA580C'],
           disableForReducedMotion: true,
           useWorker: false
         });

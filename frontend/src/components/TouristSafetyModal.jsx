@@ -48,9 +48,9 @@ const EMERGENCY_CONTACTS = [
     title: 'Women Traveler Safety Helpline',
     subtitle: 'Dedicated police response for women & families',
     badge: 'Safe Travel',
-    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    badgeColor: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
     icon: ShieldCheck,
-    iconColor: 'text-purple-400 bg-purple-500/10 border-purple-400/20',
+    iconColor: 'text-rose-400 bg-rose-500/10 border-rose-400/20',
     description: 'Immediate assistance from Women Protection Cells and Disha / SHE Teams across both states.'
   },
   {
@@ -58,9 +58,9 @@ const EMERGENCY_CONTACTS = [
     title: 'National Highway Roadside Assistance',
     subtitle: 'NHAI Highway Patrol & Vehicle Towing',
     badge: 'Corridor Highway',
-    badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
     icon: Truck,
-    iconColor: 'text-blue-400 bg-blue-500/10 border-blue-400/20',
+    iconColor: 'text-amber-400 bg-amber-500/10 border-amber-400/20',
     description: 'Emergency vehicle breakdown towing, fuel help, and clearance on NH-16, NH-65, NH-44, and NH-765.'
   },
   {

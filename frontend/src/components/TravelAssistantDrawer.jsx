@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Sparkles, 
+  Compass,
   X, 
   Send, 
   Mic, 
@@ -484,14 +484,14 @@ export default function TravelAssistantDrawer({
           {/* Header Bar */}
           <header className="px-5 py-4 border-b border-white/10 bg-[#0B101B]/95 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 shadow-md">
-                <Sparkles className="w-4 h-4 fill-current" />
+              <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-400/30 text-amber-400">
+                <Compass className="w-4 h-4" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-bold text-white tracking-tight">Travel Assistant</h2>
-                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold font-mono">
-                    {activeModelName}
+                  <h2 className="text-sm font-bold text-white tracking-tight">Travel Concierge</h2>
+                  <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-400/20 text-amber-300 font-semibold font-mono">
+                    {activeModelName || 'Regional Guide'}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 truncate max-w-[240px]">

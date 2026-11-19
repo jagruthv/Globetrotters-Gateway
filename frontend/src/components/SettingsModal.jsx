@@ -641,10 +641,10 @@ export default function SettingsModal({
                     className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 flex items-center justify-between text-xs text-slate-200 transition-colors group"
                   >
                     <div className="flex flex-col">
-                      <span className="font-bold text-cyan-300">TSRTC Gamyam Tracker</span>
+                      <span className="font-bold text-amber-300">TSRTC Gamyam Tracker</span>
                       <span className="text-[10px] text-slate-400">Telangana Live Tracking</span>
                     </div>
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-cyan-300 transition-colors" />
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-300 transition-colors" />
                   </a>
                 </div>
 
@@ -655,7 +655,7 @@ export default function SettingsModal({
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Phone className="w-3 h-3 text-slate-500" />
-                    <span>TSRTC Helpline: <a href="tel:04069440000" className="text-cyan-300 hover:underline font-mono">040-69440000</a></span>
+                    <span>TSRTC Helpline: <a href="tel:04069440000" className="text-amber-300 hover:underline font-mono">040-69440000</a></span>
                   </div>
                 </div>
               </div>

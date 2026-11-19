@@ -15,7 +15,6 @@ import {
   Headphones,
   AlertTriangle,
   FileText,
-  Sparkles,
   Clock,
   Utensils
 } from 'lucide-react';
@@ -317,7 +316,7 @@ export default function FluidLiquidDropHero({
                 <div className="sm:col-span-3 flex flex-col px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors relative">
                   <label htmlFor="hero-date-select" className="text-[10px] text-slate-400 font-medium flex items-center justify-between font-sans-clean">
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                      <Calendar className="w-3 h-3 text-amber-400/80 flex-shrink-0" />
                       <span>Date of Visit</span>
                     </span>
                     {getDateLabel(travelDate) && (
@@ -366,12 +365,10 @@ export default function FluidLiquidDropHero({
                 {/* Verification Status & Audio Add-On */}
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-1.5">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      activeDest.isTicketed ? 'bg-amber-500/15 text-amber-300' : 'bg-emerald-500/15 text-emerald-300'
-                    }`}>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-amber-500/10 text-amber-300 border border-amber-400/20">
                       {activeDest.isTicketed ? <Ticket className="w-2.5 h-2.5" /> : <ShieldCheck className="w-2.5 h-2.5" />}
                     </div>
-                    <span className={`text-[10px] sm:text-[11px] font-bold ${activeDest.isTicketed ? 'text-amber-300' : 'text-emerald-300'}`}>
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-amber-300">
                       {activeDest.isTicketed ? `Official Ticket: ₹${activeDest.groundRate}/person` : 'Free Public Monument'}
                     </span>
                     {activeDest.earlyEntry && (
@@ -446,9 +443,9 @@ export default function FluidLiquidDropHero({
                   onLaunchTripPlanner();
                 }
               }}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300 hover:text-emerald-300 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300 hover:text-amber-300 transition-colors cursor-pointer"
             >
-              <Sparkles className="w-3 h-3 text-emerald-400" />
+              <Calendar className="w-3 h-3 text-amber-400" />
               <span>Plan Custom Trip</span>
               <ChevronRight className="w-2.5 h-2.5" />
             </button>
@@ -456,60 +453,54 @@ export default function FluidLiquidDropHero({
 
         </div>
 
-        {/* Right Column: Natural Destination Card */}
+        {/* Right Column: Destination Spotlight Plaque */}
         <div className="lg:col-span-5 flex flex-col items-center lg:items-end w-full">
-          <div className="w-full max-w-md xl:max-w-lg rounded-xl bg-[#0B0F17] border border-white/10 p-3 sm:p-4 flex flex-col gap-2.5">
-            {/* Destination Spotlight Image */}
-            <div className="relative h-44 sm:h-48 rounded-lg overflow-hidden bg-slate-900 group">
-              <img
-                src={activeDest.image}
-                alt={activeDest.name}
-                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-              
-              <div className="absolute bottom-2.5 left-3 right-3 flex items-end justify-between gap-2">
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold text-white font-sans-clean leading-snug">
-                    {activeDest.name}
-                  </h3>
-                  <span className="text-xs text-amber-200/90 flex items-center gap-1 mt-0.5">
-                    <MapPin className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                    <span>{activeDest.district}, {activeDest.state}</span>
-                  </span>
-                </div>
-                <span className="px-2 py-0.5 rounded bg-black/60 border border-white/20 text-xs font-semibold text-white">
-                  {activeDest.isTicketed ? `₹${activeDest.groundRate}` : 'Free Entry'}
+          <div className="w-full max-w-md xl:max-w-lg rounded-2xl bg-[#0B0F17]/85 backdrop-blur-xl border border-white/[0.08] p-4 sm:p-5 flex flex-col gap-3 shadow-2xl">
+            {/* Header: Destination Title & Entry Badge */}
+            <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/[0.08]">
+              <div>
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-amber-400 font-mono">
+                  {activeDest.tag || 'Featured Destination'}
+                </span>
+                <h3 className="text-lg sm:text-xl font-bold text-white font-sans-clean mt-0.5 leading-snug">
+                  {activeDest.name}
+                </h3>
+                <span className="text-xs text-slate-400 flex items-center gap-1.5 mt-1">
+                  <MapPin className="w-3 h-3 text-amber-400/80 flex-shrink-0" />
+                  <span>{activeDest.district}, {activeDest.state}</span>
                 </span>
               </div>
+              <span className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10 text-xs font-semibold text-amber-300 whitespace-nowrap">
+                {activeDest.isTicketed ? `₹${activeDest.groundRate} Entry` : 'Free Entry'}
+              </span>
             </div>
 
-            {/* Visiting Hours & Timings */}
-            <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white/[0.02] border border-white/5 text-xs font-sans-clean">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <Clock className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                <span className="text-[11px] text-slate-300 truncate">{activeDest.bestHours}</span>
+            {/* Visiting Hours & Early Entry */}
+            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] text-xs font-sans-clean">
+              <div className="flex items-center gap-2 min-w-0">
+                <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                <span className="text-xs text-slate-300 truncate">{activeDest.bestHours}</span>
               </div>
               {activeDest.earlyEntry && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold uppercase tracking-wider flex-shrink-0 ml-1">
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 font-bold uppercase tracking-wider flex-shrink-0 ml-2 border border-amber-400/20">
                   Early Entry
                 </span>
               )}
             </div>
 
-            {/* Authentic Food Highlight */}
+            {/* Authentic Local Delicacy Highlight */}
             {activeDest.foodTip && (
-              <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/[0.04] border border-amber-500/15 text-xs text-amber-200/90 font-sans-clean">
-                <Utensils className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span className="text-[11px] leading-relaxed line-clamp-2">
+              <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 text-xs font-sans-clean">
+                <Utensils className="w-3.5 h-3.5 text-amber-400/80 flex-shrink-0 mt-0.5" />
+                <p className="text-[11px] text-slate-300 leading-relaxed">
                   <strong className="text-amber-300 font-semibold">Local Food: </strong>
                   {activeDest.foodTip}
-                </span>
+                </p>
               </div>
             )}
 
             {/* Navigation controls with slide dots */}
-            <div className="pt-1.5 border-t border-white/10 flex items-center justify-between text-xs">
+            <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-xs">
               <div className="flex items-center gap-1.5">
                 {HERO_DESTINATIONS.map((dest, i) => (
                   <button
@@ -518,7 +509,7 @@ export default function FluidLiquidDropHero({
                     onClick={() => handleSelectDestination(i)}
                     aria-label={`View ${dest.name}`}
                     className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                      i === activeIdx ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/20 hover:bg-white/40'
+                      i === activeIdx ? 'w-6 bg-amber-400' : 'w-1.5 bg-white/20 hover:bg-white/40'
                     }`}
                   />
                 ))}
@@ -527,14 +518,14 @@ export default function FluidLiquidDropHero({
                 <button
                   onClick={() => handleSelectDestination((activeIdx - 1 + HERO_DESTINATIONS.length) % HERO_DESTINATIONS.length)}
                   aria-label="Previous destination"
-                  className="p-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-slate-300 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white transition-colors cursor-pointer"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => handleSelectDestination((activeIdx + 1) % HERO_DESTINATIONS.length)}
                   aria-label="Next destination"
-                  className="p-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-slate-300 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white transition-colors cursor-pointer"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
