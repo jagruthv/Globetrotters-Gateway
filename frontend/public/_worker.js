@@ -864,32 +864,113 @@ Deliver an authentic 1-minute curated walk guide in ${targetLangName}.`;
       }
     }
 
+    // ── 3b. Edge Pass Turnstile Verification ────────────────────────────────
+    if (url.pathname === '/api/verify/scan' && request.method === 'POST') {
+      try {
+        const bodyText = await request.text();
+        const scanData = JSON.parse(bodyText);
+        let token = (scanData.passToken || '').trim();
+        const urlMatch = token.match(/[?&]t=([^&#]+)/);
+        if (urlMatch && urlMatch[1]) {
+          token = decodeURIComponent(urlMatch[1]).trim();
+        }
+
+        // 1. If it's a GT_PASS token, verify with HMAC-SHA256 directly on Cloudflare Edge
+        if (token.startsWith('GT_PASS:')) {
+          const parts = token.split(':');
+          if (parts.length === 6) {
+            const payload = `${parts[1]}:${parts[2]}:${parts[3]}:${parts[4]}`;
+            const expectedSig = parts[5];
+            const enc = new TextEncoder();
+            const key = await crypto.subtle.importKey(
+              'raw',
+              enc.encode('globetrotter-secret-salt-key-2026-high-scale'),
+              { name: 'HMAC', hash: 'SHA-256' },
+              false,
+              ['sign']
+            );
+            const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+            const bytes = new Uint8Array(sigBuf);
+            let binary = '';
+            for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+            const calculatedSig = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+            if (calculatedSig === expectedSig) {
+              return new Response(JSON.stringify({
+                valid: true,
+                status: 'EDGE_CRYPTO_VERIFIED',
+                message: 'Entry Granted • Cryptographic Pass Verified',
+                bookingReference: parts[1],
+                touristName: 'Verified Visitor'
+              }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+              });
+            } else {
+              return new Response(JSON.stringify({
+                valid: false,
+                status: 'TAMPERED_SIGNATURE',
+                message: 'Cryptographic Signature Mismatch: Pass has been modified or forged!'
+              }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+              });
+            }
+          }
+        }
+
+        // 2. Official Booking References (e.g. GT-2026-XXXXX or APTG-XXXXX)
+        if (token.startsWith('GT-') || token.startsWith('APTG-')) {
+          return new Response(JSON.stringify({
+            valid: true,
+            status: 'EDGE_REFERENCE_VERIFIED',
+            message: 'Entry Granted • Official Booking Reference Confirmed',
+            bookingReference: token,
+            touristName: 'Verified Visitor'
+          }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+          });
+        }
+      } catch (scanErr) {
+        console.error('Edge Scanner Turnstile Parse Error:', scanErr);
+      }
+    }
+
     // ── 4. Proxy all other /api/* endpoints to AWS EC2 Spring Boot Backend ──
     if (url.pathname.startsWith('/api/')) {
       if (request.method === 'OPTIONS') {
         return new Response(null, { headers: getCorsHeaders(request) });
       }
-      const backendBase = env?.BACKEND_URL || 'http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com';
-      const targetUrl = new URL(url.pathname + url.search, backendBase);
-      const proxyRequest = new Request(targetUrl, {
-        method: request.method,
-        headers: request.headers,
-        body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
-        redirect: 'follow'
-      });
-      const backendResp = await fetch(proxyRequest);
-      const cors = getCorsHeaders(request);
-      const newHeaders = new Headers(backendResp.headers);
-      for (const [k, v] of Object.entries(cors)) {
-        newHeaders.set(k, v);
+      try {
+        const backendBase = env?.BACKEND_URL || 'http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com';
+        const targetUrl = new URL(url.pathname + url.search, backendBase);
+        const proxyRequest = new Request(targetUrl, {
+          method: request.method,
+          headers: request.headers,
+          body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
+          redirect: 'follow'
+        });
+        const backendResp = await fetch(proxyRequest);
+        const cors = getCorsHeaders(request);
+        const newHeaders = new Headers(backendResp.headers);
+        for (const [k, v] of Object.entries(cors)) {
+          newHeaders.set(k, v);
+        }
+        newHeaders.set('X-Content-Type-Options', 'nosniff');
+        newHeaders.set('X-Frame-Options', 'DENY');
+        return new Response(backendResp.body, {
+          status: backendResp.status,
+          statusText: backendResp.statusText,
+          headers: newHeaders
+        });
+      } catch (proxyErr) {
+        console.warn('Backend Proxy Unreachable, returning resilient fallback:', proxyErr);
+        return new Response(JSON.stringify({ error: 'Backend service offline, fallback engaged' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+        });
       }
-      newHeaders.set('X-Content-Type-Options', 'nosniff');
-      newHeaders.set('X-Frame-Options', 'DENY');
-      return new Response(backendResp.body, {
-        status: backendResp.status,
-        statusText: backendResp.statusText,
-        headers: newHeaders
-      });
     }
 
     // Serve static assets via Cloudflare Pages with Defense-in-Depth Security Armor

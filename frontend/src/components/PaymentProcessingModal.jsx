@@ -82,8 +82,9 @@ export default function PaymentProcessingModal({
 
     // Generate real cryptographic HMAC-SHA256 signed pass token
     let signedToken = '';
+    const targetPlaceId = Number(bookingDetails?.circuitId || bookingDetails?.placeId || 1);
     try {
-      signedToken = await generateCryptographicPassToken(refNumber, 1, 1);
+      signedToken = await generateCryptographicPassToken(refNumber, targetPlaceId, numTourists);
     } catch {
       signedToken = refNumber;
     }

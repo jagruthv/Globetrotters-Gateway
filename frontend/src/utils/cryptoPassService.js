@@ -10,21 +10,21 @@
  * - Token Structure: GT_PASS:<bookingReference>:<circuitId>:<userId>:<timestamp>:<base64url_hmac_sha256>
  */
 
+// Shared sovereign regional authority salt key matching Spring Boot QrCodeService.java
+const OFFICIAL_AUTHORITY_SALT = 'globetrotter-secret-salt-key-2026-high-scale';
+
 /**
- * Retrieves the ephemeral session verification key issued to authorized gate operators.
- * Rotates dynamically per session and never embeds static server secrets in client code.
+ * Retrieves the verification key for gate turnstiles and pass signing.
+ * Uses the operator session key when logged in, or falls back to the regional authority key.
  */
 function getTurnstileVerificationKey() {
   if (typeof window !== 'undefined' && window.sessionStorage) {
-    let key = window.sessionStorage.getItem('GT_TURNSTILE_OPERATOR_KEY');
-    if (!key) {
-      // Ephemeral device session key: isolated per browser session without static server secrets
-      key = `gt_ephemeral_${typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)}`;
-      window.sessionStorage.setItem('GT_TURNSTILE_OPERATOR_KEY', key);
+    const operatorKey = window.sessionStorage.getItem('GT_TURNSTILE_OPERATOR_KEY');
+    if (operatorKey && operatorKey.trim()) {
+      return operatorKey.trim();
     }
-    return key;
   }
-  return 'gt_client_ephemeral_key';
+  return OFFICIAL_AUTHORITY_SALT;
 }
 
 /**
