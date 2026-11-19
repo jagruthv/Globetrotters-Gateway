@@ -10,17 +10,13 @@ import {
   Ticket, 
   ChevronRight, 
   Headphones, 
-  QrCode, 
   Bot, 
-  BookmarkCheck, 
-  CheckCircle2
+  BookmarkCheck
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 const QUICK_PROMPTS = [
   { label: 'Book pass for me', prompt: 'Please book this curated pass directly under my tourist account.' },
   { label: 'Save trip to profile', prompt: 'Save this itinerary into my saved trips profile.' },
-  { label: 'Show active passes', prompt: 'Show me all my active booked passes and tickets.' },
   { label: 'Sunset viewpoints', prompt: 'Adjust the plan so we reach the best viewpoints or beaches right at sunset for golden-hour photography.' },
   { label: 'Relaxed family pace', prompt: 'Make the daily pace more relaxed for a family with kids/elders. Remove strenuous climbs and start days at 10 AM.' },
   { label: 'Regional cuisine stops', prompt: 'Add dedicated regional lunch stops featuring famous local Andhra & Telangana culinary specialties.' }
@@ -28,58 +24,17 @@ const QUICK_PROMPTS = [
 
 const createMsgId = (prefix) => `${prefix}-${performance.now()}`;
 
-// Retrieve current logged in user if available
-const getStoredUser = () => {
-  try {
-    const stored = localStorage.getItem('globetrotter_user');
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-};
-
 // Execute account actions (pass booking, saving trips)
 function runAgentTool(toolName, _params, planToUse, onBookPass, latestPlan, currentPlan) {
-  const user = getStoredUser();
-  const touristName = user?.fullName || (user?.email ? user.email.split('@')[0] : 'Traveler');
+  const targetPlan = planToUse || latestPlan || currentPlan;
 
   if (toolName === 'book_pass') {
-    const orderRef = `APTG-${Math.floor(10000 + Math.random() * 90000)}`;
-    const newPass = {
-      reference: orderRef,
-      token: orderRef,
-      touristName,
-      circuitName: planToUse?.title || 'Custom Curated Tour Pass',
-      validFrom: 'Today',
-      validUntil: '7 Days Access',
-      status: 'ACTIVE_AUTHENTICATED',
-      placesAllowed: (planToUse?.days || []).flatMap(d => (d.stops || []).map(s => s.name || s.placeName)).slice(0, 6),
-      gateFeeTotal: `₹${planToUse?.packagePrice || 320} (Pre-Paid Online)`
-    };
-
-    try {
-      const stored = localStorage.getItem('globetrotter_passes');
-      const list = stored ? JSON.parse(stored) : [];
-      list.unshift(newPass);
-      localStorage.setItem('globetrotter_passes', JSON.stringify(list));
-    } catch (err) {
-      console.warn('Pass store warning:', err);
-    }
-
-    confetti({
-      particleCount: 100,
-      spread: 80,
-      origin: { y: 0.6 },
-      colors: ['#00F2FE', '#4F46E5', '#10B981']
-    });
-
     if (onBookPass) {
-      onBookPass(planToUse || latestPlan || currentPlan);
+      onBookPass(targetPlan);
     }
-
     return {
-      type: 'booked_ticket',
-      pass: newPass
+      type: 'launch_checkout',
+      plan: targetPlan
     };
   }
 
@@ -203,9 +158,11 @@ export default function GeminiPlanDrawer({
 
         const aiMsg = {
           id: createMsgId('ai'),
-          sender: 'gemini',
-          text: data.replyMessage || "I've processed your request on your account!",
-          showPlanPreview: !actionResult || actionResult.type !== 'booked_ticket',
+          sender: 'assistant',
+          text: data.replyMessage || (actionResult?.type === 'launch_checkout'
+            ? "I've initiated the official gate pass checkout for your tour. Please verify your details in the checkout window to receive your verified pass."
+            : "I've processed your request on your account!"),
+          showPlanPreview: !actionResult || actionResult.type !== 'launch_checkout',
           plan: updated,
           readyToBook: data.readyToBook || false,
           actionResult
@@ -228,12 +185,12 @@ export default function GeminiPlanDrawer({
       const aiFallbackMsg = {
         id: createMsgId('ai-err'),
         sender: 'assistant',
-        text: actionResult?.type === 'booked_ticket' 
-          ? "I've booked your All-Access Entry Ticket directly under your account! Here is your official verified entry pass."
+        text: actionResult?.type === 'launch_checkout' 
+          ? "I've initiated the official gate pass checkout for your tour. Please confirm your details in the checkout window."
           : actionResult?.type === 'saved_trip'
           ? "Your itinerary has been saved to your account profile!"
           : `I've adjusted your trip pacing to: "${textToSend}". You can confirm your booking below!`,
-        showPlanPreview: !actionResult || actionResult.type !== 'booked_ticket',
+        showPlanPreview: !actionResult || actionResult.type !== 'launch_checkout',
         plan: latestPlan || currentPlan,
         readyToBook: true,
         actionResult
@@ -245,12 +202,6 @@ export default function GeminiPlanDrawer({
   };
 
   const handleCheckoutAndPay = (planToBook) => {
-    confetti({
-      particleCount: 90,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#00F2FE', '#4F46E5', '#10B981']
-    });
     if (onBookPass) {
       onBookPass(planToBook || latestPlan || currentPlan);
     }
@@ -343,51 +294,46 @@ export default function GeminiPlanDrawer({
                   <p className="whitespace-pre-wrap">{msg.text}</p>
                 </div>
 
-                {/* MCP ACTION RESULT: BOOKED CINEMA TICKET */}
-                {msg.actionResult?.type === 'booked_ticket' && (
+                {/* ACTION RESULT: LAUNCH OFFICIAL CHECKOUT */}
+                {msg.actionResult?.type === 'launch_checkout' && (
                   <div className="w-full max-w-md mt-3 rounded-2xl bg-[#151B26] border border-amber-500/30 p-4 shadow-xl flex flex-col gap-3 font-sans-clean">
                     <div className="flex items-center justify-between border-b border-white/10 pb-2">
                       <div className="flex items-center gap-2">
                         <Ticket className="w-4 h-4 text-amber-400" />
                         <span className="text-[11px] font-bold text-white uppercase font-mono">
-                          Digital Entry Gate Pass
+                          Official Entry Gate Pass
                         </span>
                       </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-                        {msg.actionResult.pass.reference}
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold">
+                        Verification Required
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex flex-col gap-1">
-                        <h4 className="text-sm font-extrabold text-white">
-                          {msg.actionResult.pass.circuitName}
-                        </h4>
-                        <div className="flex items-center gap-2 text-[11px] text-slate-300">
-                          <span>Traveler: <strong>{msg.actionResult.pass.touristName}</strong></span>
-                          <span>•</span>
-                          <span className="text-emerald-400 font-semibold">{msg.actionResult.pass.gateFeeTotal}</span>
-                        </div>
-                      </div>
-                      <div className="w-16 h-16 bg-white p-1 rounded-lg flex items-center justify-center shrink-0">
-                        <QrCode className="w-14 h-14 text-slate-950" />
-                      </div>
+                    <div className="flex flex-col gap-1">
+                      <h4 className="text-sm font-bold text-white">
+                        {msg.actionResult.plan?.title || msg.plan?.title || 'Consolidated Circuit Pass'}
+                      </h4>
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                        Official digital gate pass for queue-free entry across your selected destinations. Complete traveler verification to issue your cryptographically verified pass.
+                      </p>
                     </div>
 
                     <div className="w-full border-b border-dashed border-white/15 my-1" />
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-400">
-                      <span className="flex items-center gap-1 text-emerald-400">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Fast-Track QR Entry Active
-                      </span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-[11px] text-slate-400">Total:</span>
+                        <span className="text-sm font-extrabold text-emerald-300 font-mono">
+                          ₹{msg.actionResult.plan?.packagePrice || msg.plan?.packagePrice || 320}
+                        </span>
+                      </div>
                       <button
-                        onClick={() => {
-                          if (onBookPass) onBookPass(msg.plan || latestPlan);
-                          if (onClose) onClose();
-                        }}
-                        className="text-amber-300 hover:underline font-semibold cursor-pointer"
+                        onClick={() => handleCheckoutAndPay(msg.actionResult.plan || msg.plan || latestPlan)}
+                        className="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer active:scale-[0.98]"
                       >
-                        View Full Ticket Pass →
+                        <Ticket className="w-3.5 h-3.5 text-slate-950" />
+                        <span>Proceed to Gate Pass Checkout</span>
+                        <ChevronRight className="w-3 h-3 text-slate-950" />
                       </button>
                     </div>
                   </div>

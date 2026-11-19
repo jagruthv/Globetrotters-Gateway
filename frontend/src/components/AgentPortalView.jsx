@@ -75,7 +75,7 @@ export default function AgentPortalView({
   onExitAgentMode,
   passData = null
 }) {
-  const [tokenInput, setTokenInput] = useState(passData?.token || 'APTG-89421');
+  const [tokenInput, setTokenInput] = useState(passData?.token || '');
   const [selectedPlaceId, setSelectedPlaceId] = useState(1);
   const [verdict, setVerdict] = useState(null); // { success: boolean, touristName: string, message: string }
   const [isScanning, setIsScanning] = useState(false);
