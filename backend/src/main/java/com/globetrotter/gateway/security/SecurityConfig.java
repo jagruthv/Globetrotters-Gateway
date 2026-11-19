@@ -74,7 +74,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/poa/**").permitAll()
                     .requestMatchers("/api/bookings/verify/qr-image/**").permitAll()
                     .requestMatchers("/api/health").permitAll()
-                    .requestMatchers("/h2-console/**").permitAll()
+                    .requestMatchers("/h2-console/**").hasAuthority("ROLE_ADMIN")
                     // Swagger UI & OpenAPI docs (public for project demo)
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                     // Actuator health endpoint (public for monitoring)

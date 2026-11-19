@@ -118,6 +118,23 @@ public class AuthController {
     }
 
     /**
+     * MSG91 User Existence Validation Endpoint (Optional Gate).
+     * Format: GET /api/auth/check-user?identifier={identifier}
+     * Returns: { "user_found": boolean, "identifier": string }
+     */
+    @GetMapping("/check-user")
+    public ResponseEntity<Map<String, Object>> checkUserExistence(@RequestParam(value = "identifier", required = false) String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            return ResponseEntity.ok(Map.of("user_found", false, "identifier", ""));
+        }
+        boolean exists = authService.userExists(identifier);
+        return ResponseEntity.ok(Map.of(
+                "user_found", exists,
+                "identifier", identifier
+        ));
+    }
+
+    /**
      * Dispatches an OTP to an email address.
      */
     @PostMapping("/otp/send-email")

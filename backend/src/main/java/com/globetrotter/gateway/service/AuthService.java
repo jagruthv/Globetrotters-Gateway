@@ -96,6 +96,20 @@ public class AuthService {
     }
 
     /**
+     * Checks if a user already exists by email or mobile phone number.
+     * Compatible with MSG91 User Existence Validation hook.
+     */
+    public boolean userExists(String identifier) {
+        if (identifier == null || identifier.isBlank()) return false;
+        String clean = identifier.trim().toLowerCase();
+        if (userRepository.existsByEmail(clean)) return true;
+        String phoneClean = clean.replace("+", "").replace(" ", "");
+        if (userRepository.existsByPhoneNumber(phoneClean)) return true;
+        if (phoneClean.length() >= 10 && userRepository.existsByPhoneNumber(phoneClean.substring(phoneClean.length() - 10))) return true;
+        return false;
+    }
+
+    /**
      * Authenticates a user with a verified Google Identity Services JWT ID Token.
      * Validates cryptographic signature directly against Google's tokeninfo service.
      */

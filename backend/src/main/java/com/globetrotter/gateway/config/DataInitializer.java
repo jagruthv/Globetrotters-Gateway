@@ -85,9 +85,13 @@ public class DataInitializer implements CommandLineRunner {
 
         // 1. Seed Users if not present
         if (userRepository.count() == 0) {
+            String adminPassword = System.getenv().getOrDefault("APP_ADMIN_PASSWORD", "GlobetrotterAdmin@2026");
+            String staffPassword = System.getenv().getOrDefault("APP_STAFF_PASSWORD", "GateInspector@APTG2026");
+            String touristPassword = System.getenv().getOrDefault("APP_TOURIST_PASSWORD", "WelcomeExplorer@2026");
+
             User admin = User.builder()
                     .email("admin@globetrotter.com")
-                    .password(passwordEncoder.encode("admin123"))
+                    .password(passwordEncoder.encode(adminPassword))
                     .fullName("Tourism Director (Admin)")
                     .phoneNumber("+91 98765 00001")
                     .role(Role.ROLE_ADMIN)
@@ -96,7 +100,7 @@ public class DataInitializer implements CommandLineRunner {
 
             User staff = User.builder()
                     .email("staff@globetrotter.com")
-                    .password(passwordEncoder.encode("staff123"))
+                    .password(passwordEncoder.encode(staffPassword))
                     .fullName("Kailasagiri Gate Inspector (Staff)")
                     .phoneNumber("+91 98765 00002")
                     .role(Role.ROLE_STAFF)
@@ -105,7 +109,7 @@ public class DataInitializer implements CommandLineRunner {
 
             User tourist = User.builder()
                     .email("tourist@globetrotter.com")
-                    .password(passwordEncoder.encode("tourist123"))
+                    .password(passwordEncoder.encode(touristPassword))
                     .fullName("Aarav Sharma")
                     .phoneNumber("+91 98765 43210")
                     .role(Role.ROLE_TOURIST)

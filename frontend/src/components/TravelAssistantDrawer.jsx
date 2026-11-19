@@ -146,8 +146,8 @@ export default function TravelAssistantDrawer({
     return list;
   }, []);
 
-  // MCP Tool Execution Engine
-  const executeMcpAction = useCallback((text) => {
+  // Corridor Travel Action Engine
+  const executeCorridorAction = useCallback((text) => {
     const lower = text.toLowerCase().trim();
     const allPlaces = getAllAtlasPlaces();
 
@@ -312,7 +312,7 @@ export default function TravelAssistantDrawer({
     setInputQuery('');
     setIsThinking(true);
 
-    const actionResult = executeMcpAction(textToSend);
+    const actionResult = executeCorridorAction(textToSend);
 
     try {
       const response = await fetch('/api/chat', {
@@ -438,7 +438,7 @@ export default function TravelAssistantDrawer({
                 <div className="flex items-center gap-2">
                   <h2 className="text-sm font-bold text-white tracking-tight">Travel Assistant</h2>
                   <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold font-mono">
-                    MCP Edge
+                    Regional Guide
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 truncate max-w-[240px]">
@@ -504,7 +504,7 @@ export default function TravelAssistantDrawer({
                   </span>
                 </div>
 
-                {/* MCP Interactive Tool Action Result Cards */}
+                {/* Regional Travel Action Result Cards */}
                 {msg.actionResult && (
                   <div className="w-full max-w-[92%] mt-2 space-y-2">
                     

@@ -651,6 +651,38 @@ export default function App() {
           </div>
 
         </div>
+
+        {/* 24/7 Official Support & Tourist Helplines Strip */}
+        <div className="max-w-7xl mx-auto pt-6 mt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 font-sans-clean">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+            <span className="text-white font-semibold flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>24/7 Official Helplines:</span>
+            </span>
+            <a href="tel:1363" className="hover:text-amber-300 font-mono text-slate-200 transition-colors">
+              1363 (Tourist Desk)
+            </a>
+            <span>•</span>
+            <a href="tel:112" className="hover:text-rose-300 font-mono text-slate-200 transition-colors">
+              112 (Emergency)
+            </a>
+            <span>•</span>
+            <a href="tel:108" className="hover:text-emerald-300 font-mono text-slate-200 transition-colors">
+              108 (Ambulance)
+            </a>
+            <span>•</span>
+            <a href="tel:1033" className="hover:text-sky-300 font-mono text-slate-200 transition-colors">
+              1033 (NHAI Highway Help)
+            </a>
+          </div>
+
+          <button
+            onClick={() => setSafetyModalOpen(true)}
+            className="text-amber-400 hover:text-amber-300 transition-colors underline cursor-pointer text-xs"
+          >
+            Emergency Directory & Hospital Contacts →
+          </button>
+        </div>
       </footer>
 
       {/* Persistent Global AI Travel Assistant Trigger & Drawer */}

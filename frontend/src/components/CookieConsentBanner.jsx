@@ -50,7 +50,7 @@ export default function CookieConsentBanner() {
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           aria-label="Cookie consent banner"
           role="region"
-          className="fixed bottom-20 md:bottom-6 left-3 right-3 md:left-auto md:right-6 md:max-w-sm z-50 p-3.5 sm:p-4 rounded-2xl bg-[#090D16]/95 backdrop-blur-xl border border-white/15 shadow-2xl text-slate-200"
+          className="fixed bottom-16 md:bottom-6 left-3 right-3 md:left-auto md:right-6 md:max-w-sm z-50 p-3 sm:p-4 rounded-2xl bg-[#090D16]/95 backdrop-blur-xl border border-white/15 shadow-2xl text-slate-200"
         >
           <div className="flex items-start gap-3 mb-2">
             <div className="p-1.5 rounded-xl bg-amber-500/10 text-amber-400 shrink-0 mt-0.5">

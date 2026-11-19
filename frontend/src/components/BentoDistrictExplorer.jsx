@@ -14,12 +14,15 @@ import {
   Landmark, 
   Trees, 
   Castle, 
-  Palette, 
   Ticket, 
   Compass, 
   RotateCcw,
   Star,
-  Accessibility
+  Accessibility,
+  Award,
+  Mountain,
+  Waves,
+  ShieldCheck
 } from 'lucide-react';
 import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
 import { getAuthenticPlacePhoto, getOfflineImageFallback } from '../utils/authenticPlacePhotos';
@@ -61,47 +64,107 @@ const TRAVELER_THEMES = [
     label: 'All Sights', 
     Icon: Compass,
     image: '/images/aptourism/kailasagiri_hill.jpg',
-    count: 646
+    count: 646,
+    matcher: () => true,
+  },
+  { 
+    id: 'unesco', 
+    label: 'UNESCO & Heritage', 
+    Icon: Award,
+    image: '/images/telangana/warangal.jpg',
+    count: 16,
+    matcher: (s) => {
+      const str = (s.name + ' ' + (s.description || '') + ' ' + (s.rules_and_hazards || '') + ' ' + (s.category || '')).toLowerCase();
+      const unescoNames = ['ramappa', 'golconda', 'charminar', 'warangal fort', 'lepakshi', 'chowmahalla', 'alampur', 'gandikota', 'qutb shahi', 'thousand pillar'];
+      return str.includes('unesco') || str.includes('world heritage') || unescoNames.some(n => s.name.toLowerCase().includes(n));
+    },
+  },
+  { 
+    id: 'caves', 
+    label: 'Caves & Geology', 
+    Icon: Mountain,
+    image: '/images/aptourism/borra_caves.jpg',
+    count: 29,
+    matcher: (s) => {
+      const str = (s.name + ' ' + (s.description || '') + ' ' + (s.category || '')).toLowerCase();
+      return str.includes('cave') || str.includes('caves') || str.includes('cavern') || str.includes('geolog') || str.includes('canyon');
+    },
+  },
+  { 
+    id: 'beaches', 
+    label: 'Beaches & Coast', 
+    Icon: Waves,
+    image: '/images/aptourism/kailasagiri_hill.jpg',
+    count: 82,
+    matcher: (s) => {
+      const str = (s.name + ' ' + (s.description || '') + ' ' + (s.category || '')).toLowerCase();
+      return str.includes('beach') || str.includes('coast') || str.includes('marine') || str.includes('port') || str.includes('island');
+    },
+  },
+  { 
+    id: 'forts', 
+    label: 'Forts & Palaces', 
+    Icon: Castle,
+    image: '/images/telangana/hyderabad.jpg',
+    count: 74,
+    matcher: (s) => {
+      const str = (s.name + ' ' + (s.description || '') + ' ' + (s.category || '')).toLowerCase();
+      return str.includes('fort') || str.includes('palace') || str.includes('castle') || str.includes('gadi') || (s.category && s.category.toLowerCase().includes('fort'));
+    },
   },
   { 
     id: 'spiritual', 
     label: 'Spiritual & Temples', 
-    category: 'Heritage & Spiritual', 
     Icon: Landmark,
     image: '/images/aptourism/sri_venkateshwara_swamy_temple.jpg',
-    count: 214
+    count: 295,
+    matcher: (s) => {
+      const str = (s.name + ' ' + (s.description || '') + ' ' + (s.category || '')).toLowerCase();
+      return str.includes('temple') || str.includes('dargah') || str.includes('church') || str.includes('mosque') || str.includes('spiritual') || str.includes('alayam') || (s.category && s.category.toLowerCase().includes('spiritual'));
+    },
   },
   { 
     id: 'nature', 
-    label: 'Nature & Waterfalls', 
-    category: 'Nature & Wildlife,Waterfalls & Gorges', 
+    label: 'Nature & Wildlife', 
     Icon: Trees,
     image: '/images/aptourism/borra_caves.jpg',
-    count: 142
+    count: 253,
+    matcher: (s) => {
+      const str = (s.name + ' ' + (s.description || '') + ' ' + (s.category || '')).toLowerCase();
+      return str.includes('waterfall') || str.includes('lake') || str.includes('wildlife') || str.includes('sanctuary') || str.includes('forest') || str.includes('valley') || str.includes('hill') || (s.category && s.category.toLowerCase().includes('nature'));
+    },
   },
   { 
-    id: 'forts', 
-    label: 'Forts & Heritage', 
-    category: 'Historical Forts & Monuments', 
-    Icon: Castle,
-    image: '/images/telangana/hyderabad.jpg',
-    count: 98
-  },
-  { 
-    id: 'crafts', 
-    label: 'Culture & GI Crafts', 
-    category: 'Artisans & Culture', 
-    Icon: Palette,
-    image: '/images/telangana/warangal.jpg',
-    count: 64
+    id: 'ticketed', 
+    label: 'Ticketed Passes', 
+    Icon: Ticket,
+    image: '/images/aptourism/bhavani_islands.jpg',
+    count: 148,
+    matcher: (s) => {
+      const fee = parseFloat(s.individualPrice) || 0;
+      const feeStr = (s.fees || s.feesDescription || '').toLowerCase();
+      return fee > 0 || (feeStr && !feeStr.includes('free') && (feeStr.includes('₹') || feeStr.includes('rs') || /\d+/.test(feeStr)));
+    },
   },
   { 
     id: 'free', 
     label: 'Free Public Sights', 
-    freeOnly: true, 
-    Icon: Ticket,
+    Icon: ShieldCheck,
     image: '/images/aptourism/bhavani_islands.jpg',
-    count: 185
+    count: 498,
+    matcher: (s) => {
+      const fee = parseFloat(s.individualPrice) || 0;
+      const feeStr = (s.fees || s.feesDescription || '').toLowerCase();
+      return fee === 0 || feeStr.includes('free') || feeStr.includes('no entry fee');
+    },
+  },
+  { 
+    id: 'wishlist', 
+    label: 'Saved Wishlist', 
+    Icon: Heart,
+    image: '/images/aptourism/bhavani_islands.jpg',
+    count: null,
+    isWishlist: true,
   },
 ];
 
@@ -153,6 +216,33 @@ export default function BentoDistrictExplorer({
   const [isLocating, setIsLocating] = useState(false);
   const [sortByDistance, setSortByDistance] = useState(false);
   const [locationMessage, setLocationMessage] = useState(null);
+
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const stored = localStorage.getItem('globetrotter_favorites');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const toggleFavorite = (spotName, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setFavorites((prev) => {
+      const next = prev.includes(spotName)
+        ? prev.filter((name) => name !== spotName)
+        : [...prev, spotName];
+      try {
+        localStorage.setItem('globetrotter_favorites', JSON.stringify(next));
+      } catch (err) {
+        console.warn('Could not save favorites to localStorage:', err);
+      }
+      return next;
+    });
+  };
 
   // Escape key listener for accessible modal dismissal
   useEffect(() => {
@@ -279,20 +369,28 @@ export default function BentoDistrictExplorer({
 
       // 4. Traveler Theme Filter
       if (activeTheme !== 'all') {
-        const themeDef = TRAVELER_THEMES.find(t => t.id === activeTheme);
-        if (themeDef) {
-          const hasMatchingSpot = dist.spots.some(s => {
-            if (themeDef.freeOnly) {
-              const feeStr = (s.fees || s.feesDescription || '').toLowerCase();
-              return feeStr.includes('free') || s.individualPrice === 0;
-            }
-            if (themeDef.category) {
-              const cats = themeDef.category.split(',').map(c => c.trim().toLowerCase());
-              return cats.some(c => s.category?.toLowerCase().includes(c));
-            }
-            return true;
-          });
-          if (!hasMatchingSpot) return false;
+        if (activeTheme === 'wishlist') {
+          const hasFavoriteSpot = dist.spots.some((s) => favorites.includes(s.name));
+          if (!hasFavoriteSpot) return false;
+        } else {
+          const themeDef = TRAVELER_THEMES.find(t => t.id === activeTheme);
+          if (themeDef) {
+            const hasMatchingSpot = dist.spots.some(s => {
+              if (themeDef.matcher) {
+                return themeDef.matcher(s);
+              }
+              if (themeDef.freeOnly) {
+                const feeStr = (s.fees || s.feesDescription || '').toLowerCase();
+                return feeStr.includes('free') || s.individualPrice === 0;
+              }
+              if (themeDef.category) {
+                const cats = themeDef.category.split(',').map(c => c.trim().toLowerCase());
+                return cats.some(c => s.category?.toLowerCase().includes(c));
+              }
+              return true;
+            });
+            if (!hasMatchingSpot) return false;
+          }
         }
       }
 
@@ -324,7 +422,7 @@ export default function BentoDistrictExplorer({
     }
 
     return list;
-  }, [allDistricts, searchQuery, activeState, activeZone, activeTheme, sortByDistance, userCoords]);
+  }, [allDistricts, searchQuery, activeState, activeZone, activeTheme, sortByDistance, userCoords, favorites]);
 
   const isPlaceSelected = (placeName) => {
     return selectedPlaces.some((p) => p.name.toLowerCase() === placeName.toLowerCase());
@@ -494,6 +592,13 @@ export default function BentoDistrictExplorer({
                 >
                   <ThemeIcon className="w-3.5 h-3.5" />
                   <span>{theme.label}</span>
+                  {theme.count !== undefined && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
+                      isSelected ? 'bg-amber-400/20 text-amber-200' : 'bg-white/5 text-slate-400'
+                    }`}>
+                      {theme.count}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -764,13 +869,16 @@ export default function BentoDistrictExplorer({
                     }
                     if (activeTheme !== 'all') {
                       const themeDef = TRAVELER_THEMES.find(t => t.id === activeTheme);
-                      if (themeDef?.freeOnly) {
-                        const feeStr = (spot.fees || spot.feesDescription || '').toLowerCase();
-                        return feeStr.includes('free') || spot.individualPrice === 0;
-                      }
-                      if (themeDef?.category) {
-                        const cats = themeDef.category.split(',').map(c => c.trim().toLowerCase());
-                        return cats.some(c => spot.category?.toLowerCase().includes(c));
+                      if (themeDef) {
+                        if (themeDef.matcher) return themeDef.matcher(spot);
+                        if (themeDef.freeOnly) {
+                          const feeStr = (spot.fees || spot.feesDescription || '').toLowerCase();
+                          return feeStr.includes('free') || spot.individualPrice === 0;
+                        }
+                        if (themeDef.category) {
+                          const cats = themeDef.category.split(',').map(c => c.trim().toLowerCase());
+                          return cats.some(c => spot.category?.toLowerCase().includes(c));
+                        }
                       }
                     }
                     return true;

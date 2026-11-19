@@ -45,6 +45,11 @@ public class PaymentController {
             @RequestParam String reference,
             @AuthenticationPrincipal UserDetails userDetails) {
 
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Authentication required to initiate payment. Please sign in or register."));
+        }
+
         // Rate limit check: 10 attempts per minute per user
         if (!rateLimitingService.tryConsumePayment(userDetails.getUsername())) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
@@ -64,6 +69,11 @@ public class PaymentController {
     public ResponseEntity<?> verifyPayment(
             @Valid @RequestBody PaymentVerifyRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Authentication required to verify payment. Please sign in or register."));
+        }
 
         // Rate limit check
         if (!rateLimitingService.tryConsumePayment(userDetails.getUsername())) {

@@ -11,7 +11,7 @@ export default function AssistantFloatingTrigger({ isOpen, onToggle }) {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       aria-label="Toggle Travel Assistant"
-      className={`fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-2.5 px-4 py-2.5 rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-xl border transition-all cursor-pointer ${
+      className={`hidden md:flex fixed bottom-6 right-6 z-40 items-center gap-2.5 px-4 py-2.5 rounded-full shadow-[0_10px_35px_rgba(0,0,0,0.6)] backdrop-blur-xl border transition-all cursor-pointer ${
         isOpen
           ? 'bg-amber-400 text-slate-950 border-amber-300 font-bold ring-2 ring-amber-400/40'
           : 'bg-[#0B0F17]/90 text-white border-amber-400/30 hover:border-amber-400/60'

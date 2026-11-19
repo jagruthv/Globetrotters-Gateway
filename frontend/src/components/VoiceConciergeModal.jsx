@@ -102,6 +102,94 @@ const HERITAGE_STORIES = [
         narrative: "16वीं शताब्दी में विजयनगर साम्राज्य द्वारा निर्मित लेपाक्षी मंदिर अपने रहस्यमयी झूलते खंभे के लिए विश्व प्रसिद्ध है, जो जमीन को नहीं छूता। पौराणिक मान्यताओं के अनुसार, रावण से युद्ध के बाद जटायु यहीं गिरे थे और प्रभु श्री राम ने उन्हें 'ले पाक्षी' यानी 'उठो पक्षी' कहकर मोक्ष दिया था।"
       }
     }
+  },
+  {
+    id: 'golconda-fort',
+    title: 'Golconda Fort: Whispering Vaults & Diamond Mines',
+    district: 'Hyderabad, Telangana',
+    duration: '1 min 50 sec',
+    image: '/images/telangana/hyderabad.jpg',
+    standout: 'Qutb Shahi Acoustic Citadel',
+    languages: {
+      en: {
+        title: 'The Acoustic Citadel of Golconda',
+        narrative: "Perched atop a 120-meter granite hill, Golconda Fort was the medieval seat of the Qutb Shahi dynasty and the global epicenter of the diamond trade that produced the legendary Koh-i-Noor and Hope diamonds. The fort's engineering masterpiece is its acoustic warning system: a handclap beneath the dome at the Fateh Darwaza entrance gate reverberates with crystal clarity all the way up to the Bala Hissar pavilion one kilometer away at the highest summit!"
+      },
+      te: {
+        title: 'గోల్కొండ కోట: చేతి చప్పట్ల శబ్ద అద్భుతం',
+        narrative: "హైదరాబాద్‌లోని గోల్కొండ కోట ప్రపంచ ప్రసిద్ధి గాంచిన వజ్రాల గని మరియు కుతుబ్ షాహీల రాజధాని. కోట ప్రవేశద్వారం ఫతే దర్వాజా కింద చప్పట్లు కొడితే ఆ శబ్దం దాదాపు ఒక కిలోమీటరు దూరంలో ఉన్న కొండపై బాలా హిస్సార్ దర్బార్‌లో స్పష్టంగా వినిపిస్తుంది. కోహినూర్ వంటి అద్భుతమైన వజ్రాలు ఈ ప్రాంతం నుంచే లభించాయి."
+      },
+      hi: {
+        title: 'गोलकोंडा किला: तालियों की गूंज और कोहिनूर का इतिहास',
+        narrative: "120 मीटर ऊंची ग्रेनाइट पहाड़ी पर बना गोलकोंडा किला कुतुब शाही वंश की राजधानी था। यह किला अपनी बेजोड़ ध्वनिकी तकनीक के लिए प्रसिद्ध है। इसके मुख्य प्रवेश द्वार पर ताली बजाने से उसकी आवाज एक किलोमीटर दूर पहाड़ी की चोटी पर स्थित महल में साफ सुनाई देती है। इसी क्षेत्र से प्रसिद्ध कोहिनूर हीरा भी मिला था।"
+      }
+    }
+  },
+  {
+    id: 'tirumala-hills',
+    title: 'Tirumala Venkateswara: Seven Sacred Hills',
+    district: 'Tirupati, Andhra Pradesh',
+    duration: '1 min 40 sec',
+    image: '/images/aptourism/sri_venkateshwara_swamy_temple.jpg',
+    standout: 'Sacred Seshachalam Shrine',
+    languages: {
+      en: {
+        title: 'The Divine Sanctum of Tirumala Hills',
+        narrative: "Nestled in the lush Seshachalam biosphere, the Sri Venkateswara Swamy Temple atop Tirumala is among the world's most visited and spiritually revered destinations. Dedicated to Lord Srinivasa, the temple's golden Ananda Nilayam vimana glows beneath the sky. Historical inscriptions from the Pallava, Chola, and Vijayanagara emperors (notably Sri Krishnadevaraya) recount centuries of royal patronage. Traditional attire is mandatory in the sanctum."
+      },
+      te: {
+        title: 'తిరుమల వేంకటేశ్వర స్వామి: ఏడు కొండల దివ్యక్షేత్రం',
+        narrative: "శేషాచలం అటవీ ప్రాంతంలోని ఏడు కొండలపై వెలసిన శ్రీ వేంకటేశ్వర స్వామి ఆలయం ప్రపంచ ప్రసిద్ధి చెందిన పుణ్యక్షేత్రం. ఆనంద నిలయం బంగారు గోపురం క్రింద కొలువైన శ్రీనివాసుడిని దర్శించుకోవడానికి రోజూ వేలాది మంది భక్తులు తరలివస్తారు. పల్లవులు, చోళులు, మరియు శ్రీకృష్ణదేవరాయలు ఈ ఆలయానికి విశేష కానుకలు సమర్పించినట్లు శాసనాలు తెలుపుతున్నాయి."
+      },
+      hi: {
+        title: 'तिरुपति तिरुमाला: सात पहाड़ियों पर स्थित दिव्य धाम',
+        narrative: "शेषाचलम पहाड़ियों में स्थित तिरुमाला वेंकटेश्वर मंदिर दुनिया के सबसे पवित्र और प्रसिद्ध मंदिरों में से एक है। भगवान श्रीनिवास को समर्पित यह मंदिर अपने स्वर्ण आनंद निलयम गोपुरम और अपार आस्था के लिए जाना जाता है। मंदिर में प्रवेश के लिए पारंपरिक परिधान अनिवार्य हैं।"
+      }
+    }
+  },
+  {
+    id: 'srisailam-temple',
+    title: 'Srisailam: Ancient Jyotirlinga on Krishna Gorges',
+    district: 'Nandyal, Andhra Pradesh',
+    duration: '1 min 45 sec',
+    image: '/images/aptourism/srisailam.jpg',
+    standout: 'Jyotirlinga & Shakti Peetha',
+    languages: {
+      en: {
+        title: 'Mallikarjuna Jyotirlinga and Bhramaramba Shakti Peetha',
+        narrative: "Perched dramatically on the flat top of the Nallamala Hills overlooking the rushing Krishna River, Srisailam is one of the exceptionally rare places in India that houses both one of the 12 sacred Jyotirlingas of Lord Shiva (Mallikarjuna) and one of the 18 Maha Shakti Peethas of Goddess Parvati (Bhramaramba). Chhatrapati Shivaji Maharaj worshipped here and commissioned the northern gateway tower in 1677."
+      },
+      te: {
+        title: 'శ్రీశైలం: కృష్ణా తీరంలో జ్యోతిర్లింగ క్షేత్రం',
+        narrative: "నల్లమల అడవుల్లో కృష్ణా నది తీరాన వెలసిన శ్రీశైలం మహాక్షేత్రం భారతదేశంలోనే అరుదైన పుణ్యస్థలం. ఇక్కడ శివుని ద్వాదశ జ్యోతిర్లింగాలలో ఒకటైన మల్లికార్జున స్వామి మరియు అష్టాదశ శక్తిపీఠాలలో ఒకటైన భ్రమరాంబికా అమ్మవారు ఒకేచోట కొలువై ఉన్నారు. ఛత్రపతి శివాజీ మహారాజ్ ఇక్కడ గోపురాన్ని నిర్మించి ప్రత్యేక పూజలు చేశారు."
+      },
+      hi: {
+        title: 'श्रीशैलम: कृष्णा नदी के तट पर पवित्र ज्योतिर्लिंग',
+        narrative: "नल्लामलाई की हरी-भरी पहाड़ियों में स्थित श्रीशैलम भारत का एक अत्यंत दुर्लभ तीर्थ स्थल है, जहाँ 12 ज्योतिर्लिंगों में से एक मल्लिकार्जुन और 18 शक्तिपीठों में से एक भ्रमराम्बा देवी एक साथ विराजमान हैं। छत्रपति शिवाजी महाराज ने भी यहाँ दर्शन कर एक भव्य गोपुरम का निर्माण करवाया था।"
+      }
+    }
+  },
+  {
+    id: 'warangal-fort',
+    title: 'Warangal Fort & Thousand Pillar Temple',
+    district: 'Hanamkonda, Telangana',
+    duration: '1 min 35 sec',
+    image: '/images/telangana/warangal.jpg',
+    standout: 'Kakatiya Dynasty Monoliths',
+    languages: {
+      en: {
+        title: 'The Monolithic Keerthi Thoranas of Warangal',
+        narrative: "Warangal was the historic capital of the Kakatiya Dynasty from the 12th to 14th centuries, ruled by visionary monarchs including the legendary warrior Queen Rani Rudrama Devi. The four majestic Keerthi Thorana ornamental stone archways in the fort stand as the official emblem of the Government of Telangana today. Nearby, the Thousand Pillar Temple features star-shaped tripartite shrines and a monumental monolith Nandi bull carved from black dolerite."
+      },
+      te: {
+        title: 'వరంగల్ కోట: కాకతీయుల కీర్తి తోరణాలు',
+        narrative: "కాకతీయ రాజధానిగా వెలుగొందిన వరంగల్ నగరంలో రాణి రుద్రమదేవి వంటి పరాక్రమవంతులు పాలించారు. వరంగల్ కోటలోని నాలుగు అద్భుత కీర్తి తోరణాలు ప్రస్తుతం తెలంగాణ ప్రభుత్వ అధికారిక చిహ్నంగా ఉన్నాయి. సమీపంలోని వేయి స్తంభాల గుడి నక్షత్రాకార పునాది మరియు ఏకశిలా నంది శిల్పంతో అలరారుతోంది."
+      },
+      hi: {
+        title: 'वारंगल किला: काकतीय साम्राज्य की कीर्ति तोरण',
+        narrative: "12वीं से 14वीं शताब्दी के दौरान काकतीय वंश की राजधानी रहे वारंगल में वीरांगना रानी रुद्रमा देवी ने शासन किया था। वारंगल किले के भव्य कीर्ति तोरण आज तेलंगाना सरकार के आधिकारिक प्रतीक हैं। पास ही स्थित हजार खंभों वाला मंदिर अपनी उत्कृष्ट मूर्तिकला के लिए विख्यात है।"
+      }
+    }
   }
 ];
 
@@ -584,7 +672,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
 
         {/* Tab 2: Heritage Monument Audio Guides (Zero Mic Required) */}
         {activeTab === 'stories' && (
-          <div className="relative z-10 flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
+          <div className="relative z-10 flex-1 overflow-y-auto pr-1 flex flex-col gap-3">
             {/* Language Switcher */}
             <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/5">
               <span className="text-xs text-slate-400 font-sans-clean pl-2">Narration Language:</span>
@@ -613,6 +701,12 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Crowd Audio Accessibility Notice */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200 font-sans-clean">
+              <Headphones className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>In noisy queues or echoes, use earphones or follow the synchronized live text transcript below.</span>
             </div>
 
             {/* Story Cards List */}
@@ -661,6 +755,20 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                         {isCurrentlyPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
                       </button>
                     </div>
+
+                    {isCurrentlyPlaying && (
+                      <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5 animate-in fade-in">
+                        <Volume2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 animate-pulse" />
+                        <div className="flex flex-col">
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-300">
+                            Live Captions ({selectedLanguage === 'te' ? 'తెలుగు' : selectedLanguage === 'hi' ? 'हिन्दी' : 'English'}):
+                          </span>
+                          <p className="text-xs text-white mt-1 leading-relaxed font-medium">
+                            {langContent.narrative}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}

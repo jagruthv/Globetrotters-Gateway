@@ -28,7 +28,6 @@ import { tripService, chatService } from '../services/api';
 import { offlineRouteFallback, resolveSpotCoordinates } from '../utils/offlineRouteEngine';
 import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
 import LiveWeatherBadge from './LiveWeatherBadge';
-import GeminiPlanDrawer from './GeminiPlanDrawer';
 import PocketDossierModal from './PocketDossierModal';
 
 // Module-level utility functions to isolate side-effect timings from React Compiler render scope
@@ -73,13 +72,21 @@ export default function AiFluidTripStudio({
       console.warn('Failed to persist plan to localStorage:', e);
     }
   }, []);
-  const [geminiDrawerOpen, setGeminiDrawerOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [generationError, setGenerationError] = useState(null);
   const [chatSessionId] = useState(() => 'trip_chat_' + Math.random().toString(36).substring(2, 9));
   const [isPocketDossierOpen, setIsPocketDossierOpen] = useState(false);
   const [showPackingList, setShowPackingList] = useState(false);
   const [checkedPackingItems, setCheckedPackingItems] = useState({});
+
+  const _handleScrollToConcierge = () => {
+    const el = document.getElementById('trip-concierge-console');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      const input = document.querySelector('input[name="chatQuery"]');
+      if (input) input.focus();
+    }
+  };
 
   // Quick In-Planner Destination Search & Add
   const [quickSearchQuery, setQuickSearchQuery] = useState('');
@@ -900,8 +907,9 @@ export default function AiFluidTripStudio({
                   </button>
 
                   <button
-                    onClick={() => setGeminiDrawerOpen(true)}
+                    onClick={handleScrollToConcierge}
                     className="px-4 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean"
+                    title="Discuss with AI guide, swap spots, or tune pace"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                     <span>Customize Itinerary</span>
@@ -1172,7 +1180,7 @@ export default function AiFluidTripStudio({
                   PERSONAL TRAVEL CONCIERGE CHAT CONSOLE
                   Enables tourist discussion, questions, trade-offs, and re-design
                   ───────────────────────────────────────────────────────────────── */}
-              <div className="pt-6 border-t border-white/10 flex flex-col gap-4 font-sans-clean">
+              <div id="trip-concierge-console" className="pt-6 border-t border-white/10 flex flex-col gap-4 font-sans-clean scroll-mt-24">
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
@@ -1306,18 +1314,6 @@ export default function AiFluidTripStudio({
             </div>
           </motion.div>
         )}
-
-        {/* Google Apps Style Gemini Assistant Slide-Over Popup */}
-        <GeminiPlanDrawer
-          isOpen={geminiDrawerOpen}
-          onClose={() => setGeminiDrawerOpen(false)}
-          currentPlan={planResult}
-          onUpdatePlan={(updated) => setPlanResult(updated)}
-          onBookPass={(plan) => {
-            setGeminiDrawerOpen(false);
-            handleBuyPass(plan);
-          }}
-        />
 
         {/* 1-Page Printable / Downloadable Pocket Trip Dossier */}
         <PocketDossierModal

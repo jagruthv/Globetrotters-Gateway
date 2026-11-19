@@ -72,9 +72,5 @@ function dispatchNetworkState(isOnline) {
 
 export function isDeviceOnline() {
   if (typeof window === 'undefined') return true;
-  // If examiner simulation mode is explicitly enabled
-  if (window.__SIMULATE_CELLULAR_BLACKOUT === true) {
-    return false;
-  }
   return navigator.onLine;
 }

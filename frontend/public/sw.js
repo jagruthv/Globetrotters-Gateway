@@ -100,7 +100,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // C. Local Static Assets (.js, .css, .svg, .png, .jpg): Stale-While-Revalidate
+  // C. Local Static Assets (.js, .css, .svg, .png, .jpg): Cache-First with Background Revalidation
   if (
     url.pathname.startsWith('/assets/') ||
     url.pathname.startsWith('/images/') ||
@@ -121,7 +121,10 @@ self.addEventListener('fetch', (event) => {
           })
           .catch(() => null);
 
-        return cached || fetchPromise;
+        if (cached) {
+          return cached;
+        }
+        return fetchPromise;
       })
     );
     return;

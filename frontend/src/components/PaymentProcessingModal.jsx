@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, X, CheckCircle2, Zap, CreditCard } from 'lucide-react';
+import { ShieldCheck, X, CheckCircle2, Zap, CreditCard, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { generateCryptographicPassToken } from '../utils/cryptoPassService';
-import { launchRazorpayCheckout, isRazorpayLoaded } from '../utils/razorpayClient';
+import { launchRazorpayCheckout } from '../utils/razorpayClient';
 
 const STATUS_MESSAGES = {
   5: 'Connecting to state tourism payment gateway...',
@@ -52,6 +52,7 @@ export default function PaymentProcessingModal({
   const [secondsRemaining, setSecondsRemaining] = useState(5);
   const [paymentFinished, setPaymentFinished] = useState(false);
   const [isPayingWithRazorpay, setIsPayingWithRazorpay] = useState(false);
+  const [paymentNotice, setPaymentNotice] = useState(null);
 
   const completeBooking = useCallback(async () => {
     const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -116,6 +117,8 @@ export default function PaymentProcessingModal({
     if (isOpen) {
       setSecondsRemaining(5);
       setPaymentFinished(false);
+      setIsPayingWithRazorpay(false);
+      setPaymentNotice(null);
     }
   }
 
@@ -153,6 +156,7 @@ export default function PaymentProcessingModal({
   };
 
   const handleRazorpayPayment = async () => {
+    setPaymentNotice(null);
     setIsPayingWithRazorpay(true);
     const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
     const refNumber = `GT-${new Date().getFullYear()}-${randomCode}`;
@@ -187,7 +191,7 @@ export default function PaymentProcessingModal({
       },
       onError: (err) => {
         setIsPayingWithRazorpay(false);
-        console.warn('Razorpay checkout error:', err);
+        setPaymentNotice(err?.message || 'Payment interrupted. You can continue with instant pass mode.');
       },
       onDismiss: () => {
         setIsPayingWithRazorpay(false);
@@ -232,6 +236,24 @@ export default function PaymentProcessingModal({
               Simulating fast-track digital gate verification and pass generation.
             </p>
           </div>
+
+          {/* Payment Notice Banner */}
+          {paymentNotice && (
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs animate-in fade-in">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex-1 text-[11px] leading-relaxed">
+                {paymentNotice}
+              </div>
+              <button
+                type="button"
+                onClick={() => setPaymentNotice(null)}
+                className="text-amber-400 hover:text-white shrink-0 cursor-pointer"
+                title="Dismiss notice"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* Countdown & Status Ring */}
           <div className="flex flex-col items-center justify-center py-1">
@@ -333,17 +355,16 @@ export default function PaymentProcessingModal({
                 <span>Instant Pass</span>
               </button>
 
-              {isRazorpayLoaded() && (
-                <button
-                  onClick={handleRazorpayPayment}
-                  disabled={paymentFinished || isPayingWithRazorpay}
-                  className="px-4 py-2.5 rounded-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer disabled:opacity-50"
-                  title="Open official Razorpay payment gateway (UPI, Cards, Netbanking)"
-                >
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>{isPayingWithRazorpay ? 'Opening...' : 'Pay with Razorpay'}</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleRazorpayPayment}
+                disabled={paymentFinished || isPayingWithRazorpay}
+                className="px-4 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer disabled:opacity-50"
+                title="Pay securely with Razorpay (UPI, Cards, Netbanking)"
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>{isPayingWithRazorpay ? 'Connecting...' : 'Pay with Razorpay'}</span>
+              </button>
             </div>
           </div>
         </motion.div>
