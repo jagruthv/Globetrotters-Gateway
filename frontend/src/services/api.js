@@ -1,4 +1,4 @@
-import { logger } from '../utils/telemetryLogger';
+import { logger } from '../utils/telemetryLogger.js';
 
 const API_BASE_URL = '/api';
 

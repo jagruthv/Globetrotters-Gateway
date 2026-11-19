@@ -10,7 +10,6 @@ import {
   Volume2,
   VolumeX,
   MapPin,
-  Users,
   Camera,
   CameraOff,
   RotateCcw,
@@ -24,7 +23,8 @@ import {
   verifyPassOffline, 
   syncLedgerToCentralCore,
   getAdmittedPasses,
-  markPassVisited
+  markPassVisited,
+  isPassValidForLocation
 } from '../utils/offlineTurnstileLedger';
 
 function playScannerSound(isGranted) {
@@ -41,7 +41,6 @@ function playScannerSound(isGranted) {
     gain.connect(ctx.destination);
 
     if (isGranted) {
-      // Crisp positive double-chime
       osc.type = 'sine';
       osc.frequency.setValueAtTime(587.33, ctx.currentTime);
       osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.08);
@@ -50,7 +49,6 @@ function playScannerSound(isGranted) {
       osc.start();
       osc.stop(ctx.currentTime + 0.3);
     } else {
-      // Low buzz alert
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(130, ctx.currentTime);
       gain.gain.setValueAtTime(0.2, ctx.currentTime);
@@ -63,8 +61,108 @@ function playScannerSound(isGranted) {
   }
 }
 
+// 10 Distinct Paid Attractions across 10 Different Districts with verified entry fees
 const CHECKPOINTS = [
-  { id: 2, name: 'Borra Caves Cave Entrance (Alluri Sitharama Raju)', gate: 'Gate B2' }
+  { 
+    id: 1, 
+    name: 'Borra Caves', 
+    fullName: 'Borra Caves Cave Entrance',
+    district: 'Alluri Sitharama Raju (ASR)', 
+    state: 'Andhra Pradesh',
+    fee: 80, 
+    gate: 'Gate B2 • Turnstile 01',
+    keyword: 'borra'
+  },
+  { 
+    id: 2, 
+    name: 'INS Kurusura Submarine Museum', 
+    fullName: 'INS Kurusura Submarine Museum Deck',
+    district: 'Visakhapatnam', 
+    state: 'Andhra Pradesh',
+    fee: 70, 
+    gate: 'Gangway North Gate',
+    keyword: 'kurusura'
+  },
+  { 
+    id: 3, 
+    name: 'Kondakarla Ava Lake', 
+    fullName: 'Kondakarla Ava Bird Sanctuary & Lake',
+    district: 'Anakapalli', 
+    state: 'Andhra Pradesh',
+    fee: 20, 
+    gate: 'Jetty Turnstile 01',
+    keyword: 'kondakarla'
+  },
+  { 
+    id: 4, 
+    name: 'Belum Caves', 
+    fullName: 'Belum Caves Underground Passages',
+    district: 'Nandyal', 
+    state: 'Andhra Pradesh',
+    fee: 70, 
+    gate: 'Cave Descent Gate 01',
+    keyword: 'belum'
+  },
+  { 
+    id: 5, 
+    name: 'Kondapalli Fort', 
+    fullName: 'Kondapalli Fort & Heritage Complex',
+    district: 'NTR', 
+    state: 'Andhra Pradesh',
+    fee: 25, 
+    gate: 'Rani Mahal Gate',
+    keyword: 'kondapalli'
+  },
+  { 
+    id: 6, 
+    name: 'Chandragiri Fort & Palaces', 
+    fullName: 'Chandragiri Fort & Raja Mahal',
+    district: 'Tirupati', 
+    state: 'Andhra Pradesh',
+    fee: 25, 
+    gate: 'Raja Mahal Main Gate',
+    keyword: 'chandragiri'
+  },
+  { 
+    id: 7, 
+    name: 'Golconda Fort', 
+    fullName: 'Golconda Fort & Acoustic Portico',
+    district: 'Hyderabad', 
+    state: 'Telangana',
+    fee: 25, 
+    gate: 'Fateh Darwaza Gate',
+    keyword: 'golconda'
+  },
+  { 
+    id: 8, 
+    name: 'Warangal Fort', 
+    fullName: 'Warangal Fort & Kala Thoranam',
+    district: 'Warangal', 
+    state: 'Telangana',
+    fee: 25, 
+    gate: 'Kirti Torana Gate',
+    keyword: 'warangal'
+  },
+  { 
+    id: 9, 
+    name: 'Ramappa Temple (UNESCO)', 
+    fullName: 'Ramappa Temple UNESCO Complex',
+    district: 'Mulugu', 
+    state: 'Telangana',
+    fee: 25, 
+    gate: 'Eastern Mandapa Gate',
+    keyword: 'ramappa'
+  },
+  { 
+    id: 10, 
+    name: 'Kinnerasani Wildlife Sanctuary', 
+    fullName: 'Kinnerasani Sanctuary & Dam',
+    district: 'Bhadradri Kothagudem', 
+    state: 'Telangana',
+    fee: 30, 
+    gate: 'Eco-Park Entrance Gate',
+    keyword: 'kinnerasani'
+  }
 ];
 
 export default function AgentPortalView({ 
@@ -72,21 +170,23 @@ export default function AgentPortalView({
   passData = null
 }) {
   const [tokenInput, setTokenInput] = useState(passData?.token || '');
-  const selectedPlaceId = 2; // Fixed & locked strictly to Borra Caves
-  const [verdict, setVerdict] = useState(null); // { success: boolean, touristName: string, message: string }
+  const [selectedPlaceId, setSelectedPlaceId] = useState(1);
+  const [verdict, setVerdict] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [soundEnabled, setSoundEnabled] = useState(() => {
     return localStorage.getItem('gt_sound_enabled') !== 'false';
   });
 
-  // Authentic Session Telemetry (Starts fresh or loads actual logged shift data)
+  const activeCheckpoint = CHECKPOINTS.find((c) => c.id === Number(selectedPlaceId)) || CHECKPOINTS[0];
+
+  // Shift Counters
   const [scanStats, setScanStats] = useState(() => {
     try {
       const stored = localStorage.getItem('globetrotter_agent_shift_stats');
-      return stored ? JSON.parse(stored) : { total: 0, approved: 0, denied: 0 };
+      return stored ? JSON.parse(stored) : { approved: 0, denied: 0 };
     } catch {
-      return { total: 0, approved: 0, denied: 0 };
+      return { approved: 0, denied: 0 };
     }
   });
 
@@ -99,7 +199,7 @@ export default function AgentPortalView({
     }
   });
 
-  // Real Camera Scanner State
+  // Camera Scanner State
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraScanning, setCameraScanning] = useState(false);
   const [cameraError, setCameraError] = useState(null);
@@ -110,7 +210,16 @@ export default function AgentPortalView({
   const scanAnimationRef = useRef(null);
   const handleScanPassRef = useRef(null);
 
-  // Retrieve active booked pass from localStorage if available (for easy 1-click test)
+  // Callback ref: immediately attaches stream and plays when <video> mounts into DOM
+  const setVideoRef = useCallback((node) => {
+    videoRef.current = node;
+    if (node && mediaStreamRef.current) {
+      node.srcObject = mediaStreamRef.current;
+      node.play().catch(() => {});
+    }
+  }, []);
+
+  // Retrieve active booked pass from localStorage for 1-click testing
   const activeBookedPass = (() => {
     try {
       const stored = localStorage.getItem('globetrotter_passes');
@@ -124,14 +233,14 @@ export default function AgentPortalView({
     return null;
   })();
 
-  // Keep token synced if a pass was passed in props
+  // Keep token synced if passData passed in props
   const [prevToken, setPrevToken] = useState(passData?.token);
   if (passData?.token && passData.token !== prevToken) {
     setPrevToken(passData.token);
     setTokenInput(passData.token);
   }
 
-  // Network Detection & Silent Auto-Sync
+  // Network Detection & Auto-Sync
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
@@ -147,87 +256,8 @@ export default function AgentPortalView({
     };
   }, []);
 
-  // Cleanup camera stream when component unmounts
-  useEffect(() => {
-    return () => {
-      if (scanAnimationRef.current) {
-        cancelAnimationFrame(scanAnimationRef.current);
-      }
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
-      }
-    };
-  }, []);
-
-  // Start Camera with resilient mobile multi-tier constraints
-  const startCamera = async (mode = facingMode) => {
-    setCameraError(null);
-    try {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
-      }
-
-      let stream = null;
-      // Tier 1: Try requested mode with ideal resolution
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: mode },
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          }
-        });
-      } catch (err1) {
-        if (import.meta.env.DEV) console.warn('Tier 1 camera constraints fallback:', err1);
-        // Tier 2: Try relaxed facingMode without resolution lock
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: mode }
-          });
-        } catch (err2) {
-          if (import.meta.env.DEV) console.warn('Tier 2 camera constraints fallback:', err2);
-          // Tier 3: Open any video camera available on device
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: true
-          });
-        }
-      }
-
-      mediaStreamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.setAttribute('webkit-playsinline', 'true');
-        videoRef.current.setAttribute('autoplay', 'true');
-        videoRef.current.setAttribute('muted', 'true');
-        try {
-          await videoRef.current.play();
-        } catch (playErr) {
-          if (import.meta.env.DEV) console.warn('Video auto-play fallback:', playErr);
-        }
-      }
-      setIsCameraActive(true);
-      setCameraScanning(true);
-    } catch (err) {
-      if (import.meta.env.DEV) console.warn('Camera initiation notice:', err);
-      setCameraError('Camera access not available or permission denied. You can manually enter or paste the ticket code below.');
-      setIsCameraActive(false);
-      setCameraScanning(false);
-    }
-  };
-
-  // Auto-boot camera immediately if officer navigated to #/scanner
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hash.includes('scanner')) {
-      const timer = setTimeout(() => {
-        startCamera();
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  // Stop Camera
-  const stopCamera = () => {
+  // Stop camera tracks helper
+  const stopCameraStream = useCallback(() => {
     if (scanAnimationRef.current) {
       cancelAnimationFrame(scanAnimationRef.current);
     }
@@ -240,16 +270,73 @@ export default function AgentPortalView({
     }
     setIsCameraActive(false);
     setCameraScanning(false);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopCameraStream();
+    };
+  }, [stopCameraStream]);
+
+  // Start Camera with resilient mobile-first constraints
+  const startCamera = async (mode = facingMode) => {
+    setCameraError(null);
+    try {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+
+      let stream = null;
+      // Relaxed mobile constraints: do not enforce rigid landscape dimensions
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: mode } }
+        });
+      } catch {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: mode }
+          });
+        } catch {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true
+          });
+        }
+      }
+
+      mediaStreamRef.current = stream;
+      setIsCameraActive(true);
+      setCameraScanning(true);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(() => {});
+      }
+    } catch {
+      setCameraError('Camera access not available. You can enter or paste the ticket code manually.');
+      setIsCameraActive(false);
+      setCameraScanning(false);
+    }
   };
 
-  // Flip Camera (environment <-> user)
+  // Auto-boot camera if officer navigated to #/scanner
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash.includes('scanner')) {
+      const timer = setTimeout(() => {
+        startCamera();
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   const toggleFlipCamera = () => {
     const nextMode = facingMode === 'environment' ? 'user' : 'environment';
     setFacingMode(nextMode);
     startCamera(nextMode);
   };
 
-  // Frame Processing Loop using jsQR
+  // QR Code Processing Loop
   useEffect(() => {
     if (!isCameraActive || !cameraScanning) return;
 
@@ -271,7 +358,6 @@ export default function AgentPortalView({
 
         if (code && code.data) {
           let extracted = code.data.trim();
-          // If code is a URL, extract ?t= parameter
           if (extracted.includes('?t=')) {
             try {
               const url = new URL(extracted);
@@ -288,7 +374,6 @@ export default function AgentPortalView({
           setTokenInput(extracted);
           handleScanPassRef.current?.(extracted);
 
-          // Pause camera scanning for 3.5s to clearly display verdict
           setCameraScanning(false);
           setTimeout(() => {
             if (active) setCameraScanning(true);
@@ -318,7 +403,6 @@ export default function AgentPortalView({
   const recordScanResult = (result, isOk, tokenToVerify, checkpointName) => {
     setScanStats((prev) => {
       const updated = {
-        total: prev.total + 1,
         approved: isOk ? prev.approved + 1 : prev.approved,
         denied: !isOk ? prev.denied + 1 : prev.denied
       };
@@ -338,7 +422,7 @@ export default function AgentPortalView({
           success: isOk, 
           checkpoint: checkpointName 
         },
-        ...prev.slice(0, 9)
+        ...prev.slice(0, 7)
       ];
       try {
         localStorage.setItem('globetrotter_agent_recent_scans', JSON.stringify(updated));
@@ -348,7 +432,7 @@ export default function AgentPortalView({
   };
 
   const handleResetShiftStats = () => {
-    const emptyStats = { total: 0, approved: 0, denied: 0 };
+    const emptyStats = { approved: 0, denied: 0 };
     setScanStats(emptyStats);
     setRecentScans([]);
     try {
@@ -364,10 +448,13 @@ export default function AgentPortalView({
     setIsScanning(true);
     setVerdict(null);
 
-    const placeObj = CHECKPOINTS.find((c) => c.id === Number(selectedPlaceId));
-    const checkpointName = placeObj ? placeObj.name : 'Borra Caves Cave Entrance (Alluri Sitharama Raju)';
+    const cp = activeCheckpoint;
+    const checkpointName = cp.name;
+    const placeId = cp.id;
+    const gateId = cp.gate;
+    const kw = cp.keyword;
 
-    // 0. Location Validation: Verify if this pass actually includes Borra Caves!
+    // Load local stored passes
     const storedPasses = (() => {
       try {
         const raw = localStorage.getItem('globetrotter_passes');
@@ -382,25 +469,15 @@ export default function AgentPortalView({
       (p?.token && (p.token === tokenToVerify || tokenToVerify.includes(p.reference)))
     ) : null;
 
-    const includesBorraCaves = (pass) => {
-      if (!pass) return false;
-      const kw = 'borra';
-      if (Array.isArray(pass.destinations) && pass.destinations.some(d => typeof d === 'string' && d.toLowerCase().includes(kw))) return true;
-      if (Array.isArray(pass.placesAllowed) && pass.placesAllowed.some(p => typeof p === 'string' && p.toLowerCase().includes(kw))) return true;
-      if (typeof pass.circuitName === 'string' && pass.circuitName.toLowerCase().includes(kw)) return true;
-      if (typeof pass.destination === 'string' && pass.destination.toLowerCase().includes(kw)) return true;
-      if (pass.circuitId === 2 || String(pass.circuitId).toLowerCase().includes(kw)) return true;
-      return false;
-    };
-
-    if (matchedPass && !includesBorraCaves(matchedPass)) {
+    // 1. Destination Matching Check: Verify whether pass is valid for this monument
+    if (matchedPass && !isPassValidForLocation(matchedPass, placeId, kw, checkpointName)) {
       setIsScanning(false);
       playScannerSound(false);
-      const passTarget = matchedPass.circuitName || matchedPass.destination || 'other attractions';
+      const passTarget = matchedPass.circuitName || matchedPass.destination || 'other destinations';
       const result = {
         success: false,
         touristName: matchedPass.touristName || 'Ticket Holder',
-        message: `ENTRY DENIED • WRONG LOCATION: Pass is only valid for "${passTarget}". It does not grant entry to Borra Caves.`,
+        message: `ENTRY DENIED: Pass is only valid for "${passTarget}". It cannot be used at ${checkpointName}.`,
         checkpoint: checkpointName,
         token: tokenToVerify
       };
@@ -410,13 +487,12 @@ export default function AgentPortalView({
       return;
     }
 
-    // 1. Anti-Revisit Check: If tourist already visited Borra Caves, agent CANNOT allow again
+    // 2. Anti-Revisit Check: Check local offline cache and pass visited history
     const admittedCache = getAdmittedPasses();
     const isAlreadyVisited = 
-      Boolean(matchedPass?.isBorraCavesVisited) ||
-      Boolean(matchedPass?.visitedPlaces?.some(v => v.placeId === 2 || (v.name && v.name.toLowerCase().includes('borra')))) ||
-      Boolean(admittedCache[`${tokenToVerify.trim()}::2`]) ||
-      Boolean(matchedPass?.reference && admittedCache[`${matchedPass.reference}::2`]);
+      Boolean(admittedCache[`${tokenToVerify.trim()}::${placeId}`]) ||
+      Boolean(matchedPass?.reference && admittedCache[`${matchedPass.reference}::${placeId}`]) ||
+      Boolean(matchedPass?.visitedPlaces?.some(v => v.placeId === placeId || (v.name && v.name.toLowerCase().includes(kw))));
 
     if (isAlreadyVisited) {
       setIsScanning(false);
@@ -424,7 +500,7 @@ export default function AgentPortalView({
       const result = {
         success: false,
         touristName: matchedPass?.touristName || 'Ticket Holder',
-        message: 'ENTRY DENIED • ALREADY VISITED: Single admission for Borra Caves was already redeemed. Re-entry strictly prohibited.',
+        message: `ENTRY DENIED: Single entry for ${checkpointName} was already redeemed. Re-entry prohibited.`,
         checkpoint: checkpointName,
         token: tokenToVerify
       };
@@ -434,21 +510,21 @@ export default function AgentPortalView({
       return;
     }
 
-    // 2. Local Offline Engine verification
+    // 3. Local Offline Verification if offline
     if (!isOnline) {
       setTimeout(async () => {
-        const offRes = await verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
+        const offRes = await verifyPassOffline(tokenToVerify, placeId, gateId, checkpointName, kw);
         setIsScanning(false);
         const isOk = offRes.valid;
         if (isOk) {
-          markPassVisited(tokenToVerify, selectedPlaceId, 'Borra Caves');
+          markPassVisited(tokenToVerify, placeId, checkpointName, gateId);
         }
         playScannerSound(isOk);
 
         const result = {
           success: isOk,
           touristName: offRes.touristName || matchedPass?.touristName || (isOk ? 'Verified Visitor' : 'Unregistered Ticket'),
-          message: isOk ? 'ENTRY GRANTED • ADMIT 1 (Single Entry Activated)' : offRes.message || 'ENTRY DENIED • INVALID TICKET',
+          message: isOk ? `ENTRY GRANTED • ADMIT 1 (${checkpointName})` : offRes.message,
           checkpoint: checkpointName,
           token: tokenToVerify
         };
@@ -456,16 +532,16 @@ export default function AgentPortalView({
         setVerdict(result);
         recordScanResult(result, isOk, tokenToVerify, checkpointName);
         setTimeout(() => setVerdict(null), 5000);
-      }, 250);
+      }, 200);
       return;
     }
 
-    // 3. Cloud Server verification with offline fallback
+    // 4. Cloud Server verification with offline fallback
     try {
       const res = await scannerService.verifyPass({
         token: tokenToVerify,
-        placeId: selectedPlaceId,
-        turnstileId: 'Gate-01'
+        placeId: placeId,
+        turnstileId: gateId
       });
 
       if (!res.valid) {
@@ -473,7 +549,7 @@ export default function AgentPortalView({
         const result = {
           success: false,
           touristName: res.touristName || matchedPass?.touristName || 'Ticket Holder',
-          message: res.message || 'ENTRY DENIED • TICKET NOT VALID FOR BORRA CAVES',
+          message: res.message || `ENTRY DENIED: Ticket not valid for ${checkpointName}.`,
           checkpoint: checkpointName,
           token: tokenToVerify
         };
@@ -483,12 +559,12 @@ export default function AgentPortalView({
         return;
       }
 
-      markPassVisited(tokenToVerify, selectedPlaceId, 'Borra Caves');
+      markPassVisited(tokenToVerify, placeId, checkpointName, gateId);
       playScannerSound(true);
       const result = {
         success: true,
         touristName: res.touristName || matchedPass?.touristName || 'Verified Visitor',
-        message: 'ENTRY GRANTED • ADMIT 1 (Borra Caves Entry Activated)',
+        message: `ENTRY GRANTED • ADMIT 1 (${checkpointName})`,
         checkpoint: checkpointName,
         token: tokenToVerify
       };
@@ -498,17 +574,17 @@ export default function AgentPortalView({
       setTimeout(() => setVerdict(null), 5000);
     } catch {
       // Fallback to local offline ledger
-      const offRes = await verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
+      const offRes = await verifyPassOffline(tokenToVerify, placeId, gateId, checkpointName, kw);
       const isOk = offRes.valid;
       if (isOk) {
-        markPassVisited(tokenToVerify, selectedPlaceId, 'Borra Caves');
+        markPassVisited(tokenToVerify, placeId, checkpointName, gateId);
       }
       playScannerSound(isOk);
 
       const result = {
         success: isOk,
         touristName: offRes.touristName || matchedPass?.touristName || (isOk ? 'Verified Visitor' : 'Unregistered Ticket'),
-        message: isOk ? 'ENTRY GRANTED • ADMIT 1 (Single Entry Activated)' : offRes.message || 'ENTRY DENIED • INVALID TICKET',
+        message: isOk ? `ENTRY GRANTED • ADMIT 1 (${checkpointName})` : offRes.message,
         checkpoint: checkpointName,
         token: tokenToVerify
       };
@@ -519,59 +595,39 @@ export default function AgentPortalView({
     } finally {
       setIsScanning(false);
     }
-  }, [tokenInput, isScanning, selectedPlaceId, isOnline]);
+  }, [tokenInput, isScanning, activeCheckpoint, isOnline]);
 
   useEffect(() => {
     handleScanPassRef.current = handleScanPass;
   }, [handleScanPass]);
 
-  const handleRevokeAgentStatus = () => {
-    stopCamera();
-    localStorage.removeItem('globetrotter_is_agent');
-    window.dispatchEvent(new Event('agent-status-changed'));
-    onExitAgentMode();
-  };
-
   return (
-    <div className="relative min-h-[100dvh] bg-[#080A0F] text-slate-100 font-sans-clean overflow-x-hidden selection:bg-amber-500/20 flex flex-col">
+    <div className="relative min-h-[100dvh] bg-[#080A0F] text-slate-100 font-sans-clean overflow-x-hidden flex flex-col">
       
-      {/* EXCLUSIVE AGENT TOP OPERATIONS BAR */}
-      <header className="sticky top-0 z-50 w-full bg-[#0E121A]/95 backdrop-blur-xl border-b border-amber-500/20 px-4 md:px-8 py-3.5 flex items-center justify-between shadow-xl">
-        
-        {/* Left: Agent Brand & Operational Badge */}
+      {/* MINIMAL HEADER */}
+      <header className="sticky top-0 z-50 w-full bg-[#0E121A]/95 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 py-3 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-300 font-bold">
-            <Scan className="w-5 h-5 text-amber-300" />
+          <div className="w-8 h-8 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-300">
+            <Scan className="w-4 h-4 text-amber-400" />
           </div>
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="font-sans-clean font-bold text-sm sm:text-base text-white">
-                Field Operations Gate Portal
-              </span>
-              <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-amber-300 font-sans-clean border border-white/10">
-                Gate terminal 01
-              </span>
-            </div>
-            <span className="text-[10px] text-slate-400 font-sans-clean flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span>AP & TG Tourism Authority • Operations Portal</span>
-            </span>
+            <span className="font-bold text-sm text-white">Agent Turnstile Scanner</span>
+            <span className="text-[10px] text-slate-400">AP & TG Tourism Corridor</span>
           </div>
         </div>
 
-        {/* Right: Operational Controls & Return to Tourist View */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Network Pill */}
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs">
+        <div className="flex items-center gap-2.5">
+          {/* Online/Offline status dot */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs">
             {isOnline ? (
               <>
-                <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-300 text-[11px] font-medium">Cloud Synced</span>
+                <Wifi className="w-3 h-3 text-emerald-400" />
+                <span className="text-emerald-300 text-[11px] font-medium hidden sm:inline">Online</span>
               </>
             ) : (
               <>
-                <WifiOff className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-amber-300 text-[11px] font-medium">Offline Core</span>
+                <WifiOff className="w-3 h-3 text-amber-400" />
+                <span className="text-amber-300 text-[11px] font-medium hidden sm:inline">Offline</span>
               </>
             )}
           </div>
@@ -580,382 +636,243 @@ export default function AgentPortalView({
           <button
             onClick={handleToggleSound}
             className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer"
-            title={soundEnabled ? 'Scanner Audio Enabled' : 'Scanner Audio Muted'}
+            title={soundEnabled ? 'Mute' : 'Unmute'}
           >
-            {soundEnabled ? (
-              <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-            ) : (
-              <VolumeX className="w-3.5 h-3.5 text-slate-500" />
-            )}
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-emerald-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
           </button>
 
-          {/* Agent Badge */}
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <span className="font-mono text-[11px] font-semibold">Agent #AGT-8942</span>
-          </div>
-
-          {/* RETURN TO TOURIST VIEW */}
+          {/* Return to Tourist View */}
           <button
             onClick={() => {
-              stopCamera();
+              stopCameraStream();
               onExitAgentMode();
             }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors shadow-md cursor-pointer font-sans-clean"
-            title="Switch back to tourist exploration interface"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors cursor-pointer"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-slate-950" />
+            <ArrowLeft className="w-3.5 h-3.5" />
             <span>Tourist View</span>
           </button>
         </div>
-
       </header>
 
-      {/* AGENT OPERATIONAL WORKSPACE BODY */}
-      <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 md:p-8 flex flex-col gap-6">
+      {/* MAIN SCANNER INTERFACE */}
+      <main className="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-5">
 
-        {/* AUTHENTIC SHIFT COUNTERS (STARTS AT 0 • ZERO FAKE DATA) */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
-            <span className="text-xs text-slate-400 font-sans-clean flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-amber-400" />
-              Shift scans
+        {/* ACTIVE CHECKPOINT SELECTOR (10 DISTRICTS) */}
+        <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-2">
+          <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+            <span className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+              <span>Assigned Monument Checkpoint</span>
             </span>
-            <span className="text-2xl font-extrabold text-white font-mono">
-              {scanStats.total}
+            <span className="text-[10px] font-mono text-amber-400">
+              Entry: ₹{activeCheckpoint.fee} • {activeCheckpoint.gate}
             </span>
-            <span className="text-[10px] text-slate-400 font-sans-clean">Active Session Log</span>
+          </label>
+
+          <select
+            value={selectedPlaceId}
+            onChange={(e) => {
+              setSelectedPlaceId(Number(e.target.value));
+              setVerdict(null);
+            }}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-amber-400/30 text-white text-xs sm:text-sm font-medium focus:outline-none focus:border-amber-400 cursor-pointer"
+          >
+            {CHECKPOINTS.map((cp) => (
+              <option key={cp.id} value={cp.id} className="bg-[#0E121A] text-white py-1">
+                {cp.name} — {cp.district} ({cp.state}) • ₹{cp.fee}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* SHIFT COUNTERS */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="p-3 rounded-xl bg-[#0E121A] border border-white/10 flex flex-col items-center justify-center">
+            <span className="text-[11px] text-slate-400">Admitted</span>
+            <span className="text-xl font-bold text-emerald-400 font-mono">{scanStats.approved}</span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
-            <span className="text-xs text-slate-400 font-sans-clean flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-              Admitted
-            </span>
-            <span className="text-2xl font-extrabold text-emerald-400 font-mono">
-              {scanStats.approved}
-            </span>
-            <span className="text-[10px] text-emerald-400 font-sans-clean">Verified Gate Passes</span>
+          <div className="p-3 rounded-xl bg-[#0E121A] border border-white/10 flex flex-col items-center justify-center">
+            <span className="text-[11px] text-slate-400">Denied</span>
+            <span className="text-xl font-bold text-rose-400 font-mono">{scanStats.denied}</span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-1 shadow-md">
-            <span className="text-xs text-slate-400 font-sans-clean flex items-center gap-1.5">
-              <XCircle className="w-3.5 h-3.5 text-rose-400" />
-              Denied / Flagged
-            </span>
-            <span className="text-2xl font-extrabold text-rose-400 font-mono">
-              {scanStats.denied}
-            </span>
-            <span className="text-[10px] text-slate-400 font-sans-clean">Zero Passback Leaks</span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col justify-between gap-1 shadow-md">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400 font-sans-clean flex items-center gap-1.5">
-                <Scan className="w-3.5 h-3.5 text-amber-400" />
-                Shift reset
-              </span>
-            </div>
+          <div className="p-3 rounded-xl bg-[#0E121A] border border-white/10 flex items-center justify-center">
             <button
               onClick={handleResetShiftStats}
-              disabled={scanStats.total === 0}
-              className="mt-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40"
-              title="Reset shift verification counters"
+              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3 text-amber-400" />
-              <span>Reset Shift</span>
+              <span>Reset</span>
             </button>
           </div>
         </div>
 
-        {/* GIANT INSTANT VERDICT BANNER (HIGH-CONTRAST GREEN OR RED) */}
+        {/* INSTANT VERDICT BANNER */}
         <AnimatePresence>
           {verdict && (
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className={`p-6 sm:p-8 rounded-3xl border-2 flex flex-col items-center justify-center text-center gap-3 shadow-xl ${
+              exit={{ scale: 0.96, opacity: 0 }}
+              className={`p-5 rounded-2xl border-2 flex flex-col items-center text-center gap-2 shadow-xl ${
                 verdict.success
                   ? 'bg-emerald-950/90 border-emerald-400 text-emerald-100'
                   : 'bg-rose-950/90 border-rose-400 text-rose-100'
               }`}
             >
               {verdict.success ? (
-                <CheckCircle className="w-16 h-16 text-emerald-400" />
+                <CheckCircle className="w-12 h-12 text-emerald-400" />
               ) : (
-                <XCircle className="w-16 h-16 text-rose-400" />
+                <XCircle className="w-12 h-12 text-rose-400" />
               )}
-
-              <div className="flex flex-col gap-1">
-                <span className="text-2xl sm:text-4xl font-extrabold tracking-tight font-sans-clean">
-                  {verdict.message}
-                </span>
-                <span className="text-base sm:text-lg font-bold text-white mt-1">
-                  Visitor: {verdict.touristName}
-                </span>
-                <span className="text-xs text-slate-300 font-mono">
-                  {verdict.checkpoint} • Token: {verdict.token}
-                </span>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-lg sm:text-xl font-bold">{verdict.message}</span>
+                <span className="text-xs text-slate-300">Visitor: {verdict.touristName}</span>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* PRIMARY GATE SCANNER CONSOLE */}
-        <div className="p-6 sm:p-8 rounded-3xl bg-[#0E121A] border border-amber-500/20 shadow-xl flex flex-col gap-6">
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-4">
-            <div className="flex flex-col">
-              <h2 className="text-lg font-bold text-white font-sans-clean flex items-center gap-2">
-                <Scan className="w-5 h-5 text-amber-400" />
-                <span>Gate Pass Verification</span>
-              </h2>
-              <span className="text-xs text-slate-400 font-sans-clean">
-                Scan visitor QR ticket using your device camera or enter code manually
-              </span>
-            </div>
+        {/* CAMERA VIEWPORT OR OPEN BUTTON */}
+        <div className="p-5 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+              <Camera className="w-4 h-4 text-amber-400" />
+              <span>Camera Scanner</span>
+            </span>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono text-slate-400">Checkpoint:</span>
-              <span className="text-xs font-semibold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
-                {CHECKPOINTS.find((c) => c.id === selectedPlaceId)?.gate || 'Gate 01'}
-              </span>
-            </div>
-          </div>
-
-          {/* Checkpoint Location: Locked to Borra Caves */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                <span>Assigned Monument Checkpoint</span>
-              </label>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300">
-                Fixed Location
-              </span>
-            </div>
-            <div className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-amber-400/30 text-white text-sm font-sans-clean flex items-center justify-between">
+            {isCameraActive && (
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <span className="font-bold text-amber-300">Borra Caves Cave Entrance</span>
-                <span className="text-xs text-slate-400 hidden sm:inline">(Alluri Sitharama Raju)</span>
-              </div>
-              <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-amber-400/15 text-amber-300 border border-amber-400/30 shrink-0">
-                Gate B2 • Turnstile 01
-              </span>
-            </div>
-          </div>
-
-          {/* LIVE CAMERA SCANNER VIEWPORT */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-300 font-sans-clean flex items-center gap-2">
-                <Camera className="w-4 h-4 text-amber-400" />
-                <span>Live optical camera scanner</span>
-              </span>
-
-              {isCameraActive && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={toggleFlipCamera}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1 transition-colors cursor-pointer"
-                    title="Flip camera"
-                  >
-                    <FlipHorizontal className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Flip Camera</span>
-                  </button>
-                  <button
-                    onClick={stopCamera}
-                    className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <CameraOff className="w-3.5 h-3.5" />
-                    <span>Close Camera</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {cameraError && (
-              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2 font-sans-clean">
-                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>{cameraError}</span>
-              </div>
-            )}
-
-            {isCameraActive ? (
-              <div className="relative w-full aspect-video sm:aspect-[21/9] max-h-72 rounded-2xl overflow-hidden bg-black border-2 border-amber-400/40 shadow-inner flex items-center justify-center">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  webkit-playsinline="true"
-                  muted
-                  className="w-full h-full object-cover"
-                />
-
-                {/* Holographic Scanner Overlay */}
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                  {/* Viewfinder Target Frame */}
-                  <div className="relative w-48 h-48 sm:w-56 sm:h-56 border-2 border-amber-400/60 rounded-2xl shadow-lg">
-                    {/* Corner Guides */}
-                    <div className="absolute -top-1 -left-1 w-4 h-4 border-t-3 border-l-3 border-amber-400" />
-                    <div className="absolute -top-1 -right-1 w-4 h-4 border-t-3 border-r-3 border-amber-400" />
-                    <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-3 border-l-3 border-amber-400" />
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-3 border-r-3 border-amber-400" />
-                    
-                    {/* Animated Scanning Laser Line */}
-                    <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent absolute top-0 animate-[scanLaser_2s_ease-in-out_infinite]" />
-                  </div>
-
-                  <span className="absolute bottom-3 text-[10px] font-mono text-amber-300 bg-black/60 px-3 py-1 rounded-full border border-white/10">
-                    Align visitor QR code inside target box
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => startCamera()}
-                className="w-full py-5 rounded-2xl border-2 border-dashed border-amber-500/30 hover:border-amber-400/60 bg-amber-500/[0.04] hover:bg-amber-500/[0.08] flex flex-col items-center justify-center gap-2 text-center transition-all cursor-pointer group"
-              >
-                <div className="w-12 h-12 rounded-xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 group-hover:scale-105 transition-transform">
-                  <Camera className="w-6 h-6 text-amber-400" />
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-bold text-white font-sans-clean">
-                    Open Camera Scanner
-                  </span>
-                  <span className="text-xs text-slate-400 font-sans-clean">
-                    Point phone or webcam to instantly verify and admit visitors
-                  </span>
-                </div>
-              </button>
-            )}
-          </div>
-
-          {/* MANUAL TICKET REFERENCE INPUT (ALWAYS ACCESSIBLE FALLBACK) */}
-          <div className="flex flex-col gap-1.5 pt-2 border-t border-white/5">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-300 font-sans-clean">
-              <span>Manual ticket reference or barcode</span>
-              <span className="text-[10px] text-amber-400 font-mono">backup input</span>
-            </div>
-            <div className="relative">
-              <input
-                type="text"
-                value={tokenInput}
-                onChange={(e) => setTokenInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleScanPass();
-                }}
-                placeholder="Enter or paste ticket code (e.g. APTG-89421 or GT-2026-XXXXX)..."
-                className="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-mono focus:outline-none focus:border-amber-400 pr-24"
-              />
-              {tokenInput && (
                 <button
-                  onClick={() => setTokenInput('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-1 text-[10px] text-slate-400 hover:text-white bg-white/5 rounded-md font-mono cursor-pointer"
+                  onClick={toggleFlipCamera}
+                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1 transition-colors cursor-pointer"
                 >
-                  Clear
+                  <FlipHorizontal className="w-3 h-3 text-amber-400" />
+                  <span>Flip</span>
                 </button>
-              )}
-            </div>
+                <button
+                  onClick={stopCameraStream}
+                  className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <CameraOff className="w-3 h-3" />
+                  <span>Close</span>
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* 1-Click Test Chips */}
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-[11px] text-slate-400 font-mono">Quick Test:</span>
-            
+          {cameraError && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>{cameraError}</span>
+            </div>
+          )}
+
+          {isCameraActive ? (
+            <div className="relative w-full aspect-video max-h-64 rounded-xl overflow-hidden bg-black border border-amber-400/30 flex items-center justify-center">
+              <video
+                ref={setVideoRef}
+                autoPlay
+                playsInline
+                webkit-playsinline="true"
+                muted
+                onLoadedMetadata={() => videoRef.current?.play().catch(() => {})}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="w-44 h-44 border-2 border-amber-400/70 rounded-2xl relative shadow-lg">
+                  <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent absolute top-0 animate-[scanLaser_2s_ease-in-out_infinite]" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => startCamera()}
+              className="w-full py-4 rounded-xl border border-dashed border-white/20 hover:border-amber-400/50 bg-white/[0.02] hover:bg-amber-400/[0.05] flex items-center justify-center gap-2 text-xs font-semibold text-white transition-colors cursor-pointer"
+            >
+              <Camera className="w-4 h-4 text-amber-400" />
+              <span>Open Device Camera</span>
+            </button>
+          )}
+
+          {/* MANUAL INPUT */}
+          <div className="flex gap-2 pt-2">
+            <input
+              type="text"
+              value={tokenInput}
+              onChange={(e) => setTokenInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleScanPass();
+              }}
+              placeholder="Paste ticket code or pass reference..."
+              className="flex-1 px-3.5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-amber-400"
+            />
+            <button
+              onClick={() => handleScanPass()}
+              disabled={isScanning || !tokenInput.trim()}
+              className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-40"
+            >
+              <Scan className="w-3.5 h-3.5" />
+              <span>{isScanning ? 'Verifying...' : 'Scan'}</span>
+            </button>
+          </div>
+
+          {/* Quick Demo Test Buttons */}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs pt-1">
+            <span className="text-[10px] text-slate-400 font-mono">Demo:</span>
             {activeBookedPass && (
               <button
                 onClick={() => {
                   setTokenInput(activeBookedPass.reference);
                   handleScanPass(activeBookedPass.reference);
                 }}
-                className="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 font-medium font-sans-clean transition-colors cursor-pointer flex items-center gap-1"
+                className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1"
               >
-                <Ticket className="w-3.5 h-3.5 text-amber-400" />
-                <span>Test Your Booked Ticket ({activeBookedPass.reference})</span>
+                <Ticket className="w-3 h-3" />
+                <span>Booked Pass ({activeBookedPass.reference})</span>
               </button>
             )}
-
             <button
               onClick={() => {
                 setTokenInput('APTG-89421');
                 handleScanPass('APTG-89421');
               }}
-              className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 font-medium font-sans-clean transition-colors cursor-pointer"
+              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] transition-colors cursor-pointer"
             >
-              Test Valid Pass (APTG-89421)
+              Sample Valid
             </button>
-
             <button
               onClick={() => {
-                setTokenInput('INVALID-TKT-0000');
-                handleScanPass('INVALID-TKT-0000');
+                setTokenInput('INVALID-CODE-999');
+                handleScanPass('INVALID-CODE-999');
               }}
-              className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 font-medium font-sans-clean transition-colors cursor-pointer"
+              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 text-[11px] transition-colors cursor-pointer"
             >
-              Test Invalid Pass
+              Sample Invalid
             </button>
           </div>
-
-          {/* Big Action Verify Button */}
-          <button
-            onClick={() => handleScanPass()}
-            disabled={isScanning || !tokenInput.trim()}
-            className="w-full py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-base flex items-center justify-center gap-2.5 transition-all shadow-md cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.99]"
-          >
-            {isScanning ? (
-              <span>Verifying Ticket Signature...</span>
-            ) : (
-              <>
-                <Scan className="w-5 h-5 text-slate-950" />
-                <span>Verify Pass & Open Gate</span>
-              </>
-            )}
-          </button>
         </div>
 
-        {/* AUTHENTIC RECENT SCAN ACTIVITY LOG (NO FAKE NAMES) */}
-        <div className="p-6 rounded-3xl bg-[#0E121A] border border-white/10 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-300 font-sans-clean">
-              Live gate scanner feed
-            </span>
-            <span className="text-[10px] text-amber-400 font-mono">
-              {recentScans.length} verified in current shift
-            </span>
-          </div>
-
-          {recentScans.length === 0 ? (
-            <div className="py-8 px-4 rounded-2xl bg-white/[0.01] border border-dashed border-white/10 flex flex-col items-center justify-center text-center gap-2">
-              <Scan className="w-8 h-8 text-slate-500" />
-              <span className="text-xs font-semibold text-slate-300 font-sans-clean">
-                No tickets scanned in this shift yet
-              </span>
-              <p className="text-[11px] text-slate-500 max-w-sm font-sans-clean">
-                Point the live camera at a visitor's QR code or enter their ticket code above to record admission.
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
+        {/* RECENT SCANS LOG */}
+        {recentScans.length > 0 && (
+          <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-2">
+            <span className="text-xs font-semibold text-slate-400">Recent Shift Check-ins</span>
+            <div className="flex flex-col gap-1.5">
               {recentScans.map((scan) => (
                 <div 
                   key={scan.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs font-sans-clean hover:bg-white/[0.04] transition-colors"
+                  className="flex items-center justify-between p-2.5 rounded-lg bg-white/[0.02] border border-white/5 text-xs"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className={`w-2 h-2 rounded-full ${scan.success ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-white">{scan.name}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{scan.code} • {scan.checkpoint}</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-1.5 h-1.5 rounded-full ${scan.success ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                    <span className="font-medium text-white">{scan.name}</span>
+                    <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">{scan.code} • {scan.checkpoint}</span>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md font-sans-clean ${
-                      scan.success ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border border-rose-500/20'
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      scan.success ? 'text-emerald-400 bg-emerald-500/10' : 'text-rose-400 bg-rose-500/10'
                     }`}>
                       {scan.success ? 'Admitted' : 'Denied'}
                     </span>
@@ -964,34 +881,8 @@ export default function AgentPortalView({
                 </div>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* BOTTOM AGENT CONTROLS & EXIT */}
-        <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#0E121A] border border-white/5 text-xs">
-          <div className="flex items-center gap-2 text-slate-400 font-sans-clean">
-            <span>Field Terminal #AGT-8942</span>
-            <span>•</span>
-            <button
-              onClick={handleRevokeAgentStatus}
-              className="text-slate-400 hover:text-rose-400 underline underline-offset-2 transition-colors cursor-pointer"
-              title="Reset agent credentials to test the application modal again"
-            >
-              Reset Agent Accreditation
-            </button>
           </div>
-
-          <button
-            onClick={() => {
-              stopCamera();
-              onExitAgentMode();
-            }}
-            className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold flex items-center gap-2 transition-colors cursor-pointer font-sans-clean"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 text-amber-400" />
-            <span>Switch to Tourist Website</span>
-          </button>
-        </div>
+        )}
 
       </main>
 

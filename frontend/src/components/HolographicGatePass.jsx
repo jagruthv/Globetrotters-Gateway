@@ -136,11 +136,19 @@ export default function HolographicGatePass({
 
   const activePass = allPasses[selectedPassIndex] || allPasses[0] || null;
 
-  const isBorraVisited = Boolean(
-    activePass?.isBorraCavesVisited ||
-    activePass?.visitedPlaces?.some(v => v.placeId === 2 || (v.name && v.name.toLowerCase().includes('borra')))
-  );
-  const borraVisitRecord = activePass?.visitedPlaces?.find(v => v.placeId === 2 || (v.name && v.name.toLowerCase().includes('borra')));
+  const visitedPlaces = activePass?.visitedPlaces || [];
+  const isAnyVisited = visitedPlaces.length > 0 || Boolean(activePass?.isBorraCavesVisited);
+
+  const isSpotVisited = (spotName) => {
+    if (!spotName) return false;
+    const s = spotName.toLowerCase();
+    if (s.includes('borra') && activePass?.isBorraCavesVisited) return true;
+    return visitedPlaces.some((v) => {
+      if (!v) return false;
+      const vName = (v.name || '').toLowerCase();
+      return vName.includes(s) || s.includes(vName);
+    });
+  };
 
   // Real Dynamic QR Code Generator (Encodes clean ticket verification URL)
   useEffect(() => {
@@ -680,8 +688,7 @@ export default function HolographicGatePass({
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {activePass.placesAllowed.map((p) => {
-                    const isPlaceBorra = p.toLowerCase().includes('borra');
-                    const isRedeemed = isPlaceBorra && isBorraVisited;
+                    const isRedeemed = isSpotVisited(p);
                     return (
                       <span
                         key={p}
@@ -712,23 +719,27 @@ export default function HolographicGatePass({
               </div>
             )}
 
-            {/* Borra Caves Visited Notification */}
-            {isBorraVisited && (
-              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs font-sans-clean">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="font-bold text-emerald-300">
-                      Borra Caves: Visited • Entry Used
-                    </span>
-                    <span className="text-[11px] text-slate-400">
-                      Checked in at {borraVisitRecord?.time || '10:30 AM'} ({borraVisitRecord?.date || 'Today'}) • Gate B2
+            {/* Dynamic Visited Monuments Notification */}
+            {visitedPlaces.length > 0 && (
+              <div className="flex flex-col gap-2">
+                {visitedPlaces.map((v, idx) => (
+                  <div key={v.placeId || v.name || idx} className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs font-sans-clean">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                      <div className="flex flex-col">
+                        <span className="font-bold text-emerald-300">
+                          {v.name}: Visited • Entry Used
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          Admitted at {v.time || '10:30 AM'} ({v.date || 'Today'}) • {v.gate || 'Turnstile'}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-semibold font-mono px-2 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-300 shrink-0">
+                      Re-entry Prohibited
                     </span>
                   </div>
-                </div>
-                <span className="text-[10px] font-semibold font-mono px-2 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-300 shrink-0">
-                  Re-entry Prohibited
-                </span>
+                ))}
               </div>
             )}
 
@@ -759,10 +770,10 @@ export default function HolographicGatePass({
                   <span className="text-xs font-bold text-white font-sans-clean">
                     Entry QR Code
                   </span>
-                  {isBorraVisited ? (
-                    <div className="mt-0.5 p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[10px] font-sans-clean flex items-center gap-1.5 max-w-xs">
-                      <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
-                      <span>Single entry for Borra Caves has been redeemed. Re-entry strictly prohibited.</span>
+                  {isAnyVisited ? (
+                    <div className="mt-0.5 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-[10px] font-sans-clean flex items-center gap-1.5 max-w-xs">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                      <span>Single-use ticket. Visited attractions cannot be re-entered.</span>
                     </div>
                   ) : (
                     <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean max-w-xs">

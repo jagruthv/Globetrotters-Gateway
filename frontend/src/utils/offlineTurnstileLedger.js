@@ -19,28 +19,42 @@ import { verifyPassCryptographicSignature } from './cryptoPassService.js';
 const LEDGER_KEY = 'globetrotter_turnstile_ledger';
 const ADMITTED_SET_KEY = 'globetrotter_admitted_passes_cache';
 
-export function isPassValidForLocation(pass, locationId = 2, keyword = 'borra') {
+export function isPassValidForLocation(pass, locationId = 1, keyword = 'borra', checkpointName = '') {
   if (!pass) return false;
-  const kw = keyword.toLowerCase();
+  const kw = (keyword || '').toLowerCase().trim();
+  const cName = (checkpointName || '').toLowerCase().trim();
+
+  const matchesText = (val) => {
+    if (!val || typeof val !== 'string') return false;
+    const lower = val.toLowerCase();
+    if (kw && lower.includes(kw)) return true;
+    if (cName && (lower.includes(cName) || cName.includes(lower))) return true;
+    return false;
+  };
 
   // Check array of destinations
-  if (Array.isArray(pass.destinations) && pass.destinations.some(d => typeof d === 'string' && d.toLowerCase().includes(kw))) {
+  if (Array.isArray(pass.destinations) && pass.destinations.some(d => matchesText(typeof d === 'string' ? d : d?.name || d?.spotName))) {
     return true;
   }
   // Check array of places allowed
-  if (Array.isArray(pass.placesAllowed) && pass.placesAllowed.some(p => typeof p === 'string' && p.toLowerCase().includes(kw))) {
+  if (Array.isArray(pass.placesAllowed) && pass.placesAllowed.some(p => matchesText(typeof p === 'string' ? p : p?.name || p?.spotName))) {
     return true;
   }
   // Check circuit name
-  if (typeof pass.circuitName === 'string' && pass.circuitName.toLowerCase().includes(kw)) {
+  if (matchesText(pass.circuitName)) {
     return true;
   }
   // Check single destination
-  if (typeof pass.destination === 'string' && pass.destination.toLowerCase().includes(kw)) {
+  if (matchesText(pass.destination)) {
     return true;
   }
   // Check circuit ID
   if (pass.circuitId === Number(locationId) || String(pass.circuitId).toLowerCase().includes(kw)) {
+    return true;
+  }
+
+  // Universal corridor all-access pass
+  if (typeof pass.circuitName === 'string' && (pass.circuitName.includes('All-Access') || pass.circuitName.includes('All Access') || pass.circuitName.includes('Corridor Pass'))) {
     return true;
   }
 
@@ -89,7 +103,7 @@ export function recordAdmittedPass(token, placeId) {
   }
 }
 
-export function markPassVisited(tokenOrRef, placeId = 2, placeName = 'Borra Caves') {
+export function markPassVisited(tokenOrRef, placeId = 1, placeName = 'Borra Caves', gateName = 'Gate 01') {
   try {
     recordAdmittedPass(tokenOrRef, placeId);
     const raw = localStorage.getItem('globetrotter_passes');
@@ -108,16 +122,21 @@ export function markPassVisited(tokenOrRef, placeId = 2, placeName = 'Borra Cave
       const tokenMatch = p.token && (p.token === tokenOrRef || p.token.includes(tokenOrRef) || tokenOrRef.includes(p.reference));
       if (refMatch || tokenMatch) {
         if (!p.visitedPlaces) p.visitedPlaces = [];
-        const alreadyInList = p.visitedPlaces.some(v => v.placeId === Number(placeId) || (v.name && v.name.toLowerCase().includes(placeName.toLowerCase())));
+        const alreadyInList = p.visitedPlaces.some(v => 
+          v.placeId === Number(placeId) || 
+          (v.name && placeName && v.name.toLowerCase().includes(placeName.toLowerCase()))
+        );
         if (!alreadyInList) {
           p.visitedPlaces.push({
             placeId: Number(placeId),
             name: placeName,
             time: nowTime,
             date: nowDate,
-            gate: 'Gate B2 • Turnstile 01'
+            gate: gateName
           });
-          p.isBorraCavesVisited = true;
+          if (placeName.toLowerCase().includes('borra')) {
+            p.isBorraCavesVisited = true;
+          }
           modified = true;
         }
       }
@@ -156,34 +175,44 @@ function findLocalPass(tokenOrRef) {
 
 /**
  * Offline Turnstile Verification
- * Evaluates pass validity via real HMAC-SHA256 signature check and enforces anti-passback.
+ * Evaluates pass validity via real HMAC-SHA256 signature check, location matching, and anti-revisit.
  */
-export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Gate-Alpha-01') {
+export async function verifyPassOffline(
+  passToken, 
+  placeId = 1, 
+  gateTerminalId = 'Gate-01',
+  checkpointName = 'Borra Caves',
+  keyword = 'borra'
+) {
   if (!passToken || typeof passToken !== 'string') {
     return {
       valid: false,
       status: 'INVALID_FORMAT',
-      message: 'Scanner Error: Empty or malformed pass payload'
+      message: 'Scanner Error: Empty or malformed ticket payload'
     };
   }
 
   const cleanToken = passToken.trim();
+  const numPlaceId = Number(placeId);
+  const kw = (keyword || '').toLowerCase();
 
   // 1. Anti-Passback / Replay Protection Check
   const admitted = getAdmittedPasses();
-  const replayKey = `${cleanToken}::${placeId}`;
+  const replayKey = `${cleanToken}::${numPlaceId}`;
   const localMatchCheck = findLocalPass(cleanToken);
-  const refReplayKey = localMatchCheck ? `${localMatchCheck.reference}::${placeId}` : null;
-  const isAlreadyVisited = localMatchCheck?.visitedPlaces?.some(v => v.placeId === Number(placeId) || (v.name && v.name.toLowerCase().includes('borra'))) ||
-                           localMatchCheck?.isBorraCavesVisited;
+  const refReplayKey = localMatchCheck ? `${localMatchCheck.reference}::${numPlaceId}` : null;
+  const isAlreadyVisited = 
+    Boolean(admitted[replayKey]) ||
+    Boolean(refReplayKey && admitted[refReplayKey]) ||
+    Boolean(localMatchCheck?.visitedPlaces?.some(v => v.placeId === numPlaceId || (v.name && kw && v.name.toLowerCase().includes(kw))));
 
-  if (admitted[replayKey] || (refReplayKey && admitted[refReplayKey]) || isAlreadyVisited) {
+  if (isAlreadyVisited) {
     const priorEntry = admitted[replayKey] || (refReplayKey ? admitted[refReplayKey] : null);
     return {
       valid: false,
       isPassback: true,
       status: 'PASSBACK_REJECTED',
-      message: `Entry Denied: Tourist already visited Borra Caves. Single admission has been redeemed and cannot be reused.`,
+      message: `Entry Denied: Single admission for ${checkpointName} was already redeemed. Re-entry is strictly prohibited.`,
       priorTimestamp: priorEntry?.admittedAt || new Date().toISOString()
     };
   }
@@ -201,39 +230,35 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
       };
     }
 
-    // Signature verified! Extract booking reference
     const ref = cryptoResult.bookingRef || 'GT-SIGNED-PASS';
     const localMatch = findLocalPass(ref);
-    const touristName = localMatch?.touristName || 'Verified Corridor Passholder';
+    const touristName = localMatch?.touristName || 'Verified Passholder';
 
-    // Verify whether pass includes Borra Caves
-    if (localMatch && !isPassValidForLocation(localMatch, placeId, 'borra')) {
-      const passTarget = localMatch.circuitName || localMatch.destination || 'other destinations';
+    if (localMatch && !isPassValidForLocation(localMatch, numPlaceId, kw, checkpointName)) {
+      const passTarget = localMatch.circuitName || localMatch.destination || 'other attractions';
       return {
         valid: false,
         isCryptographic: true,
         status: 'LOCATION_MISMATCH',
-        message: `Entry Denied: Pass is only valid for "${passTarget}". Not valid for entry at Borra Caves.`,
+        message: `Entry Denied: Pass is only valid for "${passTarget}". Not valid for entry at ${checkpointName}.`,
         bookingReference: ref,
         touristName
       };
     }
 
-    // Record admission and update tourist pass visited status
-    markPassVisited(ref, placeId, 'Borra Caves');
-    recordAdmittedPass(cleanToken, placeId);
+    markPassVisited(ref, numPlaceId, checkpointName, gateTerminalId);
+    recordAdmittedPass(cleanToken, numPlaceId);
 
-    // Append to offline audit log
     const newEntry = {
       id: `scan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       passToken: cleanToken,
-      placeId: Number(placeId),
+      placeId: numPlaceId,
       gateTerminalId,
       verifiedAt: new Date().toISOString(),
-      displayTime: new Date().toLocaleTimeString(),
+      displayTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       syncStatus: 'PENDING_BATCH_SYNC',
       reference: ref,
-      corridor: 'AP-TG Heritage Corridor',
+      corridor: checkpointName,
       verificationMethod: 'HMAC_SHA256_WEB_CRYPTO'
     };
 
@@ -244,7 +269,7 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
       valid: true,
       isCryptographic: true,
       status: 'CRYPTO_VERIFIED',
-      message: 'Pass Verified • HMAC-SHA256 Cryptographic Signature Valid',
+      message: `Entry Granted • Admit 1 (${checkpointName})`,
       bookingReference: ref,
       touristName,
       timestamp: newEntry.displayTime,
@@ -256,31 +281,31 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
   const localPass = findLocalPass(cleanToken);
 
   if (localPass) {
-    if (!isPassValidForLocation(localPass, placeId, 'borra')) {
-      const passTarget = localPass.circuitName || localPass.destination || 'another destination';
+    if (!isPassValidForLocation(localPass, numPlaceId, kw, checkpointName)) {
+      const passTarget = localPass.circuitName || localPass.destination || 'other attractions';
       return {
         valid: false,
         isCryptographic: false,
         status: 'LOCATION_MISMATCH',
-        message: `Entry Denied: Pass is issued for "${passTarget}". It does not grant entry to Borra Caves.`,
+        message: `Entry Denied: Pass is issued for "${passTarget}". It does not grant entry to ${checkpointName}.`,
         bookingReference: localPass.reference,
         touristName: localPass.touristName || 'Ticket Holder'
       };
     }
 
-    markPassVisited(localPass.reference, placeId, 'Borra Caves');
-    recordAdmittedPass(cleanToken, placeId);
+    markPassVisited(localPass.reference, numPlaceId, checkpointName, gateTerminalId);
+    recordAdmittedPass(cleanToken, numPlaceId);
 
     const newEntry = {
       id: `scan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       passToken: cleanToken,
-      placeId: Number(placeId),
+      placeId: numPlaceId,
       gateTerminalId,
       verifiedAt: new Date().toISOString(),
-      displayTime: new Date().toLocaleTimeString(),
+      displayTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       syncStatus: 'PENDING_BATCH_SYNC',
       reference: localPass.reference,
-      corridor: localPass.circuitName || 'AP-TG Heritage Corridor',
+      corridor: checkpointName,
       verificationMethod: 'LOCAL_BOOKING_LEDGER'
     };
 
@@ -291,7 +316,7 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
       valid: true,
       isCryptographic: false,
       status: 'LOCAL_LEDGER_ADMITTED',
-      message: `Pass Verified • Booking Record Found (${localPass.circuitName || 'Heritage Pass'})`,
+      message: `Entry Granted • Admit 1 (${checkpointName})`,
       bookingReference: localPass.reference,
       touristName: localPass.touristName || 'Verified Visitor',
       timestamp: newEntry.displayTime,
@@ -299,12 +324,12 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
     };
   }
 
-  // Reject unknown tickets that have no verified booking for Borra Caves
+  // Reject unknown tickets that have no verified booking
   return {
     valid: false,
     isCryptographic: false,
     status: 'UNKNOWN_TICKET',
-    message: 'Entry Denied: No valid booking record found for Borra Caves.',
+    message: `Entry Denied: No valid booking record found for ${checkpointName}.`,
     bookingReference: cleanToken,
     touristName: 'Unregistered Visitor'
   };

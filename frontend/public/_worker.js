@@ -480,6 +480,208 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
       }
     }
 
+    // ── 3.1. Gemini 3.8 Flash Neural Text-To-Speech (TTS) Endpoint ──
+    if (url.pathname === '/api/tts') {
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { headers: getCorsHeaders(request) });
+      }
+
+      if (request.method === 'POST') {
+        const check = verifyWebsiteIntegrity(request);
+        if (!check.allowed) return check.response;
+
+        try {
+          const body = await request.json();
+          const textToSpeak = body.text || '';
+          if (!textToSpeak.trim()) {
+            return new Response(JSON.stringify({ error: "Text is required for TTS", fallback: true }), {
+              status: 400,
+              headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+            });
+          }
+
+          const voiceName = body.voice || "Puck";
+          const apiKey = getGeminiKey(env);
+
+          // Dedicated audio models: Gemini 3.8 Flash TTS with fallback cascade
+          const ttsModels = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
+          let audioBase64 = null;
+          let audioMimeType = "audio/wav";
+
+          for (const modelId of ttsModels) {
+            try {
+              const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
+              const ttsResp = await fetch(geminiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{
+                    parts: [{ text: textToSpeak }]
+                  }],
+                  generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                      voiceConfig: {
+                        prebuiltVoiceConfig: {
+                          voiceName: voiceName
+                        }
+                      }
+                    }
+                  }
+                })
+              });
+
+              if (ttsResp.ok) {
+                const ttsData = await ttsResp.json();
+                const part = ttsData?.candidates?.[0]?.content?.parts?.[0];
+                if (part?.inlineData?.data) {
+                  audioBase64 = part.inlineData.data;
+                  audioMimeType = part.inlineData.mimeType || "audio/wav";
+                  break;
+                }
+              }
+            } catch (err) {
+              console.warn(`[TTS Edge Cascade] ${modelId} notice:`, err);
+            }
+          }
+
+          if (audioBase64) {
+            return new Response(JSON.stringify({
+              audioBase64,
+              mimeType: audioMimeType,
+              model: "AI Audio Guide"
+            }), {
+              headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+            });
+          }
+
+          return new Response(JSON.stringify({
+            fallback: true,
+            message: "AI Audio Guide fallback engaged."
+          }), {
+            headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({ error: err.message, fallback: true }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+          });
+        }
+      }
+    }
+
+    // ── 3.2. Dynamic Curated Audio Walk Story Generator (Gemini 3.1 Flash Lite) ──
+    if (url.pathname === '/api/curated-walk' || url.pathname === '/api/audio-story') {
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { headers: getCorsHeaders(request) });
+      }
+
+      if (request.method === 'POST') {
+        const check = verifyWebsiteIntegrity(request);
+        if (!check.allowed) return check.response;
+
+        try {
+          const body = await request.json();
+          const {
+            placeName = 'Historic Destination',
+            district = 'Telangana / Andhra Pradesh',
+            state = 'Andhra Pradesh & Telangana',
+            language = 'en',
+            category = 'Heritage & Culture',
+            details = ''
+          } = body;
+
+          const langNames = {
+            en: 'English',
+            te: 'Telugu (తెలుగు)',
+            hi: 'Hindi (हिन्दी)'
+          };
+          const targetLangName = langNames[language] || 'English';
+
+          const systemPrompt = `You are the official verified audio guide storyteller for ${state}. You craft vivid, captivating, 1-minute audio walk narrations for tourists standing right at the monument.
+CRITICAL FORMAT RULES:
+- Output strictly a valid JSON object adhering to this schema:
+{
+  "title": "Engaging title strictly in ${targetLangName}",
+  "narrative": "Audio walk narration text strictly in ${targetLangName} (130-170 words)",
+  "highlights": ["Key feature 1 to observe", "Key feature 2 to observe"],
+  "foodRecommendation": "Authentic regional delicacy or snack nearby",
+  "historicalFact": "1 verified architectural or historical detail"
+}
+- Do NOT include markdown code fences or backticks. Return ONLY the raw JSON.
+- Tone: Welcoming, immersive, and vivid. Speak directly to the tourist ("As you stand before...", "Notice the intricate carvings on..."). No robotic disclaimers.`;
+
+          const userPrompt = `Destination: ${placeName}
+District: ${district}, ${state}
+Category: ${category}
+Atlas Context: ${details || 'Prominent regional cultural landmark'}
+Language requested: ${targetLangName}
+
+Deliver an authentic 1-minute curated walk guide in ${targetLangName}.`;
+
+          const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
+          const apiKey = getGeminiKey(env);
+          let storyData = null;
+
+          for (const modelId of modelsToTry) {
+            try {
+              const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
+              const resp = await fetch(geminiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: userPrompt }] }],
+                  systemInstruction: { parts: [{ text: systemPrompt }] },
+                  generationConfig: {
+                    temperature: 0.3,
+                    maxOutputTokens: 1000,
+                    responseMimeType: "application/json"
+                  }
+                })
+              });
+
+              if (resp.ok) {
+                const raw = await resp.json();
+                const textContent = raw?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (textContent) {
+                  const clean = textContent.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+                  storyData = JSON.parse(clean);
+                  break;
+                }
+              }
+            } catch (err) {
+              console.warn(`[Curated Walk Cascade] ${modelId} error:`, err);
+            }
+          }
+
+          if (!storyData) {
+            storyData = {
+              title: placeName,
+              narrative: `Welcome to ${placeName} in ${district}, ${state}. This landmark is celebrated across the tourism corridor for its remarkable history, unique regional character, and enduring heritage. Take a moment to observe its distinct architectural features and immerse yourself in the authentic atmosphere of this historic site.`,
+              highlights: ["Main entrance and heritage ramparts", "Surrounding cultural streets"],
+              foodRecommendation: "Authentic regional snacks and refreshing filter coffee",
+              historicalFact: `Prominent verified destination in ${district}.`
+            };
+          }
+
+          return new Response(JSON.stringify({
+            ...storyData,
+            placeName,
+            district,
+            state,
+            language
+          }), {
+            headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+          });
+        } catch (err) {
+          return new Response(JSON.stringify({ error: err.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+          });
+        }
+      }
+    }
+
     // ── 3.5. Message Central CPaaS: Verified Mobile SMS Gateway ──
     const MESSAGE_CENTRAL_CUSTOMER_ID = 'C-CFD2EA355C434D2';
     const MESSAGE_CENTRAL_KEY_BASE64 = 'TmV3X1Bhc3N3b3JkQDk5MTM=';
