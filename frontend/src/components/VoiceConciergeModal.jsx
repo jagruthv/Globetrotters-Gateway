@@ -305,7 +305,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
   };
 
   // ── Speak AI Response with Natural Voice & Dynamic Accent ──────────────────
-  const speakResponse = (text, langOverride = null) => {
+  const speakResponse = useCallback((text, langOverride = null) => {
     if (!('speechSynthesis' in window) || !text) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -331,7 +331,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     utterance.onerror = () => setIsSpeaking(false);
 
     window.speechSynthesis.speak(utterance);
-  };
+  }, [selectedLanguage]);
 
   // ── Dispatch Query to Google Gemini 3.8 Flash (Edge + Direct Fallback) ──────
   const sendToGemini = useCallback(async (userText) => {
@@ -398,7 +398,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     } finally {
       setIsThinking(false);
     }
-  }, []);
+  }, [speakResponse]);
 
   // ── Speech Recognition Lifecycle (Live Continuous Listening) ───────────────
   const startLiveSession = () => {
