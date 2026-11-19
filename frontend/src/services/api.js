@@ -71,20 +71,21 @@ export const authService = {
       window.dispatchEvent(new Event('auth-change'));
       window.dispatchEvent(new Event('agent-status-changed'));
 
-      // If backend is running, verify with backend in background to sync server session
-      try {
-        const backendData = await request('/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ email: cleanEmail, password: cleanPass }),
+      // Sync with backend if available, but never block local clearance
+      request('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: cleanEmail, password: cleanPass }),
+      })
+        .then((backendData) => {
+          if (backendData?.token) {
+            localStorage.setItem('globetrotter_token', backendData.token);
+            localStorage.setItem('globetrotter_user', JSON.stringify(backendData));
+          }
+        })
+        .catch(() => {
+          // Local agent session is already authenticated
         });
-        if (backendData?.token) {
-          localStorage.setItem('globetrotter_token', backendData.token);
-          localStorage.setItem('globetrotter_user', JSON.stringify(backendData));
-          return backendData;
-        }
-      } catch {
-        // Backend offline or mock mode, local agent session is secured
-      }
+
       return agentUser;
     }
 
