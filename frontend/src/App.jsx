@@ -18,7 +18,7 @@ import TouristSafetyModal from './components/TouristSafetyModal';
 import AuthModal from './components/AuthModal';
 import PaymentProcessingModal from './components/PaymentProcessingModal';
 import ErrorBoundary from './components/ErrorBoundary';
-import { authService } from './services/api';
+import { authService, bookingService } from './services/api';
 import { Heart, ArrowRight, ShieldCheck } from 'lucide-react';
 
 const HASH_MAP = {

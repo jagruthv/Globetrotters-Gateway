@@ -15,7 +15,7 @@ import {
   Ticket
 } from 'lucide-react';
 import { authService } from '../services/api';
-import { launchMsg91Otp } from '../utils/msg91OtpClient';
+import { launchMsg91Otp, isMsg91Loaded } from '../utils/msg91OtpClient';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = null }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -280,15 +280,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
 
   const handleVerifyPhoneOtp = async (e) => {
     if (e) e.preventDefault();
-    if (!enteredPhoneOtp || enteredPhoneOtp.trim().length < 6) {
-      setError('Please enter the 6-digit SMS code.');
+    const cleanOtp = enteredPhoneOtp.trim();
+    if (!cleanOtp || cleanOtp.length < 4) {
+      setError('Please enter the 4 to 6-digit verification code.');
       return;
     }
     setError(null);
     setLoading(true);
 
     try {
-      const userData = await authService.verifyMobileOtp(phoneNumber, enteredPhoneOtp.trim());
+      const userData = await authService.verifyMobileOtp(phoneNumber, cleanOtp);
       handleFinishAuth(userData, `Phone verified! Welcome ${userData.fullName}`);
     } catch (err) {
       setError(err.message || 'Invalid verification OTP.');
@@ -623,7 +624,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                         <div className="flex flex-col gap-1.5">
                           <div className="flex items-center justify-between text-xs font-sans-clean">
                             <label className="text-slate-300 font-semibold">
-                              Enter 6-Digit SMS Code
+                              Enter Verification Code (4 or 6 digits)
                             </label>
                             <button
                               type="button"
@@ -643,7 +644,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                               maxLength={6}
                               value={enteredPhoneOtp}
                               onChange={(e) => setEnteredPhoneOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                              placeholder="6-digit code"
+                              placeholder="4 or 6-digit code"
                               className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg font-mono tracking-widest text-center focus:outline-none focus:border-emerald-400 transition-colors"
                             />
                           </div>
@@ -651,7 +652,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
 
                         <button
                           type="submit"
-                          disabled={loading || enteredPhoneOtp.length !== 6}
+                          disabled={loading || enteredPhoneOtp.length < 4}
                           className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
                         >
                           {loading ? <span>Verifying OTP...</span> : <span>Verify & Enter Gateway</span>}
