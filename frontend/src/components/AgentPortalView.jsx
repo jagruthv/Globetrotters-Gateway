@@ -153,14 +153,6 @@ export default function AgentPortalView({
 
   // Cleanup camera stream when component unmounts
   useEffect(() => {
-    // Auto-boot camera immediately if officer navigated to #/scanner
-    if (typeof window !== 'undefined' && window.location.hash.includes('scanner')) {
-      const timer = setTimeout(() => {
-        startCamera();
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-
     return () => {
       if (scanAnimationRef.current) {
         cancelAnimationFrame(scanAnimationRef.current);
@@ -189,12 +181,22 @@ export default function AgentPortalView({
       setIsCameraActive(true);
       setCameraScanning(true);
     } catch (err) {
-      console.warn('Camera initiation notice:', err);
+      if (import.meta.env.DEV) console.warn('Camera initiation notice:', err);
       setCameraError('Camera access not available or permission denied. You can manually enter or paste the ticket code below.');
       setIsCameraActive(false);
       setCameraScanning(false);
     }
   };
+
+  // Auto-boot camera immediately if officer navigated to #/scanner
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash.includes('scanner')) {
+      const timer = setTimeout(() => {
+        startCamera();
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // Stop Camera
   const stopCamera = () => {
