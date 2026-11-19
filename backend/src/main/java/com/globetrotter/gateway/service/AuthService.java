@@ -67,9 +67,18 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        if (request == null || request.getEmail() == null || request.getEmail().trim().isBlank()) {
+            throw new IllegalArgumentException("Error: Email is required!");
+        }
+
         // Unicode NFKC normalization prevents homoglyph spoofing (Scenario 20: Spotify account collision defense)
-        String cleanEmail = Normalizer.normalize(request.getEmail().trim().toLowerCase(), Normalizer.Form.NFKC);
-        String cleanFullName = Normalizer.normalize(request.getFullName().trim(), Normalizer.Form.NFKC);
+        String rawEmail = request.getEmail().trim().toLowerCase();
+        String rawName = request.getFullName() != null && !request.getFullName().trim().isBlank()
+                ? request.getFullName().trim()
+                : rawEmail.split("@")[0];
+
+        String cleanEmail = Normalizer.normalize(rawEmail, Normalizer.Form.NFKC);
+        String cleanFullName = Normalizer.normalize(rawName, Normalizer.Form.NFKC);
 
         if (userRepository.existsByEmail(cleanEmail)) {
             throw new IllegalArgumentException("Error: Email is already in use!");
