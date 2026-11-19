@@ -95,7 +95,13 @@ export default function App() {
   const [activeBookingForPayment, setActiveBookingForPayment] = useState(null);
   const [pendingBooking, setPendingBooking] = useState(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [assistantInitialQuery, setAssistantInitialQuery] = useState('');
   const [scannerAuthError, setScannerAuthError] = useState(null);
+
+  const handleOpenAssistant = (query = '') => {
+    setAssistantInitialQuery(typeof query === 'string' ? query : '');
+    setAssistantOpen(true);
+  };
 
   const [issuedPassData, setIssuedPassData] = useState(() => {
     try {
@@ -412,7 +418,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         selectedPlacesCount={selectedPlaces.length}
         onOpenSettings={() => setSettingsModalOpen(true)}
-        onOpenAssistant={() => setAssistantOpen(true)}
+        onOpenAssistant={handleOpenAssistant}
         onOpenSafetyModal={() => setSafetyModalOpen(true)}
       />
 
@@ -432,6 +438,7 @@ export default function App() {
               <FluidLiquidDropHero
                 onExploreDistricts={() => setActiveTab('explore')}
                 onLaunchTripPlanner={() => setActiveTab('planner')}
+                onPlanCustomTrip={(prompt) => handleOpenAssistant(prompt || 'Help me plan a personalized tour across Andhra Pradesh and Telangana')}
                 onDirectBookPass={handleDirectBookPass}
               />
 
@@ -442,6 +449,7 @@ export default function App() {
                   selectedPlaces={selectedPlaces}
                   isFeaturedOnly={true}
                   onViewAllDistricts={() => setActiveTab('explore')}
+                  onProceedToPlan={() => setActiveTab('planner')}
                 />
               </Suspense>
 
@@ -475,9 +483,10 @@ export default function App() {
                       <ArrowRight className="w-3.5 h-3.5 text-slate-950" />
                     </button>
                     <button
-                      onClick={() => setActiveTab('planner')}
+                      onClick={() => handleOpenAssistant('Help me plan a personalized tour across Andhra Pradesh and Telangana')}
                       className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-white font-semibold text-xs flex items-center gap-2 transition-colors cursor-pointer font-sans-clean"
                     >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                       <span>Plan Custom Trip with AI</span>
                     </button>
                   </div>
@@ -499,6 +508,7 @@ export default function App() {
                 <BentoDistrictExplorer
                   onSelectPlaceForTrip={handleSelectPlaceForTrip}
                   selectedPlaces={selectedPlaces}
+                  onProceedToPlan={() => setActiveTab('planner')}
                 />
               </Suspense>
             </motion.div>
@@ -515,15 +525,16 @@ export default function App() {
             >
               <Suspense fallback={<LazyFallback />}>
                 <AiFluidTripStudio
-                selectedPlaces={selectedPlaces}
-                onAddPlace={handleSelectPlaceForTrip}
-                onRemovePlace={handleRemovePlace}
-                onClearPlaces={handleClearPlaces}
-                onExploreMore={() => setActiveTab('explore')}
-                onProceedToPasses={() => setActiveTab('passes')}
-                onInitiateBooking={handleInitiateBooking}
-                onBookCustomPlan={handleBookCustomPlan}
-                onOpenAssistant={() => setAssistantOpen(true)}
+                  selectedPlaces={selectedPlaces}
+                  onAddPlace={handleSelectPlaceForTrip}
+                  onRemovePlace={handleRemovePlace}
+                  onClearPlaces={handleClearPlaces}
+                  onExploreMore={() => setActiveTab('explore')}
+                  onProceedToPasses={() => setActiveTab('passes')}
+                  onInitiateBooking={handleInitiateBooking}
+                  onBookCustomPlan={handleBookCustomPlan}
+                  onOpenAssistant={handleOpenAssistant}
+                  onSetPlaces={setSelectedPlaces}
                 />
               </Suspense>
             </motion.div>
@@ -561,7 +572,7 @@ export default function App() {
                 passData={issuedPassData}
                 onOpenAudioGuide={() => setVoiceModalOpen(true)}
                 onExplorePackages={() => setActiveTab('circuits')}
-                onPlanTrip={() => setActiveTab('planner')}
+                onPlanTrip={() => handleOpenAssistant('Help me plan a personalized tour across Andhra Pradesh and Telangana')}
                 />
               </Suspense>
             </motion.div>
@@ -747,6 +758,8 @@ export default function App() {
             onInitiateBooking={handleInitiateBooking}
             selectedPlaces={selectedPlaces}
             setSelectedPlaces={setSelectedPlaces}
+            initialQuery={assistantInitialQuery}
+            onClearInitialQuery={() => setAssistantInitialQuery('')}
           />
         )}
 

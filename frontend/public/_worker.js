@@ -474,6 +474,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
           }
 
           return new Response(JSON.stringify({
+            reply: replyText,
             response: replyText,
             message: replyText,
             model: usedModelName

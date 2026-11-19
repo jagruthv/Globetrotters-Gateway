@@ -35,6 +35,47 @@ const getNowTime = () => performance.now();
 const calcDuration = (start) => Math.round(performance.now() - start);
 const createMessageId = (prefix) => `${prefix}-${Date.now()}`;
 
+const STARTER_TRIPS = [
+  {
+    id: 'araku-starter',
+    title: 'Araku Valley Nature & Caves',
+    tag: 'Mountain Hill Station & Waterfalls',
+    badge: 'Popular',
+    fee: '₹130 Pass Fare',
+    places: [
+      { name: 'Borra Caves', district: 'Alluri Sitharama Raju (ASR) District', individualPrice: 80, category: 'Nature & Wildlife' },
+      { name: 'Araku Tribal Museum', district: 'Alluri Sitharama Raju (ASR) District', individualPrice: 40, category: 'Artisans & Culture' },
+      { name: 'Katiki Waterfalls', district: 'Alluri Sitharama Raju (ASR) District', individualPrice: 0, category: 'Nature & Wildlife' },
+      { name: 'Chaparai Water Cascades', district: 'Alluri Sitharama Raju (ASR) District', individualPrice: 10, category: 'Nature & Wildlife' }
+    ]
+  },
+  {
+    id: 'hyderabad-starter',
+    title: 'Hyderabad Royal Heritage',
+    tag: 'Charminar, Golconda & Nizam Palaces',
+    badge: 'Heritage',
+    fee: '₹100 Pass Fare',
+    places: [
+      { name: 'Golconda Fort & Acoustic Portico Walk', district: 'Hyderabad District', individualPrice: 25, category: 'Historical Forts & Monuments' },
+      { name: 'Charminar & Laad Bazaar Lacquer Bangles', district: 'Hyderabad District', individualPrice: 0, category: 'Historical Forts & Monuments' },
+      { name: 'Qutb Shahi Royal Tombs', district: 'Hyderabad District', individualPrice: 25, category: 'Heritage & Spiritual' },
+      { name: 'Chowmahalla Palace', district: 'Hyderabad District', individualPrice: 50, category: 'Historical Forts & Monuments' }
+    ]
+  },
+  {
+    id: 'warangal-starter',
+    title: 'Warangal Kakatiya Trail',
+    tag: 'UNESCO Rudreshwara & Monolithic Fort',
+    badge: 'UNESCO',
+    fee: '₹50 Pass Fare',
+    places: [
+      { name: 'Ramappa Temple (Sri Rudreshwara Swamy — UNESCO World Heritage Site)', district: 'Mulugu District', individualPrice: 25, category: 'Heritage & Spiritual' },
+      { name: 'Warangal Fort & Kakatiya Kala Thoranam', district: 'Warangal District', individualPrice: 25, category: 'Historical Forts & Monuments' },
+      { name: 'Thousand Pillar Temple', district: 'Hanamkonda District', individualPrice: 0, category: 'Heritage & Spiritual' }
+    ]
+  }
+];
+
 export default function AiFluidTripStudio({ 
   selectedPlaces = [], 
   onAddPlace,
@@ -44,7 +85,8 @@ export default function AiFluidTripStudio({
   onProceedToPasses,
   onBookCustomPlan,
   onInitiateBooking,
-  onOpenAssistant
+  onOpenAssistant,
+  onSetPlaces
 }) {
   // 'AUTO' allows the AI to calculate the optimal days based on spots count & elevation fatigue
   const [selectedDuration, setSelectedDuration] = useState('AUTO');
@@ -239,12 +281,25 @@ export default function AiFluidTripStudio({
 
   const recommendedDays = calculateRecommendedDays();
 
+  const handleLoadStarterTrip = (trip) => {
+    if (onSetPlaces) {
+      onSetPlaces(trip.places);
+      try {
+        localStorage.setItem('globetrotter_staged_places', JSON.stringify(trip.places));
+      } catch {}
+    } else if (onAddPlace) {
+      trip.places.forEach((p) => onAddPlace(p, p.district));
+    }
+  };
+
   // Calculate official gate fee total for selected places
   const totalStagedFee = selectedPlaces.reduce((sum, p) => {
-    const fee = parseFloat(p.individualPrice) || parseFloat(p.price) || 0;
+    const fee = typeof p.individualPrice === 'number'
+      ? p.individualPrice
+      : (parseFloat(p.price) || parseFloat(p.fees) || 0);
     return sum + fee;
   }, 0);
-  const stagedPassPrice = totalStagedFee > 0 ? totalStagedFee : (selectedPlaces.length * 40 || 320);
+  const stagedPassPrice = totalStagedFee;
 
   const handleBuyPass = (customPlan = null) => {
     const targetPlan = customPlan || planResult;
@@ -253,10 +308,12 @@ export default function AiFluidTripStudio({
       : selectedPlaces.map((p) => p.name);
 
     const calculatedFees = selectedPlaces.reduce((sum, p) => {
-      const fee = parseFloat(p.individualPrice) || parseFloat(p.price) || 0;
+      const fee = typeof p.individualPrice === 'number'
+        ? p.individualPrice
+        : (parseFloat(p.price) || parseFloat(p.fees) || 0);
       return sum + fee;
     }, 0);
-    const finalPrice = targetPlan?.packagePrice || (calculatedFees > 0 ? calculatedFees : (selectedPlaces.length * 40 || 320));
+    const finalPrice = typeof targetPlan?.packagePrice === 'number' ? targetPlan.packagePrice : calculatedFees;
 
     const bookingPayload = {
       circuitName: targetPlan?.title || (selectedPlaces.length > 0 ? `${selectedPlaces[0].name} Consolidated Tour Pass` : 'Custom Curated Tour Pass'),
@@ -786,28 +843,69 @@ export default function AiFluidTripStudio({
                   className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer font-sans-clean active:scale-[0.98] transition-all shrink-0"
                 >
                   <Ticket className="w-3.5 h-3.5 text-slate-950" />
-                  <span>Buy Entry Pass • ₹{stagedPassPrice}</span>
+                  <span>{stagedPassPrice === 0 ? 'Get Free Entry Pass (₹0)' : `Buy Entry Pass • ₹${stagedPassPrice}`}</span>
                 </button>
               </div>
             )}
 
             {selectedPlaces.length === 0 ? (
-              <div className="p-12 rounded-3xl border border-dashed border-white/10 bg-white/[0.01] flex flex-col items-center justify-center text-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-slate-400">
-                  <MapPin className="w-6 h-6" />
+              <div className="flex flex-col gap-5">
+                <div className="p-8 sm:p-10 rounded-3xl border border-dashed border-white/10 bg-white/[0.01] flex flex-col items-center justify-center text-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-slate-400">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h4 className="text-base font-bold text-white font-sans-clean">No destinations selected yet</h4>
+                    <p className="text-xs text-slate-400 max-w-sm font-sans-clean">
+                      Select attractions from the 59 Districts Directory, or start instantly with one of our verified regional trips below.
+                    </p>
+                  </div>
+                  <button
+                    onClick={onExploreMore}
+                    className="px-6 py-2.5 rounded-full bg-amber-400 text-slate-950 font-bold text-xs hover:bg-amber-300 transition-colors font-sans-clean cursor-pointer shadow-md"
+                  >
+                    Browse All 59 Districts
+                  </button>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <h4 className="text-base font-bold text-white font-sans-clean">No destinations selected</h4>
-                  <p className="text-xs text-slate-400 max-w-sm font-sans-clean">
-                    Add spots from the 59 Districts Directory or Tour Packages to create your day-by-day travel plan.
-                  </p>
+
+                {/* Popular 1-Click Starter Trips */}
+                <div className="flex flex-col gap-3">
+                  <span className="text-xs font-semibold text-slate-300 font-sans-clean">
+                    Or start instantly with verified regional trips:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {STARTER_TRIPS.map((trip) => (
+                      <div
+                        key={trip.id}
+                        onClick={() => handleLoadStarterTrip(trip)}
+                        className="p-4 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/10 hover:border-amber-400/40 transition-all cursor-pointer flex flex-col justify-between gap-3 group"
+                      >
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-400/20 font-bold">
+                              {trip.badge}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {trip.places.length} Sights
+                            </span>
+                          </div>
+                          <h5 className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors font-sans-clean mt-1">
+                            {trip.title}
+                          </h5>
+                          <span className="text-[11px] text-slate-400 leading-snug">
+                            {trip.tag}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] text-slate-300">
+                          <span className="text-amber-400 font-mono font-bold">{trip.fee}</span>
+                          <span className="text-amber-400 group-hover:translate-x-0.5 transition-transform font-bold text-xs">
+                            + Load Trip →
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <button
-                  onClick={onExploreMore}
-                  className="px-6 py-2.5 rounded-full bg-amber-400 text-slate-950 font-bold text-xs hover:bg-amber-300 transition-colors font-sans-clean cursor-pointer"
-                >
-                  Explore 59 Districts
-                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-none">
