@@ -23,6 +23,29 @@ import {
 } from 'lucide-react';
 import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData.js';
 
+// Helper: Wraps raw 16-bit 24kHz mono PCM in a standard 44-byte RIFF/WAVE header for HTML5 <audio>
+function pcmToWav(pcmData, sampleRate = 24000, numChannels = 1) {
+  const wavHeader = new ArrayBuffer(44);
+  const view = new DataView(wavHeader);
+  const dataLen = pcmData.byteLength;
+
+  view.setUint32(0, 0x52494646, false); // "RIFF"
+  view.setUint32(4, 36 + dataLen, true);
+  view.setUint32(8, 0x57415645, false); // "WAVE"
+  view.setUint32(12, 0x666d7420, false); // "fmt "
+  view.setUint32(16, 16, true); // Subchunk1Size
+  view.setUint16(20, 1, true); // PCM format
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * numChannels * 2, true);
+  view.setUint16(32, numChannels * 2, true);
+  view.setUint16(34, 16, true); // Bits per sample
+  view.setUint32(36, 0x64617461, false); // "data"
+  view.setUint32(40, dataLen, true);
+
+  return new Blob([wavHeader, pcmData], { type: 'audio/wav' });
+}
+
 export default function VoiceConciergeModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState('stories'); // 'stories' | 'live'
   
@@ -274,7 +297,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     }
   }, []);
 
-  // ── Play Destination Story (Instant, Gesture-Safe & Resilient) ─────────────
+  // ── Play Destination Story (Generated Directly via Gemini 3.8 Flash Neural TTS) ───
   const playDestinationStory = useCallback(async (spot, autoAdvance = false) => {
     if (!spot) return;
 
@@ -286,12 +309,22 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
 
     stopAllAudio();
     setSelectedSpotId(spot.id);
-    setIsLoadingStory(false);
     setAudioError(null);
+
+    // Synchronously prime AudioContext inside user gesture so browser unlocks HTML5 audio
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!window._gtAudioCtx && AudioCtx) {
+        window._gtAudioCtx = new AudioCtx();
+      }
+      if (window._gtAudioCtx && window._gtAudioCtx.state === 'suspended') {
+        window._gtAudioCtx.resume();
+      }
+    } catch {}
 
     const cacheKey = `${spot.id}_${selectedLanguage}`;
 
-    // 1. Instant local narrative generation for zero-latency, gesture-safe playback
+    // 1. Prepare spot narrative
     let storyData = storyCacheRef.current[cacheKey];
     if (!storyData) {
       const langNotice = selectedLanguage === 'te'
@@ -318,6 +351,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     // 2. Playback Completion Handler for Continuous Live Walk
     const onEnded = () => {
       setIsPlayingAudio(false);
+      setIsSpeaking(false);
       if (isLiveWalkActive) {
         const currentList = filteredStories;
         if (currentList.length > 1) {
@@ -333,11 +367,11 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
       }
     };
 
-    // 3. Check for cached neural audio blob
-    const audioBlobUrl = audioBlobCacheRef.current[cacheKey];
-    if (audioBlobUrl) {
+    // 3. Fast Path: If Gemini Neural Audio Blob is already cached, play immediately
+    const cachedAudioUrl = audioBlobCacheRef.current[cacheKey];
+    if (cachedAudioUrl) {
       try {
-        const audio = new Audio(audioBlobUrl);
+        const audio = new Audio(cachedAudioUrl);
         currentAudioRef.current = audio;
         audio.onended = onEnded;
         audio.onerror = () => {
@@ -345,39 +379,70 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
         };
         await audio.play();
         setIsPlayingAudio(true);
+        setIsSpeaking(true);
+        setIsLoadingStory(false);
         return;
-      } catch {
-        // Fallback to speech synthesis if audio play fails
+      } catch (playErr) {
+        console.warn('Cached audio playback notice:', playErr);
       }
     }
 
-    // 4. Instant, gesture-safe Web Speech API narration
-    speakWithSpeechSynthesis(storyData.narrative, selectedLanguage, onEnded);
+    // 4. Generate Neural Audio directly via Gemini TTS Endpoint on Click
+    setIsLoadingStory(true);
 
-    // 5. Background progressive enhancement: fetch richer narrative without blocking playback
-    if (!storyCacheRef.current[`${cacheKey}_enhanced`]) {
-      fetch('/api/curated-walk', {
+    try {
+      const ttsRes = await fetch('/api/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          placeName: spot.name,
-          district: spot.district,
-          state: spot.state,
-          category: spot.category,
-          details: spot.description,
+          text: storyData.narrative,
+          voice: 'Puck',
           language: selectedLanguage
         })
-      })
-      .then(res => res.ok ? res.json() : null)
-      .then(enhanced => {
-        if (enhanced && enhanced.narrative) {
-          storyCacheRef.current[cacheKey] = enhanced;
-          storyCacheRef.current[`${cacheKey}_enhanced`] = true;
-          setActiveStory(enhanced);
+      });
+
+      if (ttsRes.ok) {
+        const ttsData = await ttsRes.json();
+        if (ttsData.audioBase64) {
+          const binaryString = atob(ttsData.audioBase64);
+          const len = binaryString.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+
+          let finalBlob;
+          const isRiff = bytes.length > 4 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+          if (!isRiff && (!ttsData.mimeType || ttsData.mimeType.includes('pcm') || ttsData.mimeType.includes('wav'))) {
+            finalBlob = pcmToWav(bytes.buffer, 24000, 1);
+          } else {
+            finalBlob = new Blob([bytes], { type: ttsData.mimeType || 'audio/wav' });
+          }
+
+          const audioBlobUrl = URL.createObjectURL(finalBlob);
+          audioBlobCacheRef.current[cacheKey] = audioBlobUrl;
+
+          const audio = new Audio(audioBlobUrl);
+          currentAudioRef.current = audio;
+          audio.onended = onEnded;
+          audio.onerror = () => {
+            speakWithSpeechSynthesis(storyData.narrative, selectedLanguage, onEnded);
+          };
+
+          await audio.play();
+          setIsPlayingAudio(true);
+          setIsSpeaking(true);
+          setIsLoadingStory(false);
+          return;
         }
-      })
-      .catch(() => {});
+      }
+    } catch (ttsErr) {
+      console.warn('Gemini Flash TTS invocation notice:', ttsErr);
     }
+
+    // 5. Fallback if Gemini TTS endpoint returned fallback or network failed
+    speakWithSpeechSynthesis(storyData.narrative, selectedLanguage, onEnded);
+    setIsLoadingStory(false);
   }, [activeSpot?.id, isPlayingAudio, selectedLanguage, isLiveWalkActive, filteredStories, stopAllAudio, speakWithSpeechSynthesis]);
 
   // Keep playDestinationStoryRef synchronized outside of render
@@ -411,6 +476,17 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
     setLiveError(null);
 
     stopAllAudio();
+
+    // Synchronously prime AudioContext inside user gesture
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!window._gtAudioCtx && AudioCtx) {
+        window._gtAudioCtx = new AudioCtx();
+      }
+      if (window._gtAudioCtx && window._gtAudioCtx.state === 'suspended') {
+        window._gtAudioCtx.resume();
+      }
+    } catch {}
 
     try {
       let reply = null;
@@ -446,7 +522,61 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
       }
 
       setAiResponse(reply);
-      speakWithSpeechSynthesis(reply, 'en');
+
+      // Play reply using Gemini Neural TTS directly
+      let neuralPlayed = false;
+      try {
+        const ttsRes = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: reply,
+            voice: 'Puck',
+            language: 'en'
+          })
+        });
+
+        if (ttsRes.ok) {
+          const ttsData = await ttsRes.json();
+          if (ttsData.audioBase64) {
+            const binaryString = atob(ttsData.audioBase64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            let finalBlob;
+            const isRiff = bytes.length > 4 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+            if (!isRiff && (!ttsData.mimeType || ttsData.mimeType.includes('pcm') || ttsData.mimeType.includes('wav'))) {
+              finalBlob = pcmToWav(bytes.buffer, 24000, 1);
+            } else {
+              finalBlob = new Blob([bytes], { type: ttsData.mimeType || 'audio/wav' });
+            }
+
+            const audioBlobUrl = URL.createObjectURL(finalBlob);
+            const audio = new Audio(audioBlobUrl);
+            currentAudioRef.current = audio;
+            audio.onended = () => {
+              setIsPlayingAudio(false);
+              setIsSpeaking(false);
+            };
+            audio.onerror = () => {
+              speakWithSpeechSynthesis(reply, 'en');
+            };
+            await audio.play();
+            setIsPlayingAudio(true);
+            setIsSpeaking(true);
+            neuralPlayed = true;
+          }
+        }
+      } catch (ttsErr) {
+        console.warn('Gemini Live Voice TTS notice:', ttsErr);
+      }
+
+      if (!neuralPlayed) {
+        speakWithSpeechSynthesis(reply, 'en');
+      }
     } catch (err) {
       console.warn('Voice guide response notice:', err);
       const fallbackReply = `I am your verified regional travel guide. Please ask about any destination or district across Andhra Pradesh and Telangana.`;
@@ -775,7 +905,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                     {isLoadingStory ? (
                       <span className="text-amber-300 flex items-center gap-2 py-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Generating authentic dynamic audio walk story...
+                        Generating neural voice guide with Gemini...
                       </span>
                     ) : (
                       activeStory?.narrative || activeSpot.description

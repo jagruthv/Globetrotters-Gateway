@@ -526,8 +526,8 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
           const voiceName = body.voice || "Puck";
           const apiKey = getGeminiKey(env);
 
-          // Dedicated audio models: Gemini 3.8 Flash TTS with fallback cascade
-          const ttsModels = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
+          // Dedicated audio models: Gemini Flash Neural Audio with fallback cascade
+          const ttsModels = ["gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-2.5-flash", "gemini-3.8-flash"];
           let audioBase64 = null;
           let audioMimeType = "audio/wav";
 
@@ -539,7 +539,9 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   contents: [{
-                    parts: [{ text: textToSpeak }]
+                    parts: [{
+                      text: `Read the following tour guide narrative aloud word-for-word in a clear, natural, and welcoming voice. Do not add introductory greetings, read only the text:\n\n${textToSpeak}`
+                    }]
                   }],
                   generationConfig: {
                     responseModalities: ["AUDIO"],
@@ -556,10 +558,11 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
 
               if (ttsResp.ok) {
                 const ttsData = await ttsResp.json();
-                const part = ttsData?.candidates?.[0]?.content?.parts?.[0];
-                if (part?.inlineData?.data) {
-                  audioBase64 = part.inlineData.data;
-                  audioMimeType = part.inlineData.mimeType || "audio/wav";
+                const parts = ttsData?.candidates?.[0]?.content?.parts || [];
+                const audioPart = parts.find(p => p.inlineData && p.inlineData.data);
+                if (audioPart) {
+                  audioBase64 = audioPart.inlineData.data;
+                  audioMimeType = audioPart.inlineData.mimeType || "audio/wav";
                   break;
                 }
               }

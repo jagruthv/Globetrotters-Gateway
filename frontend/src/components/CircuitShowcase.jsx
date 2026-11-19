@@ -179,10 +179,10 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
 
                   {/* Badges */}
                   <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-bold text-amber-300 font-mono">
+                    <span className="px-2.5 py-0.5 rounded-md bg-black/60 border border-white/10 text-[10px] font-semibold text-slate-200">
                       {circuit.states}
                     </span>
-                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-400/40 text-[10px] font-bold text-emerald-300 font-mono">
+                    <span className="px-2.5 py-0.5 rounded-md bg-white/10 border border-white/15 text-[10px] font-semibold text-white">
                       {circuit.savings}
                     </span>
                   </div>
@@ -221,14 +221,14 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
                   <div className="flex items-center gap-3 pt-2">
                     <button
                       onClick={() => onBookCircuit(circuit)}
-                      className="flex-1 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md font-sans-clean cursor-pointer active:scale-[0.98]"
+                      className="flex-1 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors font-sans-clean cursor-pointer active:scale-[0.98]"
                     >
                       <Ticket className="w-3.5 h-3.5" />
                       <span>Get Tour Pass</span>
                     </button>
                     <button
                       onClick={() => onSelectCircuit(circuit)}
-                      className="px-4 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 font-semibold text-xs transition-colors font-sans-clean cursor-pointer"
+                      className="px-4 py-2.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 font-semibold text-xs transition-colors font-sans-clean cursor-pointer"
                     >
                       Plan This Tour
                     </button>

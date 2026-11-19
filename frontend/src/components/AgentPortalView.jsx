@@ -904,15 +904,15 @@ export default function AgentPortalView({
       {/* MAIN SCANNER INTERFACE */}
       <main className="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-5">
 
-        {/* ACTIVE CHECKPOINT SELECTOR (10 DISTRICTS) */}
-        <div className="p-4 rounded-2xl bg-[#0E121A] border border-white/10 flex flex-col gap-2">
-          <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+        {/* ACTIVE CHECKPOINT SELECTOR */}
+        <div className="p-3.5 rounded-xl bg-[#0E121A] border border-white/10 flex flex-col gap-2">
+          <label htmlFor="checkpoint-select" className="text-xs font-semibold text-slate-300 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-amber-400" />
-              <span>Assigned Monument Checkpoint</span>
+              <span>Assigned Checkpoint</span>
             </span>
-            <span className="text-[10px] font-mono text-amber-400">
-              {activeCheckpoint.fee > 0 ? `Entry: ₹${activeCheckpoint.fee}` : 'Free Public Access'} • {activeCheckpoint.gate}
+            <span className="text-[11px] text-slate-400">
+              {activeCheckpoint.gate}
             </span>
           </label>
 
@@ -923,19 +923,19 @@ export default function AgentPortalView({
               setSelectedPlaceId(Number(e.target.value));
               setVerdict(null);
             }}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/5 border border-amber-400/30 text-white text-xs sm:text-sm font-medium focus:outline-none focus:border-amber-400 cursor-pointer"
+            className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-xs sm:text-sm font-medium focus:outline-none focus:border-amber-400 cursor-pointer"
           >
-            <optgroup label="Sovereign State Checkpoints (10 Districts)" className="bg-[#0E121A] text-amber-300 font-bold">
+            <optgroup label="Sovereign Checkpoints (10 Districts)" className="bg-[#0E121A] text-slate-300 font-bold">
               {CHECKPOINTS.slice(0, 10).map((cp) => (
                 <option key={cp.id} value={cp.id} className="bg-[#0E121A] text-white py-1 font-normal">
-                  {cp.name} — {cp.district} ({cp.state}) • ₹{cp.fee}
+                  {cp.name} ({cp.district})
                 </option>
               ))}
             </optgroup>
-            <optgroup label="Araku Valley & Alluri Sitharama Raju Checkpoints" className="bg-[#0E121A] text-amber-300 font-bold">
+            <optgroup label="Araku / Alluri Sitharama Raju Checkpoints" className="bg-[#0E121A] text-slate-300 font-bold">
               {CHECKPOINTS.slice(10).map((cp) => (
                 <option key={cp.id} value={cp.id} className="bg-[#0E121A] text-white py-1 font-normal">
-                  {cp.name} — {cp.district} • {cp.fee > 0 ? `₹${cp.fee}` : 'Free'}
+                  {cp.name}
                 </option>
               ))}
             </optgroup>
