@@ -415,14 +415,22 @@ export default function TravelAssistantDrawer({
     }
   };
 
+  const handleSendMessageRef = useRef(handleSendMessage);
+  useEffect(() => {
+    handleSendMessageRef.current = handleSendMessage;
+  });
+
   // Auto-send initial query passed from external components (e.g. Plan Custom Trip or Planner chips)
   useEffect(() => {
     if (isOpen && initialQuery && initialQuery.trim()) {
       const q = initialQuery.trim();
       if (onClearInitialQuery) onClearInitialQuery();
-      handleSendMessage(q);
+      const timer = setTimeout(() => {
+        handleSendMessageRef.current(q);
+      }, 50);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, initialQuery]);
+  }, [isOpen, initialQuery, onClearInitialQuery]);
 
   const handleAddPlaceToTrip = (place) => {
     if (setSelectedPlaces) {

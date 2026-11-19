@@ -28,7 +28,7 @@ const LazyFallback = () => (
   </div>
 );
 import { authService, bookingService } from './services/api';
-import { Heart, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Heart, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
 const HASH_MAP = {
   '': 'home',

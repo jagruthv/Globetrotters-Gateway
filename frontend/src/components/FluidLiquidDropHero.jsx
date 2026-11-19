@@ -243,27 +243,14 @@ export default function FluidLiquidDropHero({
         {/* Left Column: Official Authority, Headline & Travel Dock */}
         <div className="lg:col-span-7 flex flex-col gap-2 sm:gap-2.5">
           
-          {/* Header Pill */}
-          <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/[0.05] border border-white/10 w-max backdrop-blur-xl">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="text-[10px] font-semibold text-emerald-300 font-sans-clean">
-                Smart Tourism Gateway • Andhra Pradesh & Telangana
-              </span>
-            </div>
-          </div>
-
-          {/* Authoritative Responsive Headline */}
-          <h1 className="text-2xl sm:text-3xl lg:text-[32px] xl:text-[36px] font-extrabold tracking-tight text-white leading-[1.12] font-sans-clean max-w-xl">
-            Explore Andhra & Telangana.{' '}
-            <span className="text-amber-400">
-              Travel Authentically.
-            </span>
+          {/* Headline */}
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight font-sans-clean max-w-xl">
+            Travel Andhra Pradesh & Telangana.
           </h1>
 
           {/* Value Proposition */}
-          <p className="text-[11.5px] sm:text-[12.5px] text-slate-300 leading-snug max-w-lg font-sans-clean">
-            Your verified companion across all 59 districts and 646 destinations. Authentic local guides for free sights, instant QR passes for ticketed monuments, and scam alerts with zero markups.
+          <p className="text-sm text-slate-300 leading-relaxed max-w-lg font-sans-clean">
+            Verified local routes, entry guidelines, and tickets for 59 districts and 646 places across both states.
           </p>
 
           {/* Overview Metrics */}
