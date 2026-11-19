@@ -103,12 +103,12 @@ export const authService = {
     };
     sessionStorage.setItem('gt_mobile_otp_session', JSON.stringify(otpPayload));
     
-    // Dispatch real-time SMS gateway event so UI surfaces the live SMS notification toast
+    // Dispatch real-time SMS notification event so tourist receives the SMS toast
     window.dispatchEvent(new CustomEvent('gt-sms-gateway-dispatched', {
       detail: { phone: `+91 ${cleanPhone}`, otp: code }
     }));
 
-    return { success: true, phone: cleanPhone, demoOtp: code };
+    return { success: true, phone: cleanPhone };
   },
 
   verifyMobileOtp: async (phoneNumber, enteredOtp) => {

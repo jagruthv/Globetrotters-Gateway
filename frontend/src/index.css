@@ -219,3 +219,87 @@
     opacity: 0.4;
   }
 }
+
+/* ==========================================================================
+   OFFICIAL TOURISM TICKET PRINT STYLESHEET
+   Clean, high-contrast, ink-friendly voucher printing on A4 / Letter paper
+   ========================================================================== */
+@media print {
+  /* Hide all interactive website chrome */
+  nav,
+  footer,
+  header,
+  button,
+  .no-print,
+  .glass-island,
+  [data-assistant],
+  [role="dialog"]:not(#printable-gate-ticket),
+  .fixed,
+  .sticky {
+    display: none !important;
+  }
+
+  /* Reset body and root to crisp white paper with zero dark-mode artifacts */
+  html,
+  body,
+  #root,
+  main {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Target the printable ticket container */
+  #printable-gate-ticket,
+  .printable-ticket-card {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 680px !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 2px solid #0f172a !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Reset inner cards and boxes to clean black/grey on white */
+  #printable-gate-ticket * {
+    color: #0f172a !important;
+    background-color: transparent !important;
+    border-color: #94a3b8 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure QR code container stays crisp white with deep black optical bars */
+  #printable-gate-ticket .print-qr-container,
+  #printable-gate-ticket img[alt*="QR"] {
+    background-color: #ffffff !important;
+    border-color: #0f172a !important;
+    filter: contrast(200%) !important;
+  }
+
+  /* Barcode graphic */
+  #printable-gate-ticket .bg-white\/80 {
+    background-color: #0f172a !important;
+  }
+
+  /* Page layout rules */
+  @page {
+    size: A4 portrait;
+    margin: 10mm 15mm;
+  }
+}

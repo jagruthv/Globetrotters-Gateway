@@ -21,7 +21,8 @@ export default function FloatingIslandNav({
   setActiveTab, 
   selectedPlacesCount = 0,
   onOpenSettings,
-  onOpenAssistant
+  onOpenAssistant,
+  onOpenSafetyModal
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -134,6 +135,17 @@ export default function FloatingIslandNav({
           >
             <Sparkles className="w-3.5 h-3.5 fill-emerald-400/30 text-emerald-400" />
             <span className="hidden sm:inline">Assistant</span>
+          </button>
+
+          {/* Tourist Safety & Emergency Helplines Button */}
+          <button
+            type="button"
+            onClick={onOpenSafetyModal}
+            className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 text-slate-300 hover:text-rose-300 flex items-center justify-center transition-colors cursor-pointer"
+            title="Tourist Safety & 24/7 Helplines (112, 108, 1363)"
+            aria-label="Tourist Safety & Helplines"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
           </button>
 
           {/* Settings & Preferences Button */}
@@ -290,6 +302,20 @@ export default function FloatingIslandNav({
                   <span className="font-semibold text-base">Ask Travel Assistant</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-emerald-400" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenSafetyModal) onOpenSafetyModal();
+                }}
+                className="w-full p-4 rounded-2xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-left flex items-center justify-between transition-colors text-rose-200 cursor-pointer"
+              >
+                <div className="flex items-center gap-3.5">
+                  <ShieldCheck className="w-5 h-5 text-rose-400" />
+                  <span className="font-semibold text-base">Safety & Helplines (112 / 108)</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-rose-400" />
               </button>
               <button
                 onClick={() => {

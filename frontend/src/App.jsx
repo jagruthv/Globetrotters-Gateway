@@ -14,7 +14,7 @@ import TravelAssistantDrawer from './components/TravelAssistantDrawer';
 import AssistantFloatingTrigger from './components/AssistantFloatingTrigger';
 import CookieConsentBanner from './components/CookieConsentBanner';
 import SettingsModal from './components/SettingsModal';
-import SmsGatewayToast from './components/SmsGatewayToast';
+import TouristSafetyModal from './components/TouristSafetyModal';
 import AuthModal from './components/AuthModal';
 import PaymentProcessingModal from './components/PaymentProcessingModal';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -63,6 +63,7 @@ export default function App() {
   });
   const [voiceModalOpen, setVoiceModalOpen] = useState(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [safetyModalOpen, setSafetyModalOpen] = useState(false);
   const [agentVerificationOpen, setAgentVerificationOpen] = useState(false);
   const [isAgentPortalActive, setIsAgentPortalActive] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -183,6 +184,16 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Listen for global auth modal request
+  useEffect(() => {
+    const handleOpenAuth = (e) => {
+      setAuthModalReason(e?.detail?.reason || 'Sign in to save your passes across devices.');
+      setAuthModalOpen(true);
+    };
+    window.addEventListener('open-auth-modal', handleOpenAuth);
+    return () => window.removeEventListener('open-auth-modal', handleOpenAuth);
   }, []);
 
   // Save selected trip places to localStorage so refreshing or switching tabs never loses state
@@ -339,6 +350,7 @@ export default function App() {
         selectedPlacesCount={selectedPlaces.length}
         onOpenSettings={() => setSettingsModalOpen(true)}
         onOpenAssistant={() => setAssistantOpen(true)}
+        onOpenSafetyModal={() => setSafetyModalOpen(true)}
       />
 
       {/* Main Tab Views with Framer Motion Spring Transition */}
@@ -539,6 +551,17 @@ export default function App() {
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
         onOpenAgentPortal={handleOpenAgentPortal}
+        onOpenAuth={() => {
+          setSettingsModalOpen(false);
+          setAuthModalReason('Sign in to save your passes across devices.');
+          setAuthModalOpen(true);
+        }}
+      />
+
+      {/* 24/7 Verified Tourist Safety & Emergency Helplines Modal */}
+      <TouristSafetyModal
+        isOpen={safetyModalOpen}
+        onClose={() => setSafetyModalOpen(false)}
       />
 
       {/* Field Agent Verification & Accreditation Modal */}
@@ -629,9 +652,6 @@ export default function App() {
 
         </div>
       </footer>
-
-      {/* Real-Time SMS Alert Toast */}
-      <SmsGatewayToast />
 
       {/* Persistent Global AI Travel Assistant Trigger & Drawer */}
       <AssistantFloatingTrigger

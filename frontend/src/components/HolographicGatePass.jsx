@@ -231,7 +231,7 @@ export default function HolographicGatePass({
       <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
         
         {/* Pass Header */}
-        <div className="flex flex-col items-center text-center gap-3">
+        <div className="print:hidden flex flex-col items-center text-center gap-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
             <Ticket className="w-3.5 h-3.5 text-emerald-400" />
             <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-emerald-300 font-sans-clean">
@@ -247,7 +247,7 @@ export default function HolographicGatePass({
         </div>
 
         {shareToast && (
-          <div className="px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 font-sans-clean animate-in fade-in">
+          <div className="print:hidden px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 font-sans-clean animate-in fade-in">
             <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{shareToast}</span>
           </div>
@@ -255,7 +255,7 @@ export default function HolographicGatePass({
 
         {/* Multi-Pass Switcher (When traveler holds multiple passes) */}
         {allPasses.length > 1 && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none w-full max-w-2xl px-2">
+          <div className="print:hidden flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none w-full max-w-2xl px-2">
             <span className="text-xs text-slate-400 font-sans-clean shrink-0">Passes ({allPasses.length}):</span>
             {allPasses.map((p, idx) => (
               <button
@@ -275,7 +275,7 @@ export default function HolographicGatePass({
 
         {/* Conductor / Scanner Verification Alert */}
         {typeof window !== 'undefined' && window.location.hash.toLowerCase().includes('verify') && (
-          <div className="w-full max-w-2xl px-5 py-3 rounded-2xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-between gap-3 text-emerald-300 shadow-lg">
+          <div className="print:hidden w-full max-w-2xl px-5 py-3 rounded-2xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-between gap-3 text-emerald-300 shadow-lg">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-emerald-400/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 shrink-0">
                 <CheckCircle className="w-5 h-5" />
@@ -293,13 +293,27 @@ export default function HolographicGatePass({
 
         {/* THE MOVIE TICKET CONTAINER */}
         <motion.div
+          id="printable-gate-ticket"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative w-full max-w-2xl bg-[#0E121A] border border-white/10 rounded-3xl shadow-2xl overflow-hidden text-slate-100"
+          className="printable-ticket-card relative w-full max-w-2xl bg-[#0E121A] border border-white/10 rounded-3xl shadow-2xl overflow-hidden text-slate-100"
         >
+          {/* Print-Only Official Apex Tourism Header */}
+          <div className="hidden print:block p-5 border-b-2 border-slate-900 text-center">
+            <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-slate-900 font-mono">
+              Government of Andhra Pradesh • Government of Telangana
+            </div>
+            <div className="text-xl font-black tracking-tight text-slate-950 uppercase mt-0.5">
+              Department of Tourism & Archaeology • Official Gate Pass
+            </div>
+            <div className="text-[10px] text-slate-600 font-mono mt-1">
+              Verified Electronic Pass • NIST FIPS 198-1 HMAC-SHA256 Authenticated
+            </div>
+          </div>
+
           {/* Top Cinema Header Bar */}
-          <div className="px-6 py-4 bg-gradient-to-r from-amber-950/40 via-stone-900/60 to-stone-950 border-b border-white/10 flex items-center justify-between">
+          <div className="print:hidden px-6 py-4 bg-gradient-to-r from-amber-950/40 via-stone-900/60 to-stone-950 border-b border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
                 <Ticket className="w-4 h-4" />
@@ -326,8 +340,8 @@ export default function HolographicGatePass({
           <div className="p-6 sm:p-8 flex flex-col gap-6 relative">
 
             {/* Left & Right Circular Ticket Punch Notches */}
-            <div className="hidden sm:block absolute -left-4 top-[58%] -translate-y-1/2 w-8 h-8 rounded-full bg-[#080A0F] border-r border-white/15 pointer-events-none" />
-            <div className="hidden sm:block absolute -right-4 top-[58%] -translate-y-1/2 w-8 h-8 rounded-full bg-[#080A0F] border-l border-white/15 pointer-events-none" />
+            <div className="hidden sm:block print:hidden absolute -left-4 top-[58%] -translate-y-1/2 w-8 h-8 rounded-full bg-[#080A0F] border-r border-white/15 pointer-events-none" />
+            <div className="hidden sm:block print:hidden absolute -right-4 top-[58%] -translate-y-1/2 w-8 h-8 rounded-full bg-[#080A0F] border-l border-white/15 pointer-events-none" />
 
             {/* Hero Circuit Title & Badges */}
             <div className="flex flex-col gap-2">
@@ -448,7 +462,7 @@ export default function HolographicGatePass({
                   <button
                     type="button"
                     onClick={() => setSunlightScanMode(true)}
-                    className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold transition-all shadow-md cursor-pointer active:scale-95 w-fit"
+                    className="print:hidden mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold transition-all shadow-md cursor-pointer active:scale-95 w-fit"
                     title="Open high-contrast full-screen QR code for outdoor gate scanning"
                   >
                     <Sun className="w-3.5 h-3.5 fill-current" />
@@ -475,7 +489,7 @@ export default function HolographicGatePass({
             </div>
 
             {/* Monument Audio Tour Bar Unlocked on Ticket */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-stone-900 via-[#151a24] to-stone-900 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="print:hidden p-3.5 rounded-2xl bg-gradient-to-r from-stone-900 via-[#151a24] to-stone-900 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
                   <Headphones className="w-4 h-4 text-amber-300" />
@@ -503,7 +517,7 @@ export default function HolographicGatePass({
             </div>
 
             {/* Social Sharing & Promotion Actions Bar */}
-            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+            <div className="print:hidden pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 {/* Digital Pass Share Button */}
                 <button
@@ -546,11 +560,17 @@ export default function HolographicGatePass({
               </div>
             </div>
 
+            {/* Print-Only Gate Scanner Instruction Footnote */}
+            <div className="hidden print:flex flex-col items-center justify-between gap-1 pt-4 border-t-2 border-slate-900 text-[10px] text-slate-800 font-mono text-center">
+              <span className="font-bold">Present this printed voucher or digital QR at the monument turnstile scanner for admission.</span>
+              <span>Pass Order: {activePass.reference} • Non-Transferable • State Tourism Helpline: 1363 (24/7 Toll-Free)</span>
+            </div>
+
           </div>
         </motion.div>
 
         {/* Offline Tourist Safety & Emergency Helplines Strip */}
-        <div className="w-full max-w-2xl p-4 rounded-2xl bg-[#0B0F17] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300 font-sans-clean">
+        <div className="print:hidden w-full max-w-2xl p-4 rounded-2xl bg-[#0B0F17] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300 font-sans-clean">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span className="font-semibold text-white">Offline Verified:</span>
@@ -566,7 +586,7 @@ export default function HolographicGatePass({
         </div>
 
         {/* Tourist Trust Proof Points */}
-        <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 font-sans-clean text-center">
+        <div className="print:hidden flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 font-sans-clean text-center">
           <span className="flex items-center gap-1.5">
             <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
             Direct QR Entry at All Gates

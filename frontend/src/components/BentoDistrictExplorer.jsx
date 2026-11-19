@@ -125,6 +125,20 @@ function getRelevanceSortedSpots(spots, query) {
   });
 }
 
+function calculateRoadDistanceKm(lat1, lon1, lat2, lon2) {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const straightLineKm = R * c;
+  return Math.round(straightLineKm * 1.35);
+}
+
 export default function BentoDistrictExplorer({ 
   onSelectPlaceForTrip, 
   selectedPlaces = [] 
@@ -135,6 +149,10 @@ export default function BentoDistrictExplorer({
   const [activeTheme, setActiveTheme] = useState('all');
   const [activeDistrictModal, setActiveDistrictModal] = useState(null);
   const [modalFilterMode, setModalFilterMode] = useState('all'); // 'all' or 'matching'
+  const [userCoords, setUserCoords] = useState(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [sortByDistance, setSortByDistance] = useState(false);
+  const [locationMessage, setLocationMessage] = useState(null);
 
   // Escape key listener for accessible modal dismissal
   useEffect(() => {
@@ -170,9 +188,53 @@ export default function BentoDistrictExplorer({
     return [...ap, ...tg];
   }, []);
 
+  const handleToggleNearMe = () => {
+    if (sortByDistance) {
+      setSortByDistance(false);
+      setLocationMessage(null);
+      return;
+    }
+
+    if (userCoords) {
+      setSortByDistance(true);
+      setLocationMessage('Districts sorted by proximity to your current location.');
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      setLocationMessage('Location is not supported by your browser.');
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationMessage('Detecting your GPS location...');
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude
+        });
+        setSortByDistance(true);
+        setIsLocating(false);
+        setLocationMessage('Showing 59 districts sorted by closest road distance to you.');
+      },
+      (err) => {
+        setIsLocating(false);
+        setSortByDistance(false);
+        if (err.code === 1) {
+          setLocationMessage('Location permission denied. Please allow location access to sort by proximity.');
+        } else {
+          setLocationMessage('Could not detect GPS coordinates. Showing standard alphabetical list.');
+        }
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 }
+    );
+  };
+
   // Compound filtering without early returns
   const filteredDistricts = useMemo(() => {
-    return allDistricts.filter((dist) => {
+    const list = allDistricts.filter((dist) => {
       const q = searchQuery.toLowerCase().trim();
       const isAP = dist.state === 'Andhra Pradesh';
       const name = dist.name.toLowerCase();
@@ -236,7 +298,33 @@ export default function BentoDistrictExplorer({
 
       return true;
     });
-  }, [allDistricts, searchQuery, activeState, activeZone, activeTheme]);
+
+    if (sortByDistance && userCoords) {
+      const withDistance = list.map((dist) => {
+        const nameKey = dist.name.toLowerCase();
+        const hqKey = (dist.hq || '').toLowerCase();
+        const coords = DISTRICT_COORDS[nameKey] || DISTRICT_COORDS[hqKey] || {
+          lat: dist.spots[0]?.latitude,
+          lng: dist.spots[0]?.longitude
+        };
+        const distKm = coords?.lat != null && coords?.lng != null
+          ? calculateRoadDistanceKm(userCoords.lat, userCoords.lng, coords.lat, coords.lng)
+          : null;
+        return {
+          ...dist,
+          distanceFromUser: distKm
+        };
+      });
+
+      return withDistance.sort((a, b) => {
+        if (a.distanceFromUser == null) return 1;
+        if (b.distanceFromUser == null) return -1;
+        return a.distanceFromUser - b.distanceFromUser;
+      });
+    }
+
+    return list;
+  }, [allDistricts, searchQuery, activeState, activeZone, activeTheme, sortByDistance, userCoords]);
 
   const isPlaceSelected = (placeName) => {
     return selectedPlaces.some((p) => p.name.toLowerCase() === placeName.toLowerCase());
@@ -247,6 +335,8 @@ export default function BentoDistrictExplorer({
     setActiveState('all');
     setActiveZone('all');
     setActiveTheme('all');
+    setSortByDistance(false);
+    setLocationMessage(null);
   };
 
   return (
@@ -298,7 +388,7 @@ export default function BentoDistrictExplorer({
 
         {/* Triple-Tier Interactive Filter System: State Toggle + Cultural Zones + Traveler Themes */}
         <div className="flex flex-col gap-3.5">
-          {/* Tier 1: State Selection Tabs */}
+          {/* Tier 1: State Selection Tabs & Proximity Locator */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Filter by State">
             {STATES.map((s) => {
               const isSelected = activeState === s.id;
@@ -319,7 +409,47 @@ export default function BentoDistrictExplorer({
                 </button>
               );
             })}
+
+            <div className="h-4 w-[1px] bg-white/10 mx-1 shrink-0" />
+
+            <button
+              type="button"
+              onClick={handleToggleNearMe}
+              disabled={isLocating}
+              aria-pressed={sortByDistance}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 font-sans-clean flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                sortByDistance
+                  ? 'bg-emerald-400 text-slate-950 font-bold shadow-md'
+                  : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/20'
+              }`}
+              title="Sort 59 districts by distance to your current location"
+            >
+              <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
+              <span>{isLocating ? 'Detecting GPS...' : (sortByDistance ? 'Nearest to Me (Active)' : '📍 Sights Near Me')}</span>
+            </button>
           </div>
+
+          {/* GPS Proximity Status Banner */}
+          {locationMessage && (
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-200 font-sans-clean">
+              <div className="flex items-center gap-2">
+                <Navigation className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>{locationMessage}</span>
+              </div>
+              {sortByDistance && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSortByDistance(false);
+                    setLocationMessage(null);
+                  }}
+                  className="text-[11px] text-emerald-300 hover:text-white underline cursor-pointer"
+                >
+                  Clear GPS Sort
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Tier 2: Geographic Cultural Zones */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Filter by Cultural Zone">
@@ -444,6 +574,12 @@ export default function BentoDistrictExplorer({
                           {district.state === 'Andhra Pradesh' ? 'AP' : 'TG'} • HQ: {district.hq}
                         </span>
                         <div className="flex items-center gap-1.5">
+                          {district.distanceFromUser != null && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/25 backdrop-blur-md border border-emerald-400/40 text-[10px] font-bold text-emerald-300 font-mono flex items-center gap-1 shadow-sm">
+                              <Navigation className="w-2.5 h-2.5 text-emerald-300" />
+                              <span>~{district.distanceFromUser} km</span>
+                            </span>
+                          )}
                           {isFlagship && (
                             <span className="px-2.5 py-1 rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-400/30 text-[10px] font-bold text-amber-300 font-mono">
                               Flagship Hub
@@ -568,6 +704,9 @@ export default function BentoDistrictExplorer({
                     </span>
                     <span className="text-xs text-slate-400 font-mono">
                       HQ: {activeDistrictModal.hq} • {activeDistrictModal.spots.length} Verified Destinations
+                      {activeDistrictModal.distanceFromUser != null && (
+                        <span className="text-emerald-400 ml-1.5 font-semibold">• ~{activeDistrictModal.distanceFromUser} km away</span>
+                      )}
                     </span>
                   </div>
                   <h3 className="text-xl md:text-2xl font-bold text-white mt-1">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Sparkles, 
@@ -16,13 +16,20 @@ import {
   Compass,
   CheckCircle2,
   Check,
-  Search
+  Search,
+  Navigation,
+  Printer,
+  ChevronDown,
+  ChevronUp,
+  Square,
+  CheckSquare
 } from 'lucide-react';
 import { tripService, chatService } from '../services/api';
 import { offlineRouteFallback, resolveSpotCoordinates } from '../utils/offlineRouteEngine';
 import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
 import LiveWeatherBadge from './LiveWeatherBadge';
 import GeminiPlanDrawer from './GeminiPlanDrawer';
+import PocketDossierModal from './PocketDossierModal';
 
 // Module-level utility functions to isolate side-effect timings from React Compiler render scope
 const getNowTime = () => performance.now();
@@ -70,10 +77,97 @@ export default function AiFluidTripStudio({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [generationError, setGenerationError] = useState(null);
   const [chatSessionId] = useState(() => 'trip_chat_' + Math.random().toString(36).substring(2, 9));
+  const [isPocketDossierOpen, setIsPocketDossierOpen] = useState(false);
+  const [showPackingList, setShowPackingList] = useState(false);
+  const [checkedPackingItems, setCheckedPackingItems] = useState({});
 
   // Quick In-Planner Destination Search & Add
   const [quickSearchQuery, setQuickSearchQuery] = useState('');
   const [isQuickSearchOpen, setIsQuickSearchOpen] = useState(false);
+
+  // Smart Terrain & Weather Packing Checklist
+  const packingChecklist = useMemo(() => {
+    if (!planResult) return [];
+    const allStops = (planResult.days || planResult.itinerary || []).flatMap(d => d.stops || d.legs || []);
+    const allNames = allStops.map(s => (s.name || s.spotName || '').toLowerCase());
+    const allCategories = allStops.map(s => (s.category || '').toLowerCase());
+
+    const hasHighElevation = allStops.some(s => {
+      const p = selectedPlaces.find(pl => pl.name?.toLowerCase() === (s.name || s.spotName || '').toLowerCase());
+      return (p?.elevationMeters && p.elevationMeters > 500) ||
+        allNames.some(n => n.includes('araku') || n.includes('lambasingi') || n.includes('horsley') || n.includes('tirumala'));
+    });
+
+    const hasCavesOrWaterfalls = allNames.some(n => 
+      n.includes('cave') || n.includes('waterfall') || n.includes('falls') || n.includes('borra') || n.includes('belum') || n.includes('ethipothala') || n.includes('bogatha')
+    ) || allCategories.some(c => c.includes('waterfall') || c.includes('caves'));
+
+    const hasForestCurfew = allNames.some(n => 
+      n.includes('srisailam') || n.includes('amrabad') || n.includes('maredumilli') || n.includes('nallamala')
+    ) || (planResult.days || []).some(d => d.curfewAdvisory);
+
+    const hasTemples = allCategories.some(c => c.includes('temple') || c.includes('spiritual')) ||
+      allNames.some(n => n.includes('temple') || n.includes('tirumala') || n.includes('lepakshi') || n.includes('ramappa') || n.includes('draksharama'));
+
+    const items = [
+      {
+        id: 'pack-power',
+        category: 'Electronics',
+        label: 'Car phone charger & 10,000+ mAh power bank',
+        hint: 'Cellular signals in rural hills and ghats drain smartphone battery rapidly.'
+      },
+      {
+        id: 'pack-cash',
+        category: 'Transit Cash',
+        label: '₹500 - ₹1,000 in small physical currency notes',
+        hint: 'Rural forest checkposts and temple shoe stalls rarely accept UPI or digital cards.'
+      },
+      {
+        id: 'pack-medical',
+        category: 'Health & Hydration',
+        label: 'Electrolyte (ORS) sachets & prescription medicines',
+        hint: 'Protects against dehydration during afternoon heritage walks in Deccan heat.'
+      }
+    ];
+
+    if (hasHighElevation) {
+      items.push({
+        id: 'pack-elevation',
+        category: 'Hills & Ghats',
+        label: 'Light warm layer / windcheater & motion sickness mints',
+        hint: 'Morning temperatures in Araku drop to 14-16°C with 30+ hairpin road bends.'
+      });
+    }
+
+    if (hasCavesOrWaterfalls) {
+      items.push({
+        id: 'pack-caves',
+        category: 'Caves & Waterfalls',
+        label: 'Rubber-grip walking shoes & standalone LED torch',
+        hint: 'Limestone steps in Borra and Belum Caves get damp, and smartphone flash drains quickly in caves.'
+      });
+    }
+
+    if (hasForestCurfew) {
+      items.push({
+        id: 'pack-forest',
+        category: 'Wildlife Curfew',
+        label: 'Full vehicle tank fuel & government Photo ID',
+        hint: 'Forest checkposts close strictly overnight (9:00 PM – 6:00 AM). Fuel pumps are far apart.'
+      });
+    }
+
+    if (hasTemples) {
+      items.push({
+        id: 'pack-temples',
+        category: 'Spiritual Attire',
+        label: 'Traditional modest attire (Dhoti/Kurta or Saree/Salwar)',
+        hint: 'Mandatory at Tirumala, Srisailam, and Simhachalam inner sanctums.'
+      });
+    }
+
+    return items;
+  }, [planResult, selectedPlaces]);
 
   const allDestinations = useMemo(() => {
     const list = [];
@@ -797,6 +891,15 @@ export default function AiFluidTripStudio({
                   </button>
 
                   <button
+                    onClick={() => setIsPocketDossierOpen(true)}
+                    className="px-4 py-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/20 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean shadow-sm"
+                    title="Print or save 1-page pocket travel dossier for offline road trip"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Pocket Dossier</span>
+                  </button>
+
+                  <button
                     onClick={() => setGeminiDrawerOpen(true)}
                     className="px-4 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean"
                   >
@@ -832,6 +935,78 @@ export default function AiFluidTripStudio({
                   </button>
                 </div>
               </div>
+
+              {/* Smart Terrain & Weather Packing Checklist */}
+              {packingChecklist.length > 0 && (
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col gap-3 font-sans-clean">
+                  <div 
+                    onClick={() => setShowPackingList(!showPackingList)}
+                    className="flex items-center justify-between cursor-pointer select-none"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                        <CheckSquare className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+                          <span>Terrain & Weather Packing Checklist</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/25 font-mono">
+                            {Object.values(checkedPackingItems).filter(Boolean).length} / {packingChecklist.length} Packed
+                          </span>
+                        </h4>
+                        <p className="text-[11px] text-slate-400">
+                          Tailored for your route's elevations, forest checkposts, and cave humidity
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-amber-300 font-semibold">
+                      <span>{showPackingList ? 'Hide Checklist' : 'Review Checklist'}</span>
+                      {showPackingList ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </div>
+                  </div>
+
+                  {showPackingList && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-3 border-t border-white/10 animate-in fade-in duration-200">
+                      {packingChecklist.map((item) => {
+                        const isChecked = Boolean(checkedPackingItems[item.id]);
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => setCheckedPackingItems(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                            className={`p-3 rounded-xl border flex items-start gap-3 cursor-pointer transition-all ${
+                              isChecked
+                                ? 'bg-emerald-500/10 border-emerald-500/25 text-slate-300'
+                                : 'bg-white/[0.02] border-white/5 hover:border-white/15 text-slate-200'
+                            }`}
+                          >
+                            <div className="pt-0.5 shrink-0">
+                              {isChecked ? (
+                                <CheckSquare className="w-4 h-4 text-emerald-400" />
+                              ) : (
+                                <Square className="w-4 h-4 text-slate-500" />
+                              )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-xs font-bold font-sans-clean ${isChecked ? 'line-through text-slate-400' : 'text-white'}`}>
+                                  {item.label}
+                                </span>
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/5 border border-white/10 text-amber-300/80 font-mono">
+                                  {item.category}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed font-sans-clean">
+                                {item.hint}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Day-by-Day Schedule Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -899,6 +1074,17 @@ export default function AiFluidTripStudio({
                                     <span className="truncate">{stop.foodTip}</span>
                                   </div>
                                 )}
+                                <div className="pl-7 pt-1">
+                                  <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stopName + ' restaurant ' + (stop.district || ''))}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-400 hover:text-slate-950 text-amber-200 text-[10px] font-semibold transition-all border border-amber-500/30"
+                                  >
+                                    <Navigation className="w-3 h-3 text-amber-400" />
+                                    <span>Open in Google Maps</span>
+                                  </a>
+                                </div>
                               </div>
                             );
                           }
@@ -906,11 +1092,12 @@ export default function AiFluidTripStudio({
                           const displayFee = (stop.individualPrice != null && stop.individualPrice > 0)
                             ? `₹${stop.individualPrice} Entry`
                             : (stop.feesDescription || stop.fees || matchedPlace?.feesDescription || matchedPlace?.fees || 'Free Entry');
+                          const foodHighlight = stop.foodTip || matchedPlace?.culinarySpecialty || matchedPlace?.foodSpecialty;
 
                           return (
                             <div
                               key={`${stopName}-${sIdx}`}
-                              className="p-3 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col gap-1.5"
+                              className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col gap-2"
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 min-w-0">
@@ -938,19 +1125,32 @@ export default function AiFluidTripStudio({
                                 </span>
                               </div>
 
-                              {stop.foodTip && (
+                              {foodHighlight && (
                                 <div className="pl-7 text-[11px] text-amber-200/90 flex items-center gap-1.5 font-sans-clean">
                                   <Utensils className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                                  <span className="truncate">{stop.foodTip}</span>
+                                  <span className="truncate">Local Taste: <strong>{foodHighlight}</strong></span>
                                 </div>
                               )}
 
-                              {stop.emergencyMedicalDistance && (
-                                <div className="pl-7 text-[10px] text-slate-400 flex items-center gap-1.5 font-sans-clean">
-                                  <ShieldCheck className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                                  <span className="truncate">{stop.emergencyMedicalDistance}</span>
-                                </div>
-                              )}
+                              <div className="pl-7 pt-0.5 flex items-center justify-between gap-2 flex-wrap">
+                                <a
+                                  href={matchedPlace?.googleMapsUri || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stopName + ' ' + (stop.district || ''))}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-amber-400 hover:text-slate-950 text-slate-300 text-[10px] font-semibold transition-all border border-white/10 hover:border-amber-400/50"
+                                  title={`Open ${stopName} in Google Maps`}
+                                >
+                                  <Navigation className="w-3 h-3 text-amber-400" />
+                                  <span>Open in Google Maps</span>
+                                </a>
+
+                                {stop.emergencyMedicalDistance && (
+                                  <div className="text-[10px] text-slate-400 flex items-center gap-1 font-sans-clean">
+                                    <ShieldCheck className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                                    <span className="truncate">{stop.emergencyMedicalDistance}</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           );
                         })}
@@ -1117,6 +1317,14 @@ export default function AiFluidTripStudio({
             setGeminiDrawerOpen(false);
             handleBuyPass(plan);
           }}
+        />
+
+        {/* 1-Page Printable / Downloadable Pocket Trip Dossier */}
+        <PocketDossierModal
+          isOpen={isPocketDossierOpen}
+          onClose={() => setIsPocketDossierOpen(false)}
+          planResult={planResult}
+          selectedPlaces={selectedPlaces}
         />
 
       </div>
