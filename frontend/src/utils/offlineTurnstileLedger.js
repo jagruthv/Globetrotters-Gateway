@@ -61,6 +61,36 @@ export function isPassValidForLocation(pass, locationId = 1, keyword = 'borra', 
   return false;
 }
 
+/**
+ * Validates whether a pass is active today or scheduled for a future/past date.
+ */
+export function checkPassDateValidity(pass) {
+  if (!pass) return { valid: true };
+  const todayIso = new Date().toISOString().split('T')[0];
+
+  if (pass.validFrom && String(pass.validFrom).match(/^\d{4}-\d{2}-\d{2}$/)) {
+    if (todayIso < pass.validFrom) {
+      return {
+        valid: false,
+        status: 'FUTURE_DATE_PASS',
+        message: `Entry Denied: Pass is booked for future date (${pass.validFrom}). Early admission before scheduled visit date is not permitted.`
+      };
+    }
+  }
+
+  if (pass.validUntil && String(pass.validUntil).match(/^\d{4}-\d{2}-\d{2}$/)) {
+    if (todayIso > pass.validUntil) {
+      return {
+        valid: false,
+        status: 'EXPIRED_PASS',
+        message: `Entry Denied: Pass validity expired on ${pass.validUntil}.`
+      };
+    }
+  }
+
+  return { valid: true };
+}
+
 export function getOfflineLedgerEntries() {
   try {
     const raw = localStorage.getItem(LEDGER_KEY);
@@ -237,6 +267,18 @@ export async function verifyPassOffline(
       const localBooking = fallbackRef ? findLocalPass(fallbackRef) : null;
 
       if (localBooking) {
+        const dateCheck = checkPassDateValidity(localBooking);
+        if (!dateCheck.valid) {
+          return {
+            valid: false,
+            isCryptographic: false,
+            status: dateCheck.status,
+            message: dateCheck.message,
+            bookingReference: localBooking.reference,
+            touristName: localBooking.touristName || 'Ticket Holder'
+          };
+        }
+
         if (!isPassValidForLocation(localBooking, numPlaceId, kw, checkpointName)) {
           const passTarget = localBooking.circuitName || localBooking.destination || 'other attractions';
           return {
@@ -292,16 +334,30 @@ export async function verifyPassOffline(
     const localMatch = findLocalPass(ref);
     const touristName = localMatch?.touristName || 'Verified Passholder';
 
-    if (localMatch && !isPassValidForLocation(localMatch, numPlaceId, kw, checkpointName)) {
-      const passTarget = localMatch.circuitName || localMatch.destination || 'other attractions';
-      return {
-        valid: false,
-        isCryptographic: true,
-        status: 'LOCATION_MISMATCH',
-        message: `Entry Denied: Pass is only valid for "${passTarget}". Not valid for entry at ${checkpointName}.`,
-        bookingReference: ref,
-        touristName
-      };
+    if (localMatch) {
+      const dateCheck = checkPassDateValidity(localMatch);
+      if (!dateCheck.valid) {
+        return {
+          valid: false,
+          isCryptographic: true,
+          status: dateCheck.status,
+          message: dateCheck.message,
+          bookingReference: ref,
+          touristName
+        };
+      }
+
+      if (!isPassValidForLocation(localMatch, numPlaceId, kw, checkpointName)) {
+        const passTarget = localMatch.circuitName || localMatch.destination || 'other attractions';
+        return {
+          valid: false,
+          isCryptographic: true,
+          status: 'LOCATION_MISMATCH',
+          message: `Entry Denied: Pass is only valid for "${passTarget}". Not valid for entry at ${checkpointName}.`,
+          bookingReference: ref,
+          touristName
+        };
+      }
     }
 
     markPassVisited(ref, numPlaceId, checkpointName, gateTerminalId);
@@ -339,6 +395,18 @@ export async function verifyPassOffline(
   const localPass = findLocalPass(cleanToken);
 
   if (localPass) {
+    const dateCheck = checkPassDateValidity(localPass);
+    if (!dateCheck.valid) {
+      return {
+        valid: false,
+        isCryptographic: false,
+        status: dateCheck.status,
+        message: dateCheck.message,
+        bookingReference: localPass.reference,
+        touristName: localPass.touristName || 'Ticket Holder'
+      };
+    }
+
     if (!isPassValidForLocation(localPass, numPlaceId, kw, checkpointName)) {
       const passTarget = localPass.circuitName || localPass.destination || 'other attractions';
       return {
