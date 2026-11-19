@@ -79,8 +79,8 @@ public class ProofOfArrivalService {
             result.put("transitType", place.getLastMileTransitType());
             result.put("issuedAt", now.toString());
             result.put("expiresAt", exp.toString());
-            result.put("legalProtectionNotice", "FAIR FARE BENCHMARK: Official estimated government transit rate is ₹"
-                    + fareCap + " per passenger for this route. Tourists can use this benchmark to negotiate fair rates with local operators.");
+            result.put("legalProtectionNotice", "LOCAL TRANSIT TIP: Typical fare for this route is around ₹"
+                    + fareCap + " per passenger. Agree on the fare with the auto or taxi driver before boarding, or request meter fare where available.");
             return result;
         } catch (Exception e) {
             log.error("Failed to generate PoA token: {}", e.getMessage(), e);

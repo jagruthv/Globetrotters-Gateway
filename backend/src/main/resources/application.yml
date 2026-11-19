@@ -21,10 +21,10 @@ spring:
       enabled: true
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://globetrotter-db.cx2cek6kon94.ap-south-1.rds.amazonaws.com:5432/postgres}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/globetrotter_db}
     driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.postgresql.Driver}
-    username: ${SPRING_DATASOURCE_USERNAME:gtadmin}
-    password: ${SPRING_DATASOURCE_PASSWORD:Globetrotter2026Pass!}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
 
     # ── HikariCP Connection Pool Tuning ────────────────────────────────────
     # Prevents connection starvation under concurrent requests.
@@ -81,10 +81,9 @@ app:
   qr:
     hmac-secret: ${APP_QR_HMAC_SECRET:6A586E3272357538782F413F4428472B4B6250645367566B5970404E63526655}
 
-  # ── Razorpay Payment Gateway ───────────────────────────────────────────────
-  # Universal Key ID shared across realckon and globetrotter-gateway:
+  # ── Payment Gateway ────────────────────────────────────────────────────────
   razorpay:
-    key-id: ${RAZORPAY_KEY_ID:rzp_live_SXIllaIAEuc1mc}
+    key-id: ${RAZORPAY_KEY_ID:}
     key-secret: ${RAZORPAY_KEY_SECRET:}
 
   # ── External Free OTP Gateways & Identity ──────────────────────────────────

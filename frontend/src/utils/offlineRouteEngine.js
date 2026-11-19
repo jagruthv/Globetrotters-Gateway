@@ -673,19 +673,23 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
       const prevDaySpots = dayBuckets[dayIdx - 1];
       const prevDayLastSpot = prevDaySpots[prevDaySpots.length - 1];
       const todayFirstSpot = daySpots[0];
-      let interDist = haversineDistance(
+      const rawStraight = haversineDistance(
         prevDayLastSpot.latitude,
         prevDayLastSpot.longitude,
         todayFirstSpot.latitude,
         todayFirstSpot.longitude
       );
-      if (interDist < 5.0) interDist = 12.0;
+      // Realistic road winding factor (1.45x for plains, 1.8x for ghats and hill climbs)
+      const isGhat = (prevDayLastSpot.elevationMeters || 0) > 500 || (todayFirstSpot.elevationMeters || 0) > 500;
+      const roadMultiplier = isGhat ? 1.8 : 1.45;
+      const roadSpeed = isGhat ? 26.0 : 45.0;
+      const interDist = Math.max(8.0, Math.round(rawStraight * roadMultiplier * 10) / 10);
       dayKm += interDist;
       interDayTransit = {
         from: prevDayLastSpot.name,
         to: todayFirstSpot.name,
-        distanceKm: Math.round(interDist * 10) / 10,
-        drivingMinutes: Math.round((interDist / 42.0) * 60) + 15,
+        distanceKm: interDist,
+        drivingMinutes: Math.round((interDist / roadSpeed) * 60) + 15,
       };
     }
 

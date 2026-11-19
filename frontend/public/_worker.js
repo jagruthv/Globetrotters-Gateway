@@ -182,7 +182,7 @@ CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no
   "packagePrice": number,
   "individualPriceTotal": number,
   "savings": "string (e.g. Save ₹120 with Unified Circuit Pass)",
-  "modelUsed": "Google Gemini 3.8 Flash",
+  "modelUsed": "AI Travel Engine",
   "days": [
     {
       "dayNumber": number,
@@ -234,7 +234,7 @@ CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no
                 const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
                 planData = JSON.parse(cleanJson);
                 planData.success = true;
-                planData.modelUsed = `Google Gemini (${modelId})`;
+                planData.modelUsed = 'AI Travel Engine';
                 break;
               }
             } catch (err) {
@@ -268,7 +268,7 @@ CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no
           const { currentPlan, userFeedback } = body;
           const apiKey = getGeminiKey(env);
 
-          const systemPrompt = `You are the Globetrotter Gateway Autonomous Tourist Concierge & MCP Agent (powered by Google Gemini 3.8 Flash).
+          const systemPrompt = `You are the Globetrotter Gateway Autonomous Tourist Concierge & Travel Assistant.
 You operate directly on the tourist's account according to verified platform rules across Andhra Pradesh and Telangana.
 
 Your agent capabilities (Tools):
@@ -408,7 +408,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
           // Primary: gemini-3.8-flash, Fallback: gemini-3.5-flash-lite
           const modelsToTry = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
           let replyText = null;
-          let usedModelName = "Google Gemini 3.8 Flash (Live Edge)";
+          let usedModelName = "AI Voice Assistant (Live)";
 
           const apiKey = getGeminiKey(env);
           for (const modelId of modelsToTry) {
@@ -439,7 +439,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
                 } else if (geminiData.candidates[0].content.parts[0]?.text) {
                   replyText = geminiData.candidates[0].content.parts[0].text;
                 }
-                usedModelName = `Google Gemini (${modelId})`;
+                usedModelName = "AI Voice Assistant (Live)";
                 break; // Successfully got response
               } else if (geminiData?.error?.message) {
                 console.warn(`[Edge Cascade] ${modelId} error: ${geminiData.error.message}. Cascading...`);

@@ -739,7 +739,26 @@ export default function TravelAssistantDrawer({
           </div>
 
           {/* Bottom Chat Input Bar */}
-          <footer className="p-4 border-t border-white/10 bg-[#0A0E18]">
+          <footer className="p-3 sm:p-4 border-t border-white/10 bg-[#0A0E18] flex flex-col gap-2">
+            {/* Quick Inquiry Chips for Noisy / Crowded Sites */}
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5">
+              {[
+                { label: '🏛️ Monument Timings & Fees', query: 'Show me entry timings and fees for key monuments' },
+                { label: '🚨 Emergency & Helplines', query: 'Show emergency medical and police helplines' },
+                { label: '🍛 Authentic Regional Food', query: 'What authentic local food specialties should I try in Andhra and Telangana?' },
+                { label: '🚗 Transport & Taxi Tips', query: 'What are standard local auto and taxi fare guidelines?' }
+              ].map((chip) => (
+                <button
+                  key={chip.label}
+                  type="button"
+                  onClick={() => handleSendMessage(chip.query)}
+                  className="px-2.5 py-1 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] text-slate-300 hover:text-white whitespace-nowrap transition-colors cursor-pointer shrink-0 font-sans-clean active:scale-95"
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();

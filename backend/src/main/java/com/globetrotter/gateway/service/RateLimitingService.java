@@ -88,7 +88,7 @@ public class RateLimitingService {
 
     /**
      * Rate limits OTP requests & verifications to max 3 attempts per 5 minutes.
-     * Prevents 4-digit / 6-digit OTP brute-force attacks (Reel 20: 20-Point Auth Armor).
+     * Prevents 4-digit / 6-digit OTP brute-force attacks.
      */
     public boolean tryConsumeOtp(String key) {
         Bucket bucket = otpBuckets.get(key, k ->

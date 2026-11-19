@@ -2,7 +2,7 @@ import React from 'react';
 import { AlertTriangle, RotateCcw, Home } from 'lucide-react';
 
 /**
- * ErrorBoundary: Anti-Silent Failure Defense (Reel 30 - Nata in Data)
+ * ErrorBoundary: Application Runtime Exception Guard
  * Prevents unhandled JavaScript runtime exceptions from crashing the application root into a blank screen.
  * Renders an institutional fallback view with state-preserving recovery actions.
  */

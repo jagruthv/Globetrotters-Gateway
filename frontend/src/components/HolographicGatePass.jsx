@@ -13,7 +13,9 @@ import {
   User, 
   ArrowUpRight,
   Compass,
-  ArrowRight
+  ArrowRight,
+  Sun,
+  X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import QRCode from 'qrcode';
@@ -27,6 +29,7 @@ export default function HolographicGatePass({
   const [isCopied, setIsCopied] = useState(false);
   const [shareToast, setShareToast] = useState(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
+  const [sunlightScanMode, setSunlightScanMode] = useState(false);
 
   const allPasses = React.useMemo(() => {
     const list = [];
@@ -129,10 +132,10 @@ export default function HolographicGatePass({
         : ref;
 
       QRCode.toDataURL(qrPayload, {
-        width: 320,
-        margin: 1,
+        width: 480,
+        margin: 2,
         color: {
-          dark: '#06080D',
+          dark: '#000000',
           light: '#FFFFFF'
         }
       })
@@ -420,7 +423,7 @@ export default function HolographicGatePass({
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-4 rounded-2xl bg-black/50 border border-white/5">
               {/* Real Dynamic QR Box */}
               <div className="flex items-center gap-4">
-                <div className="w-24 h-24 bg-white p-1 rounded-xl flex items-center justify-center shrink-0 shadow-lg overflow-hidden">
+                <div className="w-32 h-32 sm:w-36 sm:h-36 bg-white p-2 rounded-2xl flex items-center justify-center shrink-0 shadow-xl overflow-hidden border border-white/20">
                   {qrCodeDataUrl ? (
                     <img 
                       src={qrCodeDataUrl} 
@@ -431,16 +434,26 @@ export default function HolographicGatePass({
                     <div className="w-full h-full bg-slate-200 rounded-lg" />
                   )}
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1.5">
                   <span className="text-xs font-bold text-white font-sans-clean">
                     Entry QR Code
                   </span>
                   <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean max-w-xs">
-                    Show this QR code at the entrance gate for fast-track entry.
+                    Show this QR code at the entrance turnstile for fast-track entry.
                   </p>
                   <span className="text-[10px] text-amber-300 font-mono font-semibold tracking-wider">
                     Ticket Code: {activePass.reference}
                   </span>
+
+                  <button
+                    type="button"
+                    onClick={() => setSunlightScanMode(true)}
+                    className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-[11px] font-bold transition-all shadow-md cursor-pointer active:scale-95 w-fit"
+                    title="Open high-contrast full-screen QR code for outdoor gate scanning"
+                  >
+                    <Sun className="w-3.5 h-3.5 fill-current" />
+                    <span>Outdoor Scan Mode</span>
+                  </button>
                 </div>
               </div>
 
@@ -536,6 +549,22 @@ export default function HolographicGatePass({
           </div>
         </motion.div>
 
+        {/* Offline Tourist Safety & Emergency Helplines Strip */}
+        <div className="w-full max-w-2xl p-4 rounded-2xl bg-[#0B0F17] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300 font-sans-clean">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="font-semibold text-white">Offline Verified:</span>
+            <span className="text-slate-400">Pass is stored on your device for offline gate turnstiles.</span>
+          </div>
+          <div className="flex items-center gap-3 font-mono text-[11px] text-slate-400">
+            <span className="text-emerald-300">Police: 112</span>
+            <span>•</span>
+            <span className="text-amber-300">Ambulance: 108</span>
+            <span>•</span>
+            <span className="text-teal-300">Tourist Help: 1363</span>
+          </div>
+        </div>
+
         {/* Tourist Trust Proof Points */}
         <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 font-sans-clean text-center">
           <span className="flex items-center gap-1.5">
@@ -555,6 +584,61 @@ export default function HolographicGatePass({
         </div>
 
       </div>
+
+      {/* Outdoor High-Contrast Sunlight Scan Mode Modal */}
+      {sunlightScanMode && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/95 backdrop-blur-md text-slate-950 font-sans-clean select-none">
+          <div className="relative w-full max-w-sm flex flex-col items-center text-center gap-4 p-6 bg-white border-4 border-slate-950 rounded-3xl shadow-2xl">
+            <button
+              onClick={() => setSunlightScanMode(false)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 transition-colors cursor-pointer"
+              aria-label="Close Sunlight Scan Mode"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center gap-1 pt-2">
+              <span className="px-3 py-1 rounded-full bg-slate-950 text-white text-[11px] font-mono font-bold tracking-wider uppercase">
+                Official Gate Turnstile Scan
+              </span>
+              <h3 className="text-xl font-black text-slate-950 mt-1">
+                {activePass.circuitName}
+              </h3>
+              <p className="text-xs text-slate-600 font-medium">
+                Hold phone toward conductor scanner or camera
+              </p>
+            </div>
+
+            {/* Giant Ultra-Crisp High-Contrast QR Code */}
+            <div className="w-64 h-64 bg-white p-3 border-4 border-slate-950 rounded-2xl flex items-center justify-center shadow-lg">
+              {qrCodeDataUrl && (
+                <img
+                  src={qrCodeDataUrl}
+                  alt="High-Contrast Turnstile QR Code"
+                  className="w-full h-full object-contain"
+                />
+              )}
+            </div>
+
+            <div className="flex flex-col items-center gap-1 w-full bg-slate-100 p-3 rounded-2xl border border-slate-300 font-mono">
+              <span className="text-[11px] text-slate-500 font-bold uppercase">Pass Reference</span>
+              <span className="text-lg font-black text-slate-950 tracking-wider">
+                {activePass.reference}
+              </span>
+              <span className="text-xs text-slate-700 font-sans-clean font-semibold">
+                Admit: {activePass.touristName} (1 Adult)
+              </span>
+            </div>
+
+            <button
+              onClick={() => setSunlightScanMode(false)}
+              className="w-full py-3 rounded-2xl bg-slate-950 text-white font-bold text-xs hover:bg-slate-800 transition-colors cursor-pointer shadow-md"
+            >
+              Return to Standard Pass
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

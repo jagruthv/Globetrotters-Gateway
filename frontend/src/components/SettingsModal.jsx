@@ -16,7 +16,7 @@ import { authService } from '../services/api';
 export default function SettingsModal({
   isOpen,
   onClose,
-  onOpenAgentPortal
+  _onOpenAgentPortal
 }) {
   const [soundEnabled, setSoundEnabled] = useState(() => {
     return localStorage.getItem('gt_sound_enabled') !== 'false';
@@ -33,8 +33,6 @@ export default function SettingsModal({
   const [phoneError, setPhoneError] = useState(null);
   const [phoneSuccess, setPhoneSuccess] = useState(null);
   const [resendTimer, setResendTimer] = useState(30);
-
-  const isAgent = typeof window !== 'undefined' && localStorage.getItem('globetrotter_is_agent') === 'true';
 
   useEffect(() => {
     const handleAuth = () => {
@@ -388,34 +386,6 @@ export default function SettingsModal({
                   />
                 </button>
               </div>
-            </div>
-
-            {/* AGENT MODE */}
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between">
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-white font-sans-clean">Agent Mode</span>
-                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-mono font-semibold ${
-                    isAgent
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
-                  }`}>
-                    {isAgent ? 'Active' : 'Off'}
-                  </span>
-                </div>
-                <span className="text-[11px] text-slate-400 font-sans-clean">
-                  Ticket scanning for gate conductors & verified staff
-                </span>
-              </div>
-              <button
-                onClick={() => {
-                  onClose();
-                  if (onOpenAgentPortal) onOpenAgentPortal();
-                }}
-                className="px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-all shadow-sm cursor-pointer font-sans-clean active:scale-95"
-              >
-                {isAgent ? 'Open Agent Mode' : 'Switch to Agent Mode'}
-              </button>
             </div>
 
             {/* Footer */}

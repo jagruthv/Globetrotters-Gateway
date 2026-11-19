@@ -642,7 +642,9 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                         <h4 className="text-sm font-bold text-white font-sans-clean mt-1">
                           {langContent.title}
                         </h4>
-                        <p className="text-xs text-slate-300 font-sans-clean line-clamp-2 leading-relaxed">
+                        <p className={`text-xs text-slate-300 font-sans-clean leading-relaxed transition-all ${
+                          isSelected ? 'mt-1 text-slate-200' : 'line-clamp-2'
+                        }`}>
                           {langContent.narrative}
                         </p>
                       </div>

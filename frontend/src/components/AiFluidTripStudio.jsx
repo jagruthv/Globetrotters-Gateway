@@ -801,7 +801,7 @@ export default function AiFluidTripStudio({
                     className="px-4 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-white font-semibold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Fine-Tune with Gemini</span>
+                    <span>Customize Itinerary</span>
                   </button>
 
                   {onOpenAssistant && (

@@ -12,7 +12,7 @@ import java.util.HexFormat;
 
 /**
  * TokenBlacklistService — in-memory revocation list for invalidated JWTs.
- * Enforces Rule 11 (Session Revocation on Logout) from the 20-Point Authentication Armor (Reel 20).
+ * Enforces session revocation on logout.
  * Stores SHA-256 hashes of revoked tokens with 24-hour TTL automatic eviction.
  */
 @Service

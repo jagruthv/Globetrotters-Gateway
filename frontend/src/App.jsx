@@ -93,7 +93,7 @@ export default function App() {
           // Strictly purge any obsolete demo pass!
           const clean = list.filter(p => 
             p && 
-            p.reference !== 'BMS-GT-89421' && 
+            p.reference !== 'GT-PASS-DEMO' && 
             !p.token?.includes('e3b0c442')
           );
           if (clean.length !== list.length) {

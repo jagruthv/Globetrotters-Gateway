@@ -14,17 +14,13 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * CrowdAnalyticsService — Research-grade visitor dynamics & queue simulation engine.
+ * CrowdAnalyticsService — Monument visitor forecast and crowd estimator.
  *
- * Implements a time-varying Inhomogeneous Poisson Arrival Model with Gaussian diurnal intensity:
- *   λ(t) = λ_base + (λ_peak - λ_base) * exp(-(t - μ_peak)^2 / (2 * σ^2)) * ω_day
- *
- * Calculates:
- *  - Instantaneous concurrent visitor headcount at any hour of any day
- *  - Occupancy % relative to environmental carrying capacity
- *  - Physical ticket counter queue wait times (Kingman's approximation)
- *  - Fast-track bypass time savings with Globetrotter HMAC QR passes
- *  - 24-hour diurnal busyness profile (Google Popular Times equivalent)
+ * Estimates visitor levels by time of day based on monument visiting hours,
+ * weekend patterns, and popular visiting windows:
+ *  - Estimated crowd status (Serene, Moderate, Busy, Peak)
+ *  - Recommended visiting hours for lower crowds
+ *  - 24-hour diurnal busyness profile to help tourists plan their arrival
  */
 @Service
 @Slf4j
