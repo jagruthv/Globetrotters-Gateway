@@ -531,6 +531,28 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
     return b.elevationMeters - a.elevationMeters;
   });
 
+  // Check if any travel leg between consecutive spots is > 150 km
+  let hasLongTransitLeg = false;
+  for (let i = 0; i < orderedRoute.length - 1; i++) {
+    const p1 = resolveSpotCoordinates(orderedRoute[i]);
+    const p2 = resolveSpotCoordinates(orderedRoute[i + 1]);
+    const legDist = haversineDistance(p1.lat, p1.lng, p2.lat, p2.lng) * 1.3;
+    if (legDist > 150) {
+      hasLongTransitLeg = true;
+      break;
+    }
+  }
+
+  // Mandatory Density Law: At least 2 locations per day unless consecutive spots are > 150 km apart
+  if (!hasLongTransitLeg && totalCount >= 2) {
+    const maxDensityDays = Math.max(1, Math.floor(totalCount / 2));
+    if (targetDays > maxDensityDays) {
+      targetDays = maxDensityDays;
+      daysAdjustedForSafety = true;
+      safetyNotice = `Optimized into ${targetDays} day(s) covering at least 2 locations per day so your trip remains active and engaging.`;
+    }
+  }
+
   // 4. Partition spots across targetDays buckets without dropping a single destination
   const dayBuckets = Array.from({ length: targetDays }, () => []);
   const baseCount = Math.floor(totalCount / targetDays);
@@ -673,9 +695,15 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
       currentMinutes += dwell;
       const departureTimeStr = formatTime12h(currentMinutes);
 
+      const isEarlyEntry = currentMinutes <= (7 * 60 + 30) || (spot.name || '').toLowerCase().includes('sunrise') || (spot.name || '').toLowerCase().includes('vanjangi');
+      const timeSlotDisplay = isEarlyEntry 
+        ? `Early Entry: ${arrivalTimeStr} – ${departureTimeStr}` 
+        : `${arrivalTimeStr} – ${departureTimeStr}`;
+
       const legData = {
-        slot: spotIdx === 0 ? 'Morning Visit' : spotIdx === 1 ? 'Midday Exploration' : spotIdx === 2 ? 'Afternoon Sightseeing' : 'Evening Highlights',
-        timeWindow: `${arrivalTimeStr} – ${departureTimeStr}`,
+        slot: isEarlyEntry ? 'Early Entry • Dawn Sunrise' : spotIdx === 0 ? 'Morning Visit' : spotIdx === 1 ? 'Midday Exploration' : spotIdx === 2 ? 'Afternoon Sightseeing' : 'Evening Highlights',
+        timeWindow: timeSlotDisplay,
+        isEarlyEntry,
         arrivalTime: arrivalTimeStr,
         departureTime: departureTimeStr,
         dwellMinutes: dwell,
@@ -691,7 +719,8 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
         name: spot.name,
         spotName: spot.name,
         timings: spot.timings || `${spot.openingTime || '09:00 AM'} – ${spot.closingTime || '06:00 PM'}`,
-        timeSlot: `${arrivalTimeStr} – ${departureTimeStr}`,
+        timeSlot: timeSlotDisplay,
+        isEarlyEntry,
         arrivalTime: arrivalTimeStr,
         departureTime: departureTimeStr,
         dwellMinutes: dwell,

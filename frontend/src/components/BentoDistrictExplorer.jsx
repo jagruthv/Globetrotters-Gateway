@@ -102,6 +102,14 @@ const TRAVELER_THEMES = [
     matcher: () => true,
   },
   { 
+    id: 'culinary', 
+    label: 'Food & GI Trails', 
+    Icon: Utensils,
+    image: '/images/telangana/hyderabad.jpg',
+    count: 646,
+    matcher: (s) => Boolean(s.culinarySpecialty || s.authentic_purchases),
+  },
+  { 
     id: 'unesco', 
     label: 'UNESCO & Heritage', 
     Icon: Award,
@@ -521,7 +529,7 @@ export default function BentoDistrictExplorer({
               aria-label="Search district, spot, or temple"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search district, spot, temple..."
+              placeholder="Search district, spot, temple, or local food (e.g. biryani, halwa)..."
               autoComplete="off"
               spellCheck={false}
               className="w-full h-11 pl-11 pr-4 rounded-full bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400/50 transition-colors"
@@ -876,6 +884,12 @@ export default function BentoDistrictExplorer({
                   <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">
                     {hoveredMapDistrict.spots[0]?.description || 'Historic monuments, scenic views, and cultural landmarks.'}
                   </p>
+                  {hoveredMapDistrict.spots[0]?.culinarySpecialty && (
+                    <p className="text-[10px] text-amber-200/90 font-sans-clean mt-1.5 truncate flex items-center gap-1">
+                      <Utensils className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                      <span className="truncate">{hoveredMapDistrict.spots[0].culinarySpecialty}</span>
+                    </p>
+                  )}
                   <div className="mt-2 text-[10px] text-emerald-400 font-mono">
                     Tap district to view all sights & travel guide →
                   </div>
@@ -1022,6 +1036,16 @@ export default function BentoDistrictExplorer({
                           {activeSpot.description || 'Famous temples, waterfalls, hill views, and historic monuments.'}
                         </p>
                       </div>
+
+                      {/* Authentic Culinary Specialty Highlight */}
+                      {activeSpot.culinarySpecialty && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/[0.06] border border-amber-500/15 text-[11px] text-amber-200/90 font-sans-clean">
+                          <Utensils className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                          <span className="truncate">
+                            <strong className="text-amber-300 font-semibold">Specialty:</strong> {activeSpot.culinarySpecialty}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Prominent Sights Preview: Matched spots on search, or top sights on default view */}
                       <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/5 text-xs">

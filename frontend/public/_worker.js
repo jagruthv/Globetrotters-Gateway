@@ -172,12 +172,14 @@ Spot ${idx + 1}: ${p.name}
 Your goal is to create an authentic, chronologically sound, topographically optimal multi-day itinerary.
 
 CRITICAL TIMING & SCHEDULING LAWS:
-1. Every stop on each day MUST have a distinct, chronologically advancing time slot. NEVER repeat the same arrival time across multiple stops.
-   - The first stop of the day must start in the morning (e.g. 08:30 AM or 09:00 AM).
+1. DAILY DESTINATION DENSITY: Every day in the trip MUST cover at least 2 locations, unless two locations are more than 150km apart (in which case a single destination with travel transit is allowed). Never plan a day with only 1 destination if places are within 150km of each other.
+2. EARLY ENTRY: If a destination has an early morning sunrise window (e.g. 05:30 AM – 08:30 AM like Gandikota sunrise or Vanjangi cloud hills), explicitly label its time slot or note as "Early Entry: [time]" so tourists know to arrive before normal gate hours.
+3. Every stop on each day MUST have a distinct, chronologically advancing time slot. NEVER repeat the same arrival time across multiple stops.
+   - For early entry stops, start at 05:30 AM or 06:00 AM. For normal stops, start in the morning (08:30 AM or 09:00 AM).
    - Subsequent stops must advance forward by realistic drive time + dwell time (e.g. Stop 1: 09:00 AM – 10:30 AM; Stop 2: 11:15 AM – 12:45 PM; Lunch break: 01:00 PM – 02:00 PM; Stop 3: 02:30 PM – 04:15 PM; Stop 4 / Sunset: 04:45 PM – 06:15 PM).
-2. Schedule stops strictly within their Operating Hours (Opening Time to Closing Time).
-3. Align viewpoints, lakes, and beaches with their Best Time to Visit (Golden Hour or Sunset).
-4. Include authentic regional meal halts with verified culinary specialties.
+4. Schedule stops strictly within their Operating Hours (Opening Time to Closing Time).
+5. Align viewpoints, lakes, and beaches with their Best Time to Visit (Golden Hour or Sunset).
+6. Include authentic regional meal halts with verified culinary specialties.
 
 CRITICAL FORMAT: Return ONLY valid raw JSON conforming strictly to this schema:
 {
@@ -300,6 +302,8 @@ Your agent capabilities (Tools):
    - "none": For general conversational inquiries.
 
 Platform Rules:
+- Daily Destination Density: Every day MUST cover at least 2 locations unless two locations are more than 150km apart.
+- Early Entry: If an attraction has early morning sunrise hours (e.g. 05:30 AM), designate it clearly as "Early Entry".
 - Physical road speeds: 40-50 km/h in ghat/hilly terrain (Araku, Srisailam), 65 km/h on national highways.
 - Maximum 5 stops per day to avoid traveler exhaustion.
 - Entry gates close by 5:00 PM for caves and forest sanctuaries.
@@ -441,7 +445,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
                   contents: [{ parts: contentsParts }],
                   systemInstruction: {
                     parts: [{
-                      text: body.systemInstruction || "You are the Globetrotter Gateway Live Cultural Voice & Vision Concierge for Andhra Pradesh and Telangana. You provide concise, real-time, authentic travel intelligence across all 59 districts, monuments, heritage circuits, and local culture. Speak naturally like an engaging expert local guide. If an image is provided from the live camera, observe what is shown and provide vivid cultural context. Keep responses natural, concise (2-4 sentences for easy voice listening), and never give robotic disclaimer filler."
+                      text: body.systemInstruction || "You are the Globetrotter Gateway Live Cultural Voice & Vision Concierge for Andhra Pradesh and Telangana. You provide concise, real-time, authentic travel intelligence across all 59 districts, monuments, heritage circuits, and local culture. Speak naturally like an engaging expert local guide. When advising on itineraries, ensure at least 2 locations are scheduled per day unless destinations are more than 150km apart, and mark dawn visits as Early Entry. If an image is provided from the live camera, observe what is shown and provide vivid cultural context. Keep responses natural, concise (2-4 sentences for easy voice listening), and never give robotic disclaimer filler."
                     }]
                   },
                   generationConfig: {
