@@ -35,7 +35,6 @@ const HERO_DESTINATIONS = [
     authority: 'Andhra Pradesh Tourism (APTDC)',
     highlights: 'Million-Year Stalactite Formations, Gosthani River Gorge, Araku Coffee Stalls',
     bestHours: '10:00 AM – 04:30 PM (Cavern Floodlights)',
-    audioTourPrice: 39,
     rating: 'APTDC Geo-Heritage Caverns',
     advisory: 'CAVERN NOTICE: Interior pathway is damp limestone; wear non-slip shoes. Gate ticket is ₹40 per visitor.',
     foodTip: 'Araku bamboo chicken and freshly brewed valley coffee.',
@@ -57,7 +56,6 @@ const HERO_DESTINATIONS = [
     authority: 'AP Tourism & Historic Fort',
     highlights: '300ft Penna River Sandstone Gorge, Fort Ramparts, Raghunatha Temple',
     bestHours: '05:30 AM – 08:30 AM (Sunrise Viewpoint)',
-    audioTourPrice: 29,
     rating: 'Penna River Sandstone Gorge',
     earlyEntry: true,
     earlyEntryTime: '05:30 AM',
@@ -81,7 +79,6 @@ const HERO_DESTINATIONS = [
     authority: 'UNESCO & Archaeological Survey of India',
     highlights: 'Kakatiya Sandbox Foundations, Floating Brick Shikhara, Basalt Sculptures',
     bestHours: '06:00 AM – 11:30 AM (Morning Darshan & Architecture)',
-    audioTourPrice: 29,
     rating: 'UNESCO World Heritage • 1213 AD',
     earlyEntry: true,
     earlyEntryTime: '06:00 AM',
@@ -105,7 +102,6 @@ const HERO_DESTINATIONS = [
     authority: 'Telangana Tourism & ASI Heritage',
     highlights: '1591 AD Qutb Shahi Minarets, Laad Bazaar Lac Bangles, Nimrah Irani Chai',
     bestHours: '05:00 PM – 10:30 PM (Evening Illumination)',
-    audioTourPrice: 29,
     rating: 'ASI Protected Monument',
     advisory: 'STREET ADVISORY: Purchase pearls and bangles from certified jewelers inside the bazaar to ensure authentic hallmarks.',
     foodTip: 'Irani chai with Osmania biscuits at Nimrah Cafe.',
@@ -127,7 +123,6 @@ const HERO_DESTINATIONS = [
     authority: 'Archaeological Survey of India (ASI)',
     highlights: 'Fateh Darwaza Acoustic Clapping Arch, Royal Domes, Sound & Light Show',
     bestHours: '09:00 AM – 05:30 PM (Daily Gate Timings)',
-    audioTourPrice: 39,
     rating: 'ASI National Citadel',
     advisory: 'GATE NOTICE: Official ₹25 entry ticket required at the gate. Sound & light evening show requires a separate ₹60 counter ticket.',
     foodTip: 'Hyderabadi dum biryani near the outer fort gates.',
@@ -300,7 +295,7 @@ export default function FluidLiquidDropHero({
                   >
                     {HERO_DESTINATIONS.map((d) => (
                       <option key={d.id} value={d.id} className="bg-[#0B0F17] text-white">
-                        {d.name} ({d.isTicketed ? `₹${d.groundRate}` : 'Free'})
+                        {d.name}
                       </option>
                     ))}
                   </select>
