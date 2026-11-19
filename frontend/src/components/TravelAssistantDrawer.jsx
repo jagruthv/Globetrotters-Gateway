@@ -77,6 +77,7 @@ export default function TravelAssistantDrawer({
   const [inputQuery, setInputQuery] = useState('');
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [activeModelName, setActiveModelName] = useState('Gemini 3.1 Flash Lite');
   const chatBottomRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -343,6 +344,9 @@ export default function TravelAssistantDrawer({
       if (response.ok) {
         const data = await response.json();
         aiText = data.reply || data.response || data.message || "I've handled that for your journey across Andhra Pradesh and Telangana!";
+        if (data.model) {
+          setActiveModelName(data.model);
+        }
       } else {
         throw new Error('Edge worker unavailable');
       }
@@ -448,7 +452,7 @@ export default function TravelAssistantDrawer({
                 <div className="flex items-center gap-2">
                   <h2 className="text-sm font-bold text-white tracking-tight">Travel Assistant</h2>
                   <span className="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-semibold font-mono">
-                    Regional Guide
+                    {activeModelName}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 truncate max-w-[240px]">

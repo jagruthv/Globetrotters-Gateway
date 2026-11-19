@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Sparkles, 
   CheckCircle, 
   Share2, 
   Download, 
@@ -20,7 +19,6 @@ import {
   FileText,
   Printer
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import QRCode from 'qrcode';
 
 export default function HolographicGatePass({ 
@@ -29,8 +27,6 @@ export default function HolographicGatePass({
   onExplorePackages,
   onPlanTrip
 }) {
-  const [isCopied, setIsCopied] = useState(false);
-  const [shareToast, setShareToast] = useState(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [sunlightScanMode, setSunlightScanMode] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -151,22 +147,6 @@ export default function HolographicGatePass({
     }
   }, [activePass?.reference, activePass?.token]);
 
-  const handleCopyShareLink = () => {
-    if (!activePass) return;
-    const shareUrl = `${window.location.origin}/#pass=${encodeURIComponent(activePass.reference)}`;
-    const shareText = `Official Entry Pass for ${activePass.circuitName}\nBooking ID: ${activePass.reference}\nView Digital Pass: ${shareUrl}`;
-    
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(shareText);
-      setIsCopied(true);
-      setShareToast('Pass link copied! Open on your mobile phone for gate entry.');
-      setTimeout(() => {
-        setIsCopied(false);
-        setShareToast(null);
-      }, 3500);
-    }
-  };
-
   const handleShareWhatsApp = () => {
     if (!activePass) return;
     const shareUrl = `${window.location.origin}/#pass=${encodeURIComponent(activePass.reference)}`;
@@ -174,15 +154,6 @@ export default function HolographicGatePass({
       `*Official Entry Pass - Globetrotter Gateway*\n\nTour: ${activePass.circuitName}\nTraveler: ${activePass.touristName}\nBooking ID: ${activePass.reference}\n\nDigital QR pass verification across Andhra Pradesh and Telangana.\nOpen your pass: ${shareUrl}`
     );
     window.open(`https://api.whatsapp.com/send?text=${shareText}`, '_blank');
-  };
-
-  const handleCelebrate = () => {
-    confetti({
-      particleCount: 90,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#00F2FE', '#05D59E', '#F59E0B']
-    });
   };
 
   // ── Render Tax Invoice Modal ────────────────────────────────────────────────
@@ -531,13 +502,6 @@ export default function HolographicGatePass({
           </p>
         </div>
 
-        {shareToast && (
-          <div className="print:hidden px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 font-sans-clean animate-in fade-in">
-            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{shareToast}</span>
-          </div>
-        )}
-
         {/* Multi-Pass Switcher (When traveler holds multiple passes) */}
         {allPasses.length > 1 && (
           <div className="print:hidden flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none w-full max-w-2xl px-2">
@@ -801,11 +765,11 @@ export default function HolographicGatePass({
               </button>
             </div>
 
-            {/* Social Sharing & Promotion Actions Bar */}
-            <div className="print:hidden pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+            {/* Clean Action Controls */}
+            <div className="print:hidden pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2.5">
               <div className="flex items-center gap-2">
-                {/* Digital Pass Share Button */}
                 <button
+                  type="button"
                   onClick={handleShareWhatsApp}
                   className="px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer font-sans-clean"
                   title="Share your digital pass with family or friends"
@@ -815,16 +779,6 @@ export default function HolographicGatePass({
                   <ArrowUpRight className="w-3 h-3 text-emerald-400" />
                 </button>
 
-                {/* Copy Link */}
-                <button
-                  onClick={handleCopyShareLink}
-                  className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer font-sans-clean"
-                >
-                  {isCopied ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
-                  <span>{isCopied ? 'Copied!' : 'Copy Ticket Info'}</span>
-                </button>
-
-                {/* Tax Receipt Button */}
                 <button
                   type="button"
                   onClick={() => setSelectedReceiptPass(activePass)}
@@ -832,31 +786,22 @@ export default function HolographicGatePass({
                   title="View itemized GST tax invoice and receipt"
                 >
                   <FileText className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Tax Receipt</span>
+                  <span>Tax Invoice</span>
                 </button>
               </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleCelebrate}
-                  className="px-3.5 py-2 rounded-xl bg-amber-400 text-slate-950 font-bold text-xs hover:bg-amber-300 transition-colors flex items-center gap-1.5 shadow-md cursor-pointer font-sans-clean"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Official Stamp</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    document.title = `Globetrotter-Gate-Pass-${activePass.reference}`;
-                    window.print();
-                  }}
-                  className="px-3.5 py-2 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/30 text-amber-300 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer font-sans-clean shadow-sm"
-                  title="Download clean printable PDF pass receipt"
-                >
-                  <Download className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Download PDF Receipt</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  document.title = `Globetrotter-Gate-Pass-${activePass.reference}`;
+                  window.print();
+                }}
+                className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer font-sans-clean shadow-sm"
+                title="Download or print entry pass voucher"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-950" />
+                <span>Save Pass (PDF)</span>
+              </button>
             </div>
 
             {/* Print-Only Gate Scanner Instruction Footnote */}
@@ -869,37 +814,19 @@ export default function HolographicGatePass({
         </motion.div>
 
         {/* Offline Tourist Safety & Emergency Helplines Strip */}
-        <div className="print:hidden w-full max-w-2xl p-4 rounded-2xl bg-[#0B0F17] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300 font-sans-clean">
+        <div className="print:hidden w-full max-w-2xl p-3.5 rounded-2xl bg-[#0B0F17] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300 font-sans-clean">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="font-semibold text-white">Offline Verified:</span>
-            <span className="text-slate-400">Pass is stored on your device for offline gate turnstiles.</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+            <span className="font-semibold text-white">Offline Scannable:</span>
+            <span className="text-slate-400">Pass is saved locally on your phone for offline gates.</span>
           </div>
-          <div className="flex items-center gap-3 font-mono text-[11px] text-slate-400">
-            <span className="text-emerald-300">Police: 112</span>
+          <div className="flex items-center gap-2.5 font-mono text-[11px] text-slate-400">
+            <span className="text-emerald-300">112 (Police)</span>
             <span>•</span>
-            <span className="text-amber-300">Ambulance: 108</span>
+            <span className="text-amber-300">108 (Ambulance)</span>
             <span>•</span>
-            <span className="text-teal-300">Tourist Help: 1363</span>
+            <span className="text-teal-300">1363 (Tourism)</span>
           </div>
-        </div>
-
-        {/* Tourist Trust Proof Points */}
-        <div className="print:hidden flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400 font-sans-clean text-center">
-          <span className="flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-            Direct QR Entry at All Gates
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-            100% Offline Scannable
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-            Zero Markup Official Fare
-          </span>
         </div>
 
       </div>

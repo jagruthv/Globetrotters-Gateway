@@ -41,10 +41,10 @@ public class AiModelRouterService {
     @Value("${app.ai.gemini.api-key:}")
     private String geminiApiKey;
 
-    @Value("${app.ai.gemini.model:gemini-3.5-flash-lite}")
+    @Value("${app.ai.gemini.model:gemini-3.1-flash-lite}")
     private String geminiPrimaryModel;
 
-    @Value("${app.ai.gemini.reasoning-model:gemini-3.5-flash-lite}")
+    @Value("${app.ai.gemini.reasoning-model:gemini-3.1-flash-lite}")
     private String geminiReasoningModel;
 
     @Value("${app.ai.gemini.fallback-model:gemini-2.5-flash-lite}")
@@ -95,10 +95,12 @@ public class AiModelRouterService {
      * - gemini-decision-1: 200 RPM / 10,000 RPD -> Safe: 180 RPM, 9,500 RPD
      */
     private static final Map<String, QuotaLimits> MODEL_QUOTAS = Map.of(
-            "gemini-4-hydrogen", new QuotaLimits(4, 18),
+            "gemini-3.1-flash-lite", new QuotaLimits(30, 500),
+            "gemini-2.5-flash-lite", new QuotaLimits(30, 500),
             "gemini-3.8-flash", new QuotaLimits(12, 450),
             "gemini-3.5-flash-lite", new QuotaLimits(25, 480),
-            "gemini-decision-1", new QuotaLimits(180, 9500)
+            "gemini-decision-1", new QuotaLimits(180, 9500),
+            "gemini-4-hydrogen", new QuotaLimits(4, 18)
     );
 
     private static class ModelUsageTracker {
@@ -582,20 +584,20 @@ public class AiModelRouterService {
         List<ModelCandidate> list = new ArrayList<>();
 
         // Priority #1: Google Gemini Free-Tier Compliant Models
-        // Strict hierarchy: gemini-3.8-flash (Everyday) -> gemini-3.5-flash-lite (High-Volume) -> gemini-decision-1 (Fast) -> gemini-4-hydrogen (Complex Reasoning)
+        // Strict hierarchy: gemini-3.1-flash-lite (Primary) -> gemini-2.5-flash-lite -> gemini-decision-1 (Fast) -> gemini-4-hydrogen (Complex Reasoning)
         if (geminiApiKey != null && !geminiApiKey.isBlank()) {
             String primaryModel = (geminiPrimaryModel != null && !geminiPrimaryModel.isBlank())
-                    ? geminiPrimaryModel : "gemini-3.8-flash";
+                    ? geminiPrimaryModel : "gemini-3.1-flash-lite";
             list.add(new ModelCandidate(primaryModel, "gemini"));
 
             if (geminiFallbackModel != null && !geminiFallbackModel.isBlank() && !geminiFallbackModel.equals(primaryModel)) {
                 list.add(new ModelCandidate(geminiFallbackModel, "gemini"));
             }
-            if (!list.stream().anyMatch(c -> c.id.equals("gemini-3.8-flash"))) {
-                list.add(new ModelCandidate("gemini-3.8-flash", "gemini"));
+            if (!list.stream().anyMatch(c -> c.id.equals("gemini-3.1-flash-lite"))) {
+                list.add(new ModelCandidate("gemini-3.1-flash-lite", "gemini"));
             }
-            if (!list.stream().anyMatch(c -> c.id.equals("gemini-3.5-flash-lite"))) {
-                list.add(new ModelCandidate("gemini-3.5-flash-lite", "gemini"));
+            if (!list.stream().anyMatch(c -> c.id.equals("gemini-2.5-flash-lite"))) {
+                list.add(new ModelCandidate("gemini-2.5-flash-lite", "gemini"));
             }
             if (!list.stream().anyMatch(c -> c.id.equals("gemini-decision-1"))) {
                 list.add(new ModelCandidate("gemini-decision-1", "gemini"));

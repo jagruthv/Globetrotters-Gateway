@@ -123,9 +123,9 @@ app:
   ai:
     gemini:
       api-key: ${GEMINI_API_KEY:}
-      model: ${GEMINI_MODEL:gemini-3.8-flash}
-      reasoning-model: ${GEMINI_REASONING_MODEL:gemini-4-hydrogen}
-      fallback-model: ${GEMINI_FALLBACK_MODEL:gemini-3.5-flash-lite}
+      model: ${GEMINI_MODEL:gemini-3.1-flash-lite}
+      reasoning-model: ${GEMINI_REASONING_MODEL:gemini-3.1-flash-lite}
+      fallback-model: ${GEMINI_FALLBACK_MODEL:gemini-2.5-flash-lite}
     groq:
       api-key: ${GROQ_API_KEY:}
       flagship-model: ${GROQ_FLAGSHIP_MODEL:openai/gpt-oss-120b}
