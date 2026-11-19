@@ -29,6 +29,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
   const [emailOtpStep, setEmailOtpStep] = useState('input_email'); // 'input_email' | 'input_otp'
   const [enteredEmailOtp, setEnteredEmailOtp] = useState('');
   const [emailResendTimer, setEmailResendTimer] = useState(60);
+  const [emailDevCode, setEmailDevCode] = useState(null);
 
   // ── Password Login State ───────────────────────────────────────────────────
   const [email, setEmail] = useState('');
@@ -40,6 +41,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
   const [phoneOtpStep, setPhoneOtpStep] = useState('input_phone');
   const [enteredPhoneOtp, setEnteredPhoneOtp] = useState('');
   const [phoneResendTimer, setPhoneResendTimer] = useState(60);
+  const [phoneDevCode, setPhoneDevCode] = useState(null);
 
   // ── Status State ───────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(false);
@@ -56,8 +58,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
       setSuccessMsg(null);
       setEmailOtpStep('input_email');
       setEnteredEmailOtp('');
+      setEmailDevCode(null);
       setPhoneOtpStep('input_phone');
       setEnteredPhoneOtp('');
+      setPhoneDevCode(null);
     }, 700);
   }, [onAuthSuccess, onClose]);
 
@@ -169,7 +173,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
     setLoading(true);
 
     try {
-      await authService.sendEmailOtp(clean);
+      const res = await authService.sendEmailOtp(clean);
+      if (res?.devCode) setEmailDevCode(res.devCode);
       setEmailOtpStep('input_otp');
       setEmailResendTimer(60);
       setLoading(false);
@@ -240,7 +245,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
     logger.info('AUTH', `Dispatching mobile OTP to +91 ${clean}`);
 
     try {
-      await authService.sendMobileOtp(clean);
+      const res = await authService.sendMobileOtp(clean);
+      if (res?.devCode) setPhoneDevCode(res.devCode);
       setPhoneOtpStep('input_otp');
       setPhoneResendTimer(60);
       setLoading(false);
@@ -530,6 +536,15 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                           <p className="text-[11px] text-slate-400 text-center">
                             Check your inbox for the code sent to <strong className="text-slate-200">{emailForOtp}</strong>
                           </p>
+                          {emailDevCode && (
+                            <button
+                              type="button"
+                              onClick={() => setEnteredEmailOtp(emailDevCode)}
+                              className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-300 text-[11px] font-mono hover:bg-amber-400/20 transition-colors mx-auto cursor-pointer"
+                            >
+                              <span>Testing Code: <strong>{emailDevCode}</strong> (Tap to fill)</span>
+                            </button>
+                          )}
                         </div>
 
                         <button
@@ -628,6 +643,19 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                               className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg font-mono tracking-widest text-center focus:outline-none focus:border-emerald-400 transition-colors"
                             />
                           </div>
+
+                          <p className="text-[11px] text-slate-400 text-center">
+                            SMS sent to <strong className="text-slate-200">+91 {phoneNumber}</strong>
+                          </p>
+                          {phoneDevCode && (
+                            <button
+                              type="button"
+                              onClick={() => setEnteredPhoneOtp(phoneDevCode)}
+                              className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-[11px] font-mono hover:bg-emerald-400/20 transition-colors mx-auto cursor-pointer"
+                            >
+                              <span>Testing Code: <strong>{phoneDevCode}</strong> (Tap to fill)</span>
+                            </button>
+                          )}
                         </div>
 
                         <button

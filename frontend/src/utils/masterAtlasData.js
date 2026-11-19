@@ -16,3 +16,5 @@ export const MASTER_ATLAS_DATA = {
   andhraPradesh: ANDHRA_PRADESH_ATLAS,
   telangana: TELANGANA_ATLAS
 };
+
+export default MASTER_ATLAS_DATA;

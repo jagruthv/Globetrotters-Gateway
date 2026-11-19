@@ -55,13 +55,13 @@ export default function PaymentProcessingModal({
     }
   }
 
-  const completeBooking = useCallback(async (paymentMethod = 'PAID_ONLINE') => {
+  const completeBooking = useCallback(async (paymentMethod = 'PAID_ONLINE', customRefNumber = null) => {
     const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
     const destinations = bookingDetails?.destinations || ['Cultural Heritage Gate'];
     const circuitName = bookingDetails?.circuitName || 'Official Monument Pass';
     const touristName = bookingDetails?.touristName || 'Verified Visitor';
     const numTourists = bookingDetails?.touristCount || 1;
-    const refNumber = `GT-${new Date().getFullYear()}-${randomCode}`;
+    const refNumber = customRefNumber || `GT-${new Date().getFullYear()}-${randomCode}`;
     const today = new Date().toISOString().split('T')[0];
 
     // Generate real cryptographic HMAC-SHA256 signed pass token
@@ -147,7 +147,7 @@ export default function PaymentProcessingModal({
       customerPhone: bookingDetails?.touristPhone || '',
       onSuccess: () => {
         setIsPayingWithRazorpay(false);
-        completeBooking('PAID_ONLINE');
+        completeBooking('PAID_ONLINE', refNumber);
       },
       onError: (err) => {
         setIsPayingWithRazorpay(false);

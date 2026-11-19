@@ -60,9 +60,9 @@ export default function FloatingIslandNav({
   const navItems = [
     { id: 'home', label: 'Overview', icon: Compass },
     { id: 'explore', label: '59 Districts', icon: Map },
-    { id: 'planner', label: 'Tour Planner', icon: Layers, badge: selectedPlacesCount > 0 ? selectedPlacesCount : null },
-    { id: 'circuits', label: 'Tour Packages', icon: Layers },
-    { id: 'passes', label: 'Entry Passes', icon: Ticket }
+    { id: 'planner', label: 'Planner', icon: Layers, badge: selectedPlacesCount > 0 ? selectedPlacesCount : null },
+    { id: 'circuits', label: 'Packages', icon: Layers },
+    { id: 'passes', label: 'Passes', icon: Ticket }
   ];
 
   return (
@@ -73,23 +73,18 @@ export default function FloatingIslandNav({
         {/* Brand Emblem */}
         <div 
           onClick={() => setActiveTab('home')}
-          className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group pl-1 sm:pl-2 shrink-0"
+          className="flex items-center gap-2 cursor-pointer group pl-1.5 shrink-0"
         >
           <div className="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-400/30 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0">
             <span className="font-display font-bold text-sm text-amber-400 tracking-wider">G</span>
           </div>
-          <div className="flex flex-col">
-            <span className="font-display font-bold tracking-wider text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors">
-              GLOBETROTTER
-            </span>
-            <span className="text-[9px] tracking-wide text-slate-400 font-medium font-sans-clean hidden sm:block">
-              Andhra & Telangana Gateway
-            </span>
-          </div>
+          <span className="font-display font-bold tracking-wider text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors">
+            GLOBETROTTER
+          </span>
         </div>
 
-        {/* Center Nav Links with Shared Layout (Visible on desktop >= 1280px; collapses into hamburger on split-screen/tablet) */}
-        <div className="hidden xl:flex items-center gap-1 shrink-0">
+        {/* Center Nav Links with Shared Layout (Visible on desktop >= 1024px; collapses into hamburger on smaller screens) */}
+        <div className="hidden lg:flex items-center gap-1 shrink-0">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -97,7 +92,7 @@ export default function FloatingIslandNav({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`relative px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors duration-200 flex items-center gap-2 cursor-pointer ${
+                className={`relative px-3 py-1.5 rounded-full text-xs font-semibold transition-colors duration-200 flex items-center gap-1.5 cursor-pointer ${
                   isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -120,19 +115,8 @@ export default function FloatingIslandNav({
           })}
         </div>
 
-        {/* Right Action: Settings & Auth Button */}
+        {/* Right Action: Tourist Safety & Auth Button */}
         <div className="flex items-center gap-1.5 sm:gap-2 pr-1 shrink-0">
-          {/* Ask Travel Assistant Button */}
-          <button
-            type="button"
-            onClick={onOpenAssistant}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 border border-emerald-500/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 text-xs font-semibold transition-all cursor-pointer shadow-sm shrink-0"
-            title="Ask Travel Assistant (Ctrl+K)"
-          >
-            <Sparkles className="w-3.5 h-3.5 fill-emerald-400/30 text-emerald-400" />
-            <span className="hidden md:inline">Assistant</span>
-          </button>
-
           {/* Tourist Safety & Emergency Helplines Button */}
           <button
             type="button"
@@ -144,31 +128,19 @@ export default function FloatingIslandNav({
             <ShieldCheck className="w-3.5 h-3.5" />
           </button>
 
-          {/* Settings & Preferences Button */}
-          <button
-            onClick={onOpenSettings}
-            className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
-            title="Settings & Preferences"
-            aria-label="Settings"
-          >
-            <Settings className="w-3.5 h-3.5" />
-          </button>
-
-          {/* User Sign In / Account Button */}
+          {/* User Sign In / Account Avatar - No bulky text greeting */}
           {currentUser ? (
-            <div className="flex items-center gap-1.5 pl-1 shrink-0">
+            <div className="flex items-center gap-1.5 pl-0.5 shrink-0">
               <div 
-                className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-xs text-amber-200"
-                title={`Signed in as ${currentUser.fullName || currentUser.email || 'Traveler'}`}
+                className="w-8 h-8 rounded-full bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-emerald-300 text-xs font-semibold relative cursor-default"
+                title={`Signed in as ${currentUser.fullName || currentUser.phoneNumber || currentUser.email || 'Traveler'}`}
               >
-                <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="max-w-[80px] sm:max-w-[100px] truncate text-[11px] font-semibold">
-                  {currentUser.fullName || (currentUser.email ? currentUser.email.split('@')[0] : 'Traveler')}
-                </span>
+                <User className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#06080D]" />
               </div>
               <button
                 onClick={handleSignOut}
-                className="w-7 h-7 rounded-full bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-slate-400 hover:text-rose-300 transition-colors cursor-pointer shrink-0"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-slate-400 hover:text-rose-300 transition-colors cursor-pointer shrink-0"
                 title="Sign Out"
                 aria-label="Sign Out"
               >
@@ -181,7 +153,7 @@ export default function FloatingIslandNav({
                 logger.info('UI', 'Sign In button clicked from navbar dock');
                 window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { reason: 'Sign in to access your booked passes and account.' } }));
               }}
-              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-slate-100 hover:text-white text-xs font-semibold transition-colors cursor-pointer shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-slate-100 hover:text-white text-xs font-semibold transition-colors cursor-pointer shrink-0"
               title="Tourist Account Sign In"
             >
               <User className="w-3.5 h-3.5 text-amber-400" />
@@ -192,7 +164,7 @@ export default function FloatingIslandNav({
           {/* Split-Screen & Mobile Hamburger Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="xl:hidden w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
+            className="lg:hidden w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -208,7 +180,7 @@ export default function FloatingIslandNav({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-40 bg-[#06080D]/95 backdrop-blur-3xl md:hidden pt-28 px-6 pb-12 flex flex-col justify-between"
+            className="fixed inset-0 z-40 bg-[#06080D]/95 backdrop-blur-3xl lg:hidden pt-28 px-6 pb-12 flex flex-col justify-between"
           >
             <div className="flex flex-col gap-3">
               
