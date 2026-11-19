@@ -79,6 +79,18 @@ export default function PaymentProcessingModal({
     const numTourists = bookingDetails?.touristCount || 1;
     const refNumber = customRefNumber || `GT-${new Date().getFullYear()}-${randomCode}`;
     const today = new Date().toISOString().split('T')[0];
+    
+    // Calculate authentic trip validity window matching user-selected visit date and trip duration
+    const startDate = (bookingDetails?.date && String(bookingDetails.date).match(/^\d{4}-\d{2}-\d{2}$/))
+      ? String(bookingDetails.date)
+      : (bookingDetails?.date === 'Tomorrow'
+        ? new Date(Date.now() + 86400000).toISOString().split('T')[0]
+        : today);
+
+    const durationDays = Math.max(1, parseInt(bookingDetails?.durationDays || bookingDetails?.days || 1, 10));
+    const startMs = new Date(startDate + 'T00:00:00').getTime();
+    const endMs = startMs + (durationDays - 1) * 24 * 60 * 60 * 1000;
+    const validUntil = new Date(endMs).toISOString().split('T')[0];
 
     // Generate real cryptographic HMAC-SHA256 signed pass token
     let signedToken = '';
@@ -103,8 +115,10 @@ export default function PaymentProcessingModal({
       touristName: touristName,
       touristCount: numTourists,
       gateFeeTotal: feeLabel,
-      validFrom: today,
-      validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      validFrom: startDate,
+      validUntil: validUntil,
+      durationDays: durationDays,
+      validityLabel: durationDays === 1 ? `Valid on ${startDate}` : `Valid for ${durationDays} Days (${startDate} to ${validUntil})`,
       placesAllowed: destinations,
       status: isCounterPay ? 'PENDING_GATE_PAYMENT' : 'ACTIVE_AUTHENTICATED'
     };

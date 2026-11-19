@@ -657,7 +657,11 @@ export default function HolographicGatePass({
                 <span className="text-xs font-bold text-white mt-1">
                   {activePass.validFrom}
                 </span>
-                <span className="text-[10px] text-slate-500">Valid to {activePass.validUntil}</span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {activePass.durationDays && activePass.durationDays > 1 
+                    ? `Valid for ${activePass.durationDays} Days (to ${activePass.validUntil})` 
+                    : `Valid on ${activePass.validFrom || 'Visit Date'}`}
+                </span>
               </div>
 
               {/* Gate / Screen */}

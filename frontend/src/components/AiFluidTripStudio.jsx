@@ -269,14 +269,14 @@ export default function AiFluidTripStudio({
   const [inputQuery, setInputQuery] = useState('');
   const [isChatThinking, setIsChatThinking] = useState(false);
 
-  // Auto-calculate recommended days based on real physical metrics
+  // Auto-calculate recommended days based on real physical metrics (enforces at least 2 locations/day unless >150km)
   const calculateRecommendedDays = () => {
     const count = selectedPlaces.length;
-    if (count === 0) return 1;
     if (count <= 3) return 1;
-    if (count <= 6) return 2;
-    if (count <= 9) return 3;
-    return Math.min(5, Math.ceil(count / 3));
+    if (count <= 5) return 2;
+    if (count <= 7) return 3;
+    if (count <= 9) return 4;
+    return Math.min(5, Math.floor(count / 2));
   };
 
   const recommendedDays = calculateRecommendedDays();

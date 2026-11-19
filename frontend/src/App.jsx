@@ -361,7 +361,10 @@ export default function App() {
     handleInitiateBooking({
       circuitName: `${passInfo.destination} Official Gate Pass`,
       destinations: [passInfo.destination],
-      totalAmount: finalAmount
+      totalAmount: finalAmount,
+      date: passInfo.date,
+      touristCount: passInfo.travelers || 1,
+      durationDays: passInfo.durationDays || 1
     });
   };
 
@@ -381,19 +384,24 @@ export default function App() {
   };
 
   const handleBookCircuit = (circuit) => {
+    const durMatch = (circuit?.duration || '').match(/(\d+)\s*Day/i);
+    const parsedDays = durMatch ? parseInt(durMatch[1], 10) : 2;
     handleInitiateBooking({
       circuitName: circuit.title || 'Curated Heritage Circuit Pass',
       destinations: circuit.places?.map(p => p.name) || [circuit.standout],
-      totalAmount: circuit.passPrice || 480
+      totalAmount: circuit.passPrice || 480,
+      durationDays: parsedDays
     });
   };
 
   const handleBookCustomPlan = (customPlan) => {
     const allStops = (customPlan.days || []).flatMap(d => (d.stops || []).map(s => s.name || s.placeName || s));
+    const tripDays = (customPlan.days || []).length || 1;
     handleInitiateBooking({
       circuitName: customPlan.title || 'Personalized Heritage Circuit Pass',
       destinations: allStops.length > 0 ? allStops : selectedPlaces.map(p => p.name),
-      totalAmount: customPlan.packagePrice || 320
+      totalAmount: customPlan.packagePrice || 0,
+      durationDays: tripDays
     });
   };
 

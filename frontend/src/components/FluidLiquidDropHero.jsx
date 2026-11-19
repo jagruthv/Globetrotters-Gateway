@@ -59,6 +59,8 @@ const HERO_DESTINATIONS = [
     bestHours: '05:30 AM – 08:30 AM (Sunrise Viewpoint)',
     audioTourPrice: 29,
     rating: 'Penna River Sandstone Gorge',
+    earlyEntry: true,
+    earlyEntryTime: '05:30 AM',
     advisory: 'CANYON CAUTION: Natural gorge viewpoints have sheer 300ft drops with no railings. Maintain safe distance from cliff edges.',
     foodTip: 'Authentic Rayalaseema Karam Dosa (₹40 - ₹60) and hot Ragi Mudda with Natukodi Pulusu served at local village homestays and dhabas.',
     tagline: 'The Grand Canyon of India carved over millions of years through rugged red quartz granite by the Penna River.',
@@ -81,6 +83,8 @@ const HERO_DESTINATIONS = [
     bestHours: '06:00 AM – 11:30 AM (Morning Darshan & Architecture)',
     audioTourPrice: 29,
     rating: 'UNESCO World Heritage • 1213 AD',
+    earlyEntry: true,
+    earlyEntryTime: '06:00 AM',
     advisory: 'TEMPLE COURTESY: Traditional attire recommended for the sanctum. Footwear deposit stall available at the outer gate.',
     foodTip: 'Telangana Sarva Pindi and hot Jowar Rotis with spicy country chutney available at local family stalls outside the temple gateway.',
     tagline: '800-year-old Kakatiya engineering triumph built with floating bricks and earthquake-resistant sandbox foundations.',
@@ -132,6 +136,15 @@ const HERO_DESTINATIONS = [
   }
 ];
 
+const getInitialBookingDates = () => {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const tomorrow = new Date(now.getTime() + 86400000).toISOString().split('T')[0];
+  return { today, tomorrow };
+};
+
+const { today: DEFAULT_TODAY_ISO, tomorrow: DEFAULT_TOMORROW_ISO } = getInitialBookingDates();
+
 export default function FluidLiquidDropHero({ 
   onExploreDistricts, 
   onLaunchTripPlanner, 
@@ -139,9 +152,28 @@ export default function FluidLiquidDropHero({
   onPlanCustomTrip
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
-  const [travelDate, setTravelDate] = useState('Tomorrow');
+  
+  // Date Management aligned to Jakob's Law (industry standard calendar picker)
+  const todayIso = DEFAULT_TODAY_ISO;
+  const tomorrowIso = DEFAULT_TOMORROW_ISO;
+  const [travelDate, setTravelDate] = useState(DEFAULT_TOMORROW_ISO);
   const [travelersCount, setTravelersCount] = useState(2);
   const [addAudioTour, setAddAudioTour] = useState(false);
+
+  const getDateLabel = (isoDate) => {
+    if (!isoDate) return '';
+    if (isoDate === todayIso) return 'Today';
+    if (isoDate === tomorrowIso) return 'Tomorrow';
+    try {
+      const d = new Date(isoDate + 'T00:00:00');
+      const diffDays = Math.round((d - new Date(todayIso + 'T00:00:00')) / 86400000);
+      if (diffDays === 7) return 'In 1 Week';
+      if (diffDays > 0 && diffDays < 7) return `In ${diffDays} Days`;
+      return d.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+    } catch {
+      return '';
+    }
+  };
   
   // Modals for authentic government tourism flow
   const [guideModalOpen, setGuideModalOpen] = useState(false);
@@ -279,24 +311,28 @@ export default function FluidLiquidDropHero({
                   </select>
                 </div>
 
-                {/* 2. Date Selector - 3 cols */}
-                <div className="sm:col-span-3 flex flex-col px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
-                  <label htmlFor="hero-date-select" className="text-[10px] text-slate-400 font-medium flex items-center gap-1 font-sans-clean">
-                    <Calendar className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                    <span>Date of Visit</span>
+                {/* 2. Date Selector - 3 cols with standard native calendar (Jakob's Law) */}
+                <div className="sm:col-span-3 flex flex-col px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors relative">
+                  <label htmlFor="hero-date-select" className="text-[10px] text-slate-400 font-medium flex items-center justify-between font-sans-clean">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                      <span>Date of Visit</span>
+                    </span>
+                    {getDateLabel(travelDate) && (
+                      <span className="text-[9px] text-amber-300 font-semibold truncate">
+                        {getDateLabel(travelDate)}
+                      </span>
+                    )}
                   </label>
-                  <select
+                  <input
                     id="hero-date-select"
-                    aria-label="Select date of visit"
+                    type="date"
+                    min={todayIso}
                     value={travelDate}
                     onChange={(e) => setTravelDate(e.target.value)}
-                    className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-0.5"
-                  >
-                    <option value="Today" className="bg-[#0B0F17] text-white">Today</option>
-                    <option value="Tomorrow" className="bg-[#0B0F17] text-white">Tomorrow</option>
-                    <option value="This Weekend" className="bg-[#0B0F17] text-white">This Weekend</option>
-                    <option value="Next Week" className="bg-[#0B0F17] text-white">Next Week</option>
-                  </select>
+                    aria-label="Select date of visit"
+                    className="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer mt-0.5 [color-scheme:dark] w-full"
+                  />
                 </div>
 
                 {/* 3. Guests Selector - 3 cols */}
@@ -336,6 +372,11 @@ export default function FluidLiquidDropHero({
                     <span className={`text-[10px] sm:text-[11px] font-bold ${activeDest.isTicketed ? 'text-amber-300' : 'text-emerald-300'}`}>
                       {activeDest.isTicketed ? `Official Ticket: ₹${activeDest.groundRate}/person` : 'Free Public Monument'}
                     </span>
+                    {activeDest.earlyEntry && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/15 border border-amber-400/30 text-amber-300 font-bold uppercase tracking-wider">
+                        Early Entry ({activeDest.earlyEntryTime || '05:30 AM'})
+                      </span>
+                    )}
                   </div>
 
                   <label className="inline-flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded-md bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-colors">
@@ -444,7 +485,14 @@ export default function FluidLiquidDropHero({
             {/* Timings and Guidelines */}
             <div className="grid grid-cols-2 gap-2 text-xs font-sans-clean">
               <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex flex-col">
-                <span className="text-[10px] text-slate-400 uppercase tracking-wide">Visiting Hours</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wide">Visiting Hours</span>
+                  {activeDest.earlyEntry && (
+                    <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-300 font-bold">
+                      Early Entry
+                    </span>
+                  )}
+                </div>
                 <span className="text-slate-200 font-medium text-xs mt-0.5">{activeDest.bestHours}</span>
               </div>
               <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex flex-col">

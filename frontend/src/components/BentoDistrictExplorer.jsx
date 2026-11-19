@@ -611,28 +611,30 @@ export default function BentoDistrictExplorer({
             </div>
           )}
 
-          {/* Tier 2: Geographic Cultural Zones */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Filter by Cultural Zone">
-            {visibleZones.map((zone) => {
-              const isSelected = activeZone === zone.id;
-              return (
-                <button
-                  key={zone.id}
-                  type="button"
-                  onClick={() => setActiveZone(zone.id)}
-                  aria-pressed={isSelected}
-                  role="tab"
-                  className={`px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors duration-150 font-sans-clean cursor-pointer ${
-                    isSelected
-                      ? 'bg-amber-500/15 text-amber-300 border border-amber-400/30'
-                      : 'bg-white/[0.02] text-slate-400 border border-white/5 hover:border-white/15 hover:text-slate-200'
-                  }`}
-                >
-                  {zone.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Tier 2: Geographic Cultural Zones (Shown when state is selected to keep default view clean) */}
+          {activeState !== 'all' && visibleZones.length > 1 && (
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" role="tablist" aria-label="Filter by Cultural Zone">
+              {visibleZones.map((zone) => {
+                const isSelected = activeZone === zone.id;
+                return (
+                  <button
+                    key={zone.id}
+                    type="button"
+                    onClick={() => setActiveZone(zone.id)}
+                    aria-pressed={isSelected}
+                    role="tab"
+                    className={`px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-colors duration-150 font-sans-clean cursor-pointer ${
+                      isSelected
+                        ? 'bg-amber-500/15 text-amber-300 border border-amber-400/30'
+                        : 'bg-white/[0.02] text-slate-400 border border-white/5 hover:border-white/15 hover:text-slate-200'
+                    }`}
+                  >
+                    {zone.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Tier 3: Traveler Interest & Themes */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none" role="tablist" aria-label="Filter by Category">
