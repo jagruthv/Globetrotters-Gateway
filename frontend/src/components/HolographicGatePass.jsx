@@ -503,31 +503,23 @@ export default function HolographicGatePass({
       <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
         
         {/* Pass Header */}
-        <div className="print:hidden flex flex-col items-center text-center gap-3">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <Ticket className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-emerald-300 font-sans-clean">
-                Digital Entry Pass • Instant Verification
-              </span>
-            </div>
-            {allPasses.length > 0 && (
-              <button
-                type="button"
-                onClick={() => setShowHistoryModal(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs text-slate-300 hover:text-white transition-colors cursor-pointer font-sans-clean"
-                title="View all your active and past gate passes"
-              >
-                <History className="w-3.5 h-3.5 text-amber-400" />
-                <span>Pass History ({allPasses.length})</span>
-              </button>
-            )}
-          </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white font-sans-clean">
-            Curated Monument Entry Pass
+        <div className="print:hidden flex flex-col items-center text-center gap-2.5">
+          {allPasses.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setShowHistoryModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs text-slate-300 hover:text-white transition-colors cursor-pointer font-sans-clean mb-1"
+              title="View all your active and past gate passes"
+            >
+              <History className="w-3.5 h-3.5 text-amber-400" />
+              <span>Pass History ({allPasses.length})</span>
+            </button>
+          )}
+          <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans-clean">
+            Digital Entry Pass
           </h2>
-          <p className="text-xs md:text-sm text-slate-400 max-w-lg leading-relaxed font-sans-clean">
-            Official digital entry pass with fast-track QR gate code. Present at the entrance for quick access.
+          <p className="text-xs sm:text-sm text-slate-400 max-w-md leading-relaxed font-sans-clean">
+            Show this QR code at the monument gate for direct entry.
           </p>
         </div>
 

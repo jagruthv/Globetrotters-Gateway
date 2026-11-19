@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Layers, 
   Ticket,
   Percent
 } from 'lucide-react';
@@ -139,25 +138,19 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
       <div className="max-w-7xl mx-auto flex flex-col gap-10">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
-          <div className="flex flex-col gap-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 w-max">
-              <Layers className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-amber-300 font-sans-clean">
-                Curated Regional Tours
-              </span>
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white font-sans-clean">
-              Popular Tour Packages
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-6">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans-clean">
+              Tour Packages
             </h2>
-            <p className="text-sm md:text-base text-slate-400 max-w-2xl leading-relaxed font-sans-clean">
-              Multi-attraction passes bundled with transparent ticket rates, pre-cleared parking, and direct gate entry.
+            <p className="text-xs sm:text-sm text-slate-400 max-w-lg leading-relaxed font-sans-clean">
+              Curated multi-stop passes with direct gate entry across top routes.
             </p>
           </div>
 
           <div className="flex items-center gap-2 text-xs text-slate-400 font-sans-clean">
-            <Percent className="w-4 h-4 text-emerald-400" />
-            <span className="text-emerald-300 font-medium">Guaranteed Up To 40% Bundle Savings</span>
+            <Percent className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-emerald-300 font-medium">Save up to 40%</span>
           </div>
         </div>
 

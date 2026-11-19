@@ -473,10 +473,10 @@ export default function App() {
               <section className="relative py-16 px-4 md:px-12 border-t border-white/5 text-center">
                 <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center gap-4">
                   <h3 className="text-xl sm:text-2xl font-bold text-white font-sans-clean">
-                    Explore all 59 districts of Andhra Pradesh & Telangana
+                    Ready to explore?
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed font-sans-clean">
-                    Search historical temples, hill stations, and nature reserves with verified timings, entry rules, and routes.
+                  <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed font-sans-clean">
+                    Search 59 districts with verified timings and direct gate passes.
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                     <button

@@ -39,7 +39,7 @@ const HERO_DESTINATIONS = [
     audioTourPrice: 39,
     rating: 'APTDC Geo-Heritage Caverns',
     advisory: 'CAVERN NOTICE: Interior pathway is damp limestone; wear non-slip shoes. Gate ticket is ₹40 per visitor.',
-    foodTip: 'Famous Araku Bamboo Chicken cooked inside green bamboo shoots over wood embers (₹200 - ₹250), hot Araku Arabica coffee at mountain ridge stalls.',
+    foodTip: 'Araku bamboo chicken and freshly brewed valley coffee.',
     tagline: 'Deep limestone caves descending 80 meters into the scenic Eastern Ghats mountains.',
     policyNotice: 'Ticketed Attraction: Official APTDC entry ticket is ₹40 / Person. Digital entry pass gives direct access through the gate scanner.'
   },
@@ -63,7 +63,7 @@ const HERO_DESTINATIONS = [
     earlyEntry: true,
     earlyEntryTime: '05:30 AM',
     advisory: 'CANYON CAUTION: Natural gorge viewpoints have sheer 300ft drops with no railings. Maintain safe distance from cliff edges.',
-    foodTip: 'Authentic Rayalaseema Karam Dosa (₹40 - ₹60) and hot Ragi Mudda with Natukodi Pulusu served at local village homestays and dhabas.',
+    foodTip: 'Rayalaseema karam dosa and hot ragi sangati.',
     tagline: 'The Grand Canyon of India carved over millions of years through rugged red quartz granite by the Penna River.',
     policyNotice: 'Free Public Access: Open natural canyon viewpoint and fort complex. No entry ticket or pass is required to visit.'
   },
@@ -87,7 +87,7 @@ const HERO_DESTINATIONS = [
     earlyEntry: true,
     earlyEntryTime: '06:00 AM',
     advisory: 'TEMPLE COURTESY: Traditional attire recommended for the sanctum. Footwear deposit stall available at the outer gate.',
-    foodTip: 'Telangana Sarva Pindi and hot Jowar Rotis with spicy country chutney available at local family stalls outside the temple gateway.',
+    foodTip: 'Crispy sarva pindi and jowar roti with spicy chutney.',
     tagline: '800-year-old Kakatiya engineering triumph built with floating bricks and earthquake-resistant sandbox foundations.',
     policyNotice: 'Free Public Access: Temple darshan and architectural viewing are 100% free. No ticket or pass is required.'
   },
@@ -109,7 +109,7 @@ const HERO_DESTINATIONS = [
     audioTourPrice: 29,
     rating: 'ASI Protected Monument',
     advisory: 'STREET ADVISORY: Purchase pearls and bangles from certified jewelers inside the bazaar to ensure authentic hallmarks.',
-    foodTip: 'Iconic Irani Chai with hot Osmania biscuits at Nimrah Cafe right beside Charminar (₹20). Handcrafted pure lac bangles in Laad Bazaar (₹250 - ₹1,500).',
+    foodTip: 'Irani chai with Osmania biscuits at Nimrah Cafe.',
     tagline: '16th-century Qutb Shahi monument of four minarets framing the vibrant bazaars of Old Hyderabad.',
     policyNotice: 'Free Public Access: Open pedestrian heritage piazza. No entry ticket, gate pass, or booking is required to visit Charminar or Laad Bazaar.'
   },
@@ -131,7 +131,7 @@ const HERO_DESTINATIONS = [
     audioTourPrice: 39,
     rating: 'ASI National Citadel',
     advisory: 'GATE NOTICE: Official ₹25 entry ticket required at the gate. Sound & light evening show requires a separate ₹60 counter ticket.',
-    foodTip: 'Traditional Hyderabadi mutton biryani and spiced charcoal corn available at historic eateries near the outer citadel gate.',
+    foodTip: 'Hyderabadi dum biryani near the outer fort gates.',
     tagline: 'Diamond-capital medieval citadel featuring world-famous acoustic engineering where a hand clap echoes at the hilltop summit.',
     policyNotice: 'Ticketed Monument: Exact ASI gate rate is ₹25 / Person. Book online to get your QR gate pass and skip ticket counter lines.'
   }
@@ -280,7 +280,7 @@ export default function FluidLiquidDropHero({
 
           {/* Value Proposition */}
           <p className="text-sm text-slate-300 leading-relaxed max-w-lg font-sans-clean">
-            Verified local routes, entry guidelines, and tickets for 59 districts and 646 places across both states.
+            Find places, timings, and entry passes across all 59 districts.
           </p>
 
           {/* Quick Booking Console */}
@@ -455,28 +455,25 @@ export default function FluidLiquidDropHero({
 
         {/* Right Column: Destination Spotlight Plaque */}
         <div className="lg:col-span-5 flex flex-col items-center lg:items-end w-full">
-          <div className="w-full max-w-md xl:max-w-lg rounded-2xl bg-[#0B0F17]/85 backdrop-blur-xl border border-white/[0.08] p-4 sm:p-5 flex flex-col gap-3 shadow-2xl">
+          <div className="w-full max-w-md xl:max-w-lg rounded-2xl bg-[#0B0F17]/75 backdrop-blur-md border border-white/10 p-4 sm:p-5 flex flex-col gap-3">
             {/* Header: Destination Title & Entry Badge */}
-            <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/[0.08]">
+            <div className="flex items-start justify-between gap-3 pb-3 border-b border-white/10">
               <div>
-                <span className="text-[10px] uppercase tracking-wider font-semibold text-amber-400 font-mono">
-                  {activeDest.tag || 'Featured Destination'}
-                </span>
-                <h3 className="text-lg sm:text-xl font-bold text-white font-sans-clean mt-0.5 leading-snug">
+                <h3 className="text-lg sm:text-xl font-bold text-white font-sans-clean leading-snug">
                   {activeDest.name}
                 </h3>
-                <span className="text-xs text-slate-400 flex items-center gap-1.5 mt-1">
+                <span className="text-xs text-slate-400 flex items-center gap-1.5 mt-1 font-sans-clean">
                   <MapPin className="w-3 h-3 text-amber-400/80 flex-shrink-0" />
                   <span>{activeDest.district}, {activeDest.state}</span>
                 </span>
               </div>
-              <span className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/10 text-xs font-semibold text-amber-300 whitespace-nowrap">
+              <span className="px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/10 text-xs font-semibold text-amber-300 whitespace-nowrap">
                 {activeDest.isTicketed ? `₹${activeDest.groundRate} Entry` : 'Free Entry'}
               </span>
             </div>
 
             {/* Visiting Hours & Early Entry */}
-            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.05] text-xs font-sans-clean">
+            <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.02] border border-white/5 text-xs font-sans-clean">
               <div className="flex items-center gap-2 min-w-0">
                 <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                 <span className="text-xs text-slate-300 truncate">{activeDest.bestHours}</span>
@@ -490,17 +487,17 @@ export default function FluidLiquidDropHero({
 
             {/* Authentic Local Delicacy Highlight */}
             {activeDest.foodTip && (
-              <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 text-xs font-sans-clean">
-                <Utensils className="w-3.5 h-3.5 text-amber-400/80 flex-shrink-0 mt-0.5" />
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  <strong className="text-amber-300 font-semibold">Local Food: </strong>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/[0.03] border border-amber-500/10 text-xs font-sans-clean">
+                <Utensils className="w-3.5 h-3.5 text-amber-400/80 flex-shrink-0" />
+                <p className="text-[11px] text-slate-300 truncate">
+                  <span className="text-amber-300 font-medium">Food: </span>
                   {activeDest.foodTip}
                 </p>
               </div>
             )}
 
             {/* Navigation controls with slide dots */}
-            <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-xs">
+            <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
               <div className="flex items-center gap-1.5">
                 {HERO_DESTINATIONS.map((dest, i) => (
                   <button

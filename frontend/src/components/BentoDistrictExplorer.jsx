@@ -504,19 +504,13 @@ export default function BentoDistrictExplorer({
       <div className="max-w-7xl mx-auto flex flex-col gap-10">
         
         {/* Header & Search Bar */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
-          <div className="flex flex-col gap-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 w-max">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-amber-300 font-sans-clean">
-                Verified Regional Directory • Andhra Pradesh & Telangana
-              </span>
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white font-sans-clean">
-              59 Districts • 646 Destinations
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-6">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-white font-sans-clean">
+              59 Districts
             </h2>
-            <p className="text-sm md:text-base text-slate-400 max-w-2xl leading-relaxed font-sans-clean">
-              Discover authentic sights, local delicacies, and transparent entry fees across Andhra Pradesh and Telangana.
+            <p className="text-xs sm:text-sm text-slate-400 max-w-lg leading-relaxed font-sans-clean">
+              646 destinations across Andhra Pradesh and Telangana with verified timings and fees.
             </p>
           </div>
 
@@ -529,7 +523,7 @@ export default function BentoDistrictExplorer({
               aria-label="Search district, spot, or temple"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search district, spot, temple, or local food (e.g. biryani, halwa)..."
+              placeholder="Search places, temples, food, or districts..."
               autoComplete="off"
               spellCheck={false}
               className="w-full h-11 pl-11 pr-4 rounded-full bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400/50 transition-colors"
