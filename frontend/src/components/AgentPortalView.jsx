@@ -360,22 +360,14 @@ export default function AgentPortalView({
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: 'dontInvert'
+          inversionAttempts: 'attemptBoth'
         });
 
         if (code && code.data) {
           let extracted = code.data.trim();
-          if (extracted.includes('?t=')) {
-            try {
-              const url = new URL(extracted);
-              extracted = url.searchParams.get('t') || extracted;
-            } catch {
-              const match = extracted.match(/[?&]t=([^&#]+)/);
-              if (match) extracted = match[1];
-            }
-          } else if (extracted.includes('/verify?t=')) {
-            const match = extracted.match(/t=([^&#]+)/);
-            if (match) extracted = match[1];
+          const match = extracted.match(/[?&]t=([^&#]+)/);
+          if (match && match[1]) {
+            extracted = decodeURIComponent(match[1]).trim();
           }
 
           setTokenInput(extracted);
@@ -449,17 +441,17 @@ export default function AgentPortalView({
   };
 
   const handleScanPass = useCallback(async (overrideToken) => {
-    const tokenToVerify = (typeof overrideToken === 'string' ? overrideToken : tokenInput).trim();
+    let tokenToVerify = (typeof overrideToken === 'string' ? overrideToken : tokenInput).trim();
     if (!tokenToVerify || isScanning) return;
+
+    // Sanitize if scanned or pasted token is full URL
+    const urlMatch = tokenToVerify.match(/[?&]t=([^&#]+)/);
+    if (urlMatch && urlMatch[1]) {
+      tokenToVerify = decodeURIComponent(urlMatch[1]).trim();
+    }
 
     setIsScanning(true);
     setVerdict(null);
-
-    const cp = activeCheckpoint;
-    const checkpointName = cp.name;
-    const placeId = cp.id;
-    const gateId = cp.gate;
-    const kw = cp.keyword;
 
     // Load local stored passes
     const storedPasses = (() => {
@@ -473,8 +465,23 @@ export default function AgentPortalView({
     const cleanRef = tokenToVerify.trim().toUpperCase();
     const matchedPass = Array.isArray(storedPasses) ? storedPasses.find(p => 
       (p?.reference && p.reference.toUpperCase() === cleanRef) ||
-      (p?.token && (p.token === tokenToVerify || tokenToVerify.includes(p.reference)))
+      (p?.token && (p.token === tokenToVerify || tokenToVerify.includes(p.token) || (p.reference && tokenToVerify.includes(p.reference))))
     ) : null;
+
+    let cp = activeCheckpoint;
+    // Auto-align checkpoint if pass belongs to another valid checkpoint
+    if (matchedPass) {
+      const targetCheckpoint = CHECKPOINTS.find(c => isPassValidForLocation(matchedPass, c.id, c.keyword, c.name));
+      if (targetCheckpoint && targetCheckpoint.id !== cp.id) {
+        setSelectedPlaceId(targetCheckpoint.id);
+        cp = targetCheckpoint;
+      }
+    }
+
+    const checkpointName = cp.name;
+    const placeId = cp.id;
+    const gateId = cp.gate;
+    const kw = cp.keyword;
 
     // 1. Destination Matching Check: Verify whether pass is valid for this monument
     if (matchedPass && !isPassValidForLocation(matchedPass, placeId, kw, checkpointName)) {
