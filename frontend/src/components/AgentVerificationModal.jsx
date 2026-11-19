@@ -141,15 +141,27 @@ export default function AgentVerificationModal({
           {!success && (
             <form onSubmit={handleLogin} className="flex flex-col gap-3.5">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Officer Email / Staff ID</span>
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Officer Email / Staff ID</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('agent@gmail.com');
+                      setPassword('agent@123');
+                    }}
+                    className="text-[10px] text-amber-400/90 hover:text-amber-300 underline underline-offset-2 transition-colors cursor-pointer"
+                  >
+                    Quick Fill: agent@gmail.com
+                  </button>
+                </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="staff@globetrotter.com"
+                  placeholder="agent@gmail.com"
                   required
                   disabled={loading}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400/60 transition-colors"
@@ -157,15 +169,20 @@ export default function AgentVerificationModal({
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Security Passkey</span>
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Security Passkey</span>
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    pass: agent@123
+                  </span>
+                </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="agent@123"
                   required
                   disabled={loading}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400/60 transition-colors"

@@ -52,6 +52,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
     logger.success('AUTH', message, { userId: userData?.id, role: userData?.role });
     setLoading(false);
     setSuccessMsg(message);
+    if (userData?.role === 'ROLE_ADMIN' || userData?.role === 'ROLE_STAFF' || userData?.role === 'ROLE_AGENT') {
+      localStorage.setItem('globetrotter_is_agent', 'true');
+      window.dispatchEvent(new Event('agent-status-changed'));
+    }
     if (onAuthSuccess) onAuthSuccess(userData);
     setTimeout(() => {
       onClose();
@@ -710,9 +714,23 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                 )}
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-slate-300 font-sans-clean">
-                    Email Address
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-slate-300 font-sans-clean">
+                      Email Address
+                    </label>
+                    {!isRegister && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmail('agent@gmail.com');
+                          setPassword('agent@123');
+                        }}
+                        className="text-[10px] text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors cursor-pointer"
+                      >
+                        Quick Agent: agent@gmail.com
+                      </button>
+                    )}
+                  </div>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input

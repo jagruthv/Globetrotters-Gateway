@@ -1,6 +1,6 @@
 /**
  * Cloudflare Pages Edge Worker for Globetrotter Gateway
- * Handles live AI chat and multimodal vision routing with Google Gemini 3.8 Flash.
+ * Handles live AI chat and multimodal vision routing with Google Gemini 3.1 Flash Lite.
  * Hardened with Arena-Grade Anti-Bot, Anti-Scraping & Origin Integrity Armor.
  */
 
@@ -209,7 +209,8 @@ CRITICAL: Return ONLY raw valid JSON (no markdown formatting, no code fences, no
 
           const userPrompt = `Generate a ${requestedDays ? `${requestedDays}-day` : 'comfortable'} ${pace.toLowerCase()} pace itinerary for these ${places.length} destinations:\n${placesDescription}`;
 
-          const modelsToTry = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+          // Primary: gemini-3.1-flash-lite, Fallback: gemini-2.5-flash-lite, gemini-3.8-flash
+          const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite", "gemini-3.8-flash"];
           let planData = null;
 
           for (const modelId of modelsToTry) {
@@ -329,7 +330,8 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
 
           const userPrompt = `Current Itinerary Plan:\n${JSON.stringify(currentPlan, null, 2)}\n\nTourist Modification Request:\n"${userFeedback}"`;
 
-          const modelsToTry = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+          // Primary: gemini-3.1-flash-lite, Fallback: gemini-2.5-flash-lite, gemini-3.8-flash
+          const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite", "gemini-3.8-flash"];
           let modifyData = null;
 
           for (const modelId of modelsToTry) {
@@ -405,10 +407,10 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
             contentsParts.push({ text: "Hello" });
           }
 
-          // Primary: gemini-3.8-flash, Fallback: gemini-3.5-flash-lite
-          const modelsToTry = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+          // Primary: gemini-3.1-flash-lite, Fallback: gemini-2.5-flash-lite, gemini-3.8-flash
+          const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite", "gemini-3.8-flash"];
           let replyText = null;
-          let usedModelName = "AI Voice Assistant (Live)";
+          let usedModelName = "Gemini 3.1 Flash Lite";
 
           const apiKey = getGeminiKey(env);
           for (const modelId of modelsToTry) {
@@ -439,7 +441,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
                 } else if (geminiData.candidates[0].content.parts[0]?.text) {
                   replyText = geminiData.candidates[0].content.parts[0].text;
                 }
-                usedModelName = "AI Voice Assistant (Live)";
+                usedModelName = modelId.includes('3.1') ? "Gemini 3.1 Flash Lite" : (modelId.includes('2.5') ? "Gemini 2.5 Flash Lite" : "Gemini 3.8 Flash");
                 break; // Successfully got response
               } else if (geminiData?.error?.message) {
                 console.warn(`[Edge Cascade] ${modelId} error: ${geminiData.error.message}. Cascading...`);

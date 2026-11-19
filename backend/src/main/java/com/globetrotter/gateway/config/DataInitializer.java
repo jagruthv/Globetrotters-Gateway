@@ -117,6 +117,19 @@ public class DataInitializer implements CommandLineRunner {
             userRepository.save(tourist);
         }
 
+        // Canonical Official Gate Agent account (agent@gmail.com / agent@123)
+        if (!userRepository.existsByEmail("agent@gmail.com")) {
+            User agent = User.builder()
+                    .email("agent@gmail.com")
+                    .password(passwordEncoder.encode("agent@123"))
+                    .fullName("Official Gate Agent")
+                    .phoneNumber("+91 98765 00003")
+                    .role(Role.ROLE_STAFF)
+                    .build();
+            userRepository.save(agent);
+            log.info("Canonical Gate Agent seeded: agent@gmail.com with ROLE_STAFF");
+        }
+
         // ══════════════════════════════════════════════════════════════════════════════
         // REGION 1: ANDHRA PRADESH - COASTAL (Visakhapatnam)
         // ══════════════════════════════════════════════════════════════════════════════

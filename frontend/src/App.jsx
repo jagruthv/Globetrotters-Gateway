@@ -177,6 +177,7 @@ export default function App() {
           const isOfficer = Boolean(user && (user.role === 'ROLE_ADMIN' || user.role === 'ROLE_STAFF' || user.role === 'ROLE_AGENT'));
           if (isOfficer) {
             setIsAgentPortalActive(true);
+            setAgentVerificationOpen(false);
           } else {
             setIsAgentPortalActive(false);
             setAgentVerificationOpen(true);
@@ -192,9 +193,13 @@ export default function App() {
     };
     window.addEventListener('hashchange', handleHashSync);
     window.addEventListener('popstate', handleHashSync);
+    window.addEventListener('agent-status-changed', handleHashSync);
+    window.addEventListener('auth-change', handleHashSync);
     return () => {
       window.removeEventListener('hashchange', handleHashSync);
       window.removeEventListener('popstate', handleHashSync);
+      window.removeEventListener('agent-status-changed', handleHashSync);
+      window.removeEventListener('auth-change', handleHashSync);
     };
   }, []);
 
