@@ -25,7 +25,8 @@ import {
   Waves,
   ShieldCheck,
   LayoutGrid,
-  Map as MapIcon
+  Map as MapIcon,
+  ArrowRight
 } from 'lucide-react';
 import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
 import { getAuthenticPlacePhoto, getOfflineImageFallback } from '../utils/authenticPlacePhotos';
@@ -239,7 +240,8 @@ export default function BentoDistrictExplorer({
   onSelectPlaceForTrip, 
   selectedPlaces = [],
   isFeaturedOnly = false,
-  onViewAllDistricts = null
+  onViewAllDistricts = null,
+  onProceedToPlan = null
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeState, setActiveState] = useState('all');
@@ -1427,6 +1429,44 @@ export default function BentoDistrictExplorer({
 
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Staged Places Dock (Visible when user has added attractions) */}
+      <AnimatePresence>
+        {selectedPlaces.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.25 }}
+            className="fixed bottom-20 md:bottom-8 left-1/2 -translate-x-1/2 z-40 w-[94%] max-w-lg p-3 sm:p-3.5 rounded-2xl bg-[#090D16]/95 border border-amber-400/40 backdrop-blur-2xl shadow-[0_15px_40px_rgba(0,0,0,0.85)] flex items-center justify-between gap-3 text-slate-100 font-sans-clean"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 font-bold font-mono text-xs shrink-0 shadow-sm">
+                {selectedPlaces.length}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-bold text-white truncate">
+                  {selectedPlaces.length} {selectedPlaces.length === 1 ? 'Attraction' : 'Attractions'} Selected
+                </span>
+                <span className="text-[11px] text-amber-300 font-mono truncate">
+                  {(() => {
+                    const total = selectedPlaces.reduce((sum, p) => sum + (typeof p.individualPrice === 'number' ? p.individualPrice : 0), 0);
+                    return total === 0 ? 'Free Public Entry (₹0)' : `Pass Fare: ₹${total}`;
+                  })()}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => onProceedToPlan && onProceedToPlan()}
+              className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0 active:scale-[0.98]"
+            >
+              <span>Build Tour Plan</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
         )}
       </AnimatePresence>
 

@@ -42,6 +42,26 @@ const PROMPT_SUGGESTIONS = [
 let msgCounter = 0;
 const getMsgId = (prefix) => `${prefix}-${++msgCounter}`;
 
+function getGroundedLocalResponse(query = '') {
+  const lower = query.toLowerCase();
+  if (lower.includes('order') || lower.includes('arrange') || lower.includes('schedule') || lower.includes('why')) {
+    return 'I arranged these stops by geographic proximity and official opening hours so you spend less time driving and reach each place well before gate closing time (e.g. caves and museums before 5:00 PM, and early dawn for sunrise viewpoints).';
+  }
+  if (lower.includes('senior') || lower.includes('elder') || lower.includes('relax') || lower.includes('family')) {
+    return 'To make this trip relaxed for seniors and families, we recommend spacing out stops across an extra day, taking a 2-hour rest break between 1:00 PM and 3:30 PM to avoid midday heat, and using battery-operated vehicles available at major heritage gates.';
+  }
+  if (lower.includes('food') || lower.includes('eat') || lower.includes('dining') || lower.includes('cuisine') || lower.includes('lunch')) {
+    return "Along this corridor, look for official Haritha Tourism restaurants and certified heritage eateries. Don't miss authentic Andhra meals with Gongura Pachadi and Ulava Charu, or authentic Hyderabadi Dum Biryani and Irani chai with Osmania biscuits!";
+  }
+  if (lower.includes('waterfall') || lower.includes('viewpoint') || lower.includes('scenic') || lower.includes('nature')) {
+    return 'Top scenic natural spots in Andhra Pradesh and Telangana include Gandikota Grand Canyon gorge, Borra Caves in Ananthagiri Hills, Katiki Waterfalls, and Bogatha Waterfall in Mulugu. All offer breathtaking views!';
+  }
+  if (lower.includes('expand') || lower.includes('more days') || lower.includes('drive') || lower.includes('driving')) {
+    return 'Expanding this itinerary by 1 or 2 days reduces daily driving time to under 90 minutes per day, giving you ample time to explore each monument without rushing.';
+  }
+  return 'I have processed your request using the verified 59-district tourism atlas.';
+}
+
 export default function TravelAssistantDrawer({
   isOpen,
   onClose,
@@ -50,7 +70,9 @@ export default function TravelAssistantDrawer({
   onInitiateBooking,
   selectedPlaces = [],
   setSelectedPlaces,
-  currentPlan
+  currentPlan,
+  initialQuery = '',
+  onClearInitialQuery
 }) {
   const [messages, setMessages] = useState(() => {
     let touristName = 'Explorer';
@@ -84,9 +106,13 @@ export default function TravelAssistantDrawer({
 
   useEffect(() => {
     if (isOpen) {
+      if (initialQuery) {
+        setInputQuery(initialQuery);
+        if (onClearInitialQuery) onClearInitialQuery();
+      }
       setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [isOpen]);
+  }, [isOpen, initialQuery, onClearInitialQuery]);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -361,7 +387,7 @@ export default function TravelAssistantDrawer({
       setMessages((prev) => [...prev, assistantMessage]);
 
     } catch {
-      let fallbackText = "I have processed your request using the verified 59-district tourism atlas.";
+      let fallbackText = getGroundedLocalResponse(textToSend);
       if (actionResult?.type === 'initiated_booking') {
         fallbackText = `Opening official checkout for ${actionResult.place.name} (${actionResult.touristCount} visitor${actionResult.touristCount > 1 ? 's' : ''} • ₹${actionResult.totalAmount}). Please confirm your booking details in the secure payment gateway.`;
       } else if (actionResult?.type === 'booked_pass') {
@@ -392,6 +418,15 @@ export default function TravelAssistantDrawer({
       setIsThinking(false);
     }
   };
+
+  // Auto-send initial query passed from external components (e.g. Plan Custom Trip or Planner chips)
+  useEffect(() => {
+    if (isOpen && initialQuery && initialQuery.trim()) {
+      const q = initialQuery.trim();
+      if (onClearInitialQuery) onClearInitialQuery();
+      handleSendMessage(q);
+    }
+  }, [isOpen, initialQuery]);
 
   const handleAddPlaceToTrip = (place) => {
     if (setSelectedPlaces) {

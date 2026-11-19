@@ -138,7 +138,8 @@ const HERO_DESTINATIONS = [
 export default function FluidLiquidDropHero({ 
   onExploreDistricts, 
   onLaunchTripPlanner, 
-  onDirectBookPass
+  onDirectBookPass,
+  onPlanCustomTrip
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [travelDate, setTravelDate] = useState('Tomorrow');
@@ -437,7 +438,13 @@ export default function FluidLiquidDropHero({
             </button>
             <span className="text-white/20">•</span>
             <button
-              onClick={onLaunchTripPlanner}
+              onClick={() => {
+                if (onPlanCustomTrip) {
+                  onPlanCustomTrip('Help me plan a personalized tour across Andhra Pradesh and Telangana');
+                } else if (onLaunchTripPlanner) {
+                  onLaunchTripPlanner();
+                }
+              }}
               className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300 hover:text-emerald-300 transition-colors cursor-pointer"
             >
               <Sparkles className="w-3 h-3 text-emerald-400" />
