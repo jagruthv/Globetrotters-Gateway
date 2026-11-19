@@ -6,8 +6,18 @@ import {
   Navigation, 
   ShieldCheck, 
   AlertTriangle,
-  Utensils
+  Utensils,
+  Clock,
+  MessageSquare
 } from 'lucide-react';
+import {
+  getGateAcceptanceInfo,
+  getLastMileTrapWarning,
+  getCheckpostCurfewInfo,
+  getSeasonalityInfo,
+  getTempleDressCodeInfo,
+  LOCAL_TELUGU_PHRASEBOOK
+} from '../utils/travelGroundRealities';
 
 export default function PocketDossierModal({ isOpen, onClose, planResult, selectedPlaces = [] }) {
   useEffect(() => {
@@ -152,12 +162,18 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                             ? `₹${stop.individualPrice}`
                             : (stop.feesDescription || stop.fees || matchedPlace?.feesDescription || matchedPlace?.fees || 'Free');
 
+                          const lastMileTrap = getLastMileTrapWarning(stopName, stop.district);
+                          const curfewInfo = getCheckpostCurfewInfo(stopName, stop.district);
+                          const seasonInfo = getSeasonalityInfo(stopName, stop.category);
+                          const dressCodeInfo = getTempleDressCodeInfo(stopName, stop.category);
+                          const gateInfo = getGateAcceptanceInfo(stopName, stop.feesDescription, stop.individualPrice);
+
                           return (
                             <div 
                               key={`${stopName}-${sIdx}`}
-                              className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                              className="p-3.5 flex flex-col sm:flex-row sm:items-start justify-between gap-3 text-xs"
                             >
-                              <div className="flex items-start gap-3 min-w-0">
+                              <div className="flex items-start gap-3 min-w-0 flex-1">
                                 <span className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0 font-mono print:border print:border-black ${
                                   isMeal 
                                     ? 'bg-amber-500/20 text-amber-300 print:bg-transparent print:text-black' 
@@ -166,7 +182,7 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                                   {isMeal ? '🍽️' : (sIdx + 1)}
                                 </span>
 
-                                <div className="flex flex-col min-w-0">
+                                <div className="flex flex-col min-w-0 flex-1">
                                   <div className="flex items-center gap-2">
                                     <span className="font-bold text-white text-sm truncate print:text-black">
                                       {stopName}
@@ -196,6 +212,36 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                                       <span>Local Specialty: {foodHighlight}</span>
                                     </div>
                                   )}
+
+                                  {/* Ground Reality Warnings */}
+                                  {lastMileTrap && (
+                                    <div className="mt-1.5 p-2 rounded-lg bg-rose-500/10 border border-rose-500/25 text-rose-200 text-[11px] flex items-start gap-1.5 print:border print:border-black print:text-black">
+                                      <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5 print:hidden" />
+                                      <div>
+                                        <strong className="text-rose-300 print:text-black">{lastMileTrap.title}: </strong>
+                                        <span>{lastMileTrap.description}</span>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {curfewInfo && (
+                                    <div className="mt-1 p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-200 text-[10px] flex items-start gap-1 print:border print:border-black print:text-black">
+                                      <Clock className="w-3 h-3 text-amber-400 shrink-0 mt-0.5 print:hidden" />
+                                      <span><strong>Forest Gate Curfew ({curfewInfo.lockTime}):</strong> {curfewInfo.warning}</span>
+                                    </div>
+                                  )}
+
+                                  {seasonInfo && (
+                                    <div className="mt-1 text-[10px] text-sky-300/90 font-mono print:text-black">
+                                      💧 {seasonInfo.bestMonths} • {seasonInfo.summerAlert}
+                                    </div>
+                                  )}
+
+                                  {dressCodeInfo && (
+                                    <div className="mt-1 text-[10px] text-amber-300/90 font-mono print:text-black">
+                                      🛕 {dressCodeInfo.title}: {dressCodeInfo.dressCode}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
@@ -207,6 +253,9 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                                   <div className="text-[10px] text-emerald-400 font-bold print:text-black">
                                     {fee}
                                   </div>
+                                  <span className="text-[9px] block text-slate-400 print:text-black font-sans-clean">
+                                    {gateInfo.isFree ? 'Free Public Entry' : (gateInfo.type === 'ASI_CENTRAL_GOVT' ? 'ASI Ticket Req.' : 'Counter Ticket')}
+                                  </span>
                                 </div>
 
                                 <a
@@ -265,6 +314,27 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                     <strong className="block text-amber-400 print:text-black">1033</strong>
                     <span className="text-[10px] text-slate-400 print:text-gray-700">Highway Help</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Local Telugu Driver & Checkpost Phrases */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 print:border print:border-black print:bg-white print:rounded-none">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-4 h-4 text-amber-400 print:text-black" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-white print:text-black">
+                    Helpful Telugu Phrases for Drivers & Forest Checkposts
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-sans-clean print:text-black">
+                  {LOCAL_TELUGU_PHRASEBOOK.map((phrase) => (
+                    <div key={phrase.english} className="p-2 rounded-lg bg-white/[0.02] border border-white/5 print:border print:border-gray-300">
+                      <span className="text-[11px] text-slate-400 block print:text-gray-700">{phrase.english}</span>
+                      <div className="flex items-center justify-between gap-1 mt-0.5">
+                        <strong className="text-amber-300 print:text-black text-xs">{phrase.transliteration}</strong>
+                        <span className="text-xs text-slate-300 font-serif print:text-black">{phrase.telugu}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

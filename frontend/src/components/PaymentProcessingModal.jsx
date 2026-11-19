@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle2, Zap, CreditCard, Sparkles, Loader2, FlaskConical, Calendar } from 'lucide-react';
+import { X, CheckCircle2, Zap, CreditCard, Sparkles, Loader2, FlaskConical, Calendar, AlertTriangle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { generateCryptographicPassToken, formatPassDate } from '../utils/cryptoPassService';
 import { CHECKPOINTS } from '../utils/checkpointData';
@@ -378,6 +378,14 @@ export default function PaymentProcessingModal({
                     {parsedAmount === 0 ? 'Free Entry (₹0)' : `₹${parsedAmount}.00`}
                   </span>
                 </div>
+              </div>
+
+              {/* Ground Reality Notice */}
+              <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-start gap-2 text-[11px] text-slate-400 leading-relaxed font-sans-clean">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Ground Notice:</strong> Self-drive route pass. ASI heritage sites (Charminar, Golconda, Warangal Fort) require official ASI barcode tickets at the gate counter (₹25). Canyons and temples are free admission.
+                </span>
               </div>
 
               {/* Actions depending on free vs paid */}

@@ -61,7 +61,7 @@ export default function FloatingIslandNav({
     { id: 'home', label: 'Overview', icon: Compass },
     { id: 'explore', label: '59 Districts', icon: Map },
     { id: 'planner', label: 'Planner', icon: Layers, badge: selectedPlacesCount > 0 ? selectedPlacesCount : null },
-    { id: 'circuits', label: 'Packages', icon: Layers },
+    { id: 'circuits', label: 'Road Trips', icon: Layers },
     { id: 'passes', label: 'Passes', icon: Ticket }
   ];
 

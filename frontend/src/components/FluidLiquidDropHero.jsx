@@ -39,7 +39,7 @@ const HERO_DESTINATIONS = [
     advisory: 'CAVERN NOTICE: Interior pathway is damp limestone; wear non-slip shoes. Gate ticket is ₹40 per visitor.',
     foodTip: 'Araku bamboo chicken and freshly brewed valley coffee.',
     tagline: 'Deep limestone caves descending 80 meters into the scenic Eastern Ghats mountains.',
-    policyNotice: 'Ticketed Attraction: Official APTDC entry ticket is ₹40 / Person. Digital entry pass gives direct access through the gate scanner.'
+    policyNotice: 'State Tourism Site: Official APTDC entry ticket is ₹40 / Person, purchased at the entrance counter. Globetrotter provides verified route guidance, audio tours, and offline emergency support.'
   },
   {
     id: 'gandikota',
@@ -96,9 +96,9 @@ const HERO_DESTINATIONS = [
     secondaryImage: '/images/telangana/charminar_hyderabad_sovereign.jpg?v=20261119_charminar_verified',
     tag: 'DECCAN IMPERIAL HERITAGE',
     isTicketed: false,
-    entryType: 'Free Public Monument',
+    entryType: 'Public Piazza (Balcony: ASI Ticket)',
     groundRate: 0,
-    rateBadge: 'Free Entry (No Ticket Required)',
+    rateBadge: 'Free Piazza (Balcony: ₹25 ASI Ticket)',
     authority: 'Telangana Tourism & ASI Heritage',
     highlights: '1591 AD Qutb Shahi Minarets, Laad Bazaar Lac Bangles, Nimrah Irani Chai',
     bestHours: '05:00 PM – 10:30 PM (Evening Illumination)',
@@ -106,7 +106,7 @@ const HERO_DESTINATIONS = [
     advisory: 'STREET ADVISORY: Purchase pearls and bangles from certified jewelers inside the bazaar to ensure authentic hallmarks.',
     foodTip: 'Irani chai with Osmania biscuits at Nimrah Cafe.',
     tagline: '16th-century Qutb Shahi monument of four minarets framing the vibrant bazaars of Old Hyderabad.',
-    policyNotice: 'Free Public Access: Open pedestrian heritage piazza. No entry ticket, gate pass, or booking is required to visit Charminar or Laad Bazaar.'
+    policyNotice: 'Piazza Viewing is Free. Ascending to the upper gallery requires an official ASI ticket (₹25 at gate counter or asi.payumoney.com).'
   },
   {
     id: 'golconda',

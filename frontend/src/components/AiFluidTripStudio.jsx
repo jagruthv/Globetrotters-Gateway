@@ -28,6 +28,13 @@ import { offlineRouteFallback, resolveSpotCoordinates } from '../utils/offlineRo
 import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
 import LiveWeatherBadge from './LiveWeatherBadge';
 import PocketDossierModal from './PocketDossierModal';
+import { 
+  getLastMileTrapWarning,
+  getCheckpostCurfewInfo,
+  getSeasonalityInfo,
+  getTempleDressCodeInfo,
+  getGateAcceptanceInfo
+} from '../utils/travelGroundRealities';
 
 const MODULE_NOW = new Date();
 const MODULE_TODAY_ISO = MODULE_NOW.toISOString().split('T')[0];
@@ -1291,6 +1298,12 @@ export default function AiFluidTripStudio({
                             : (stop.feesDescription || stop.fees || matchedPlace?.feesDescription || matchedPlace?.fees || 'Free Entry');
                           const foodHighlight = stop.culinaryTip || stop.foodTip || matchedPlace?.culinarySpecialty || matchedPlace?.foodSpecialty;
 
+                          const lastMileTrap = getLastMileTrapWarning(stopName, stop.district || matchedPlace?.district);
+                          const curfewInfo = getCheckpostCurfewInfo(stopName, stop.district || matchedPlace?.district);
+                          const seasonInfo = getSeasonalityInfo(stopName, stop.category || matchedPlace?.category);
+                          const dressCodeInfo = getTempleDressCodeInfo(stopName, stop.category || matchedPlace?.category);
+                          const gateInfo = getGateAcceptanceInfo(stopName, stop.feesDescription || stop.fees || matchedPlace?.feesDescription || matchedPlace?.fees, stop.individualPrice);
+
                           return (
                             <div
                               key={`${stopName}-${sIdx}`}
@@ -1314,6 +1327,8 @@ export default function AiFluidTripStudio({
                                       </span>
                                       <span>•</span>
                                       <span className="text-emerald-400 font-semibold">{displayFee}</span>
+                                      <span>•</span>
+                                      <span className="text-[10px] text-slate-300 font-mono">{gateInfo.isFree ? 'Free Public Entry' : (gateInfo.type === 'ASI_CENTRAL_GOVT' ? 'ASI Ticket Req.' : 'Counter Ticket')}</span>
                                     </div>
                                   </div>
                                 </div>
@@ -1340,6 +1355,39 @@ export default function AiFluidTripStudio({
                                 <div className="pl-8 text-xs text-amber-200/90 flex items-center gap-2 font-sans-clean">
                                   <Utensils className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
                                   <span>Local Taste: <strong className="text-amber-100">{foodHighlight}</strong></span>
+                                </div>
+                              )}
+
+                              {/* Ground Reality Warnings */}
+                              {lastMileTrap && (
+                                <div className="ml-8 p-2 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-200 text-[11px] flex items-start gap-2 leading-tight">
+                                  <AlertTriangle className="w-3.5 h-3.5 text-rose-400 flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <strong className="text-rose-300">{lastMileTrap.title}: </strong>
+                                    <span>{lastMileTrap.description}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {curfewInfo && (
+                                <div className="ml-8 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-[11px] flex items-start gap-2 leading-tight">
+                                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <strong className="text-amber-300">Forest Checkpost Curfew ({curfewInfo.lockTime}): </strong>
+                                    <span>{curfewInfo.warning}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {seasonInfo && (
+                                <div className="ml-8 p-2 rounded-xl bg-sky-500/10 border border-sky-400/20 text-[11px] text-sky-200 leading-tight">
+                                  💧 <strong>Best Season:</strong> {seasonInfo.bestMonths} • <strong>Summer:</strong> {seasonInfo.summerAlert}
+                                </div>
+                              )}
+
+                              {dressCodeInfo && (
+                                <div className="ml-8 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200 leading-tight">
+                                  🛕 <strong>{dressCodeInfo.title}:</strong> {dressCodeInfo.dressCode}
                                 </div>
                               )}
 

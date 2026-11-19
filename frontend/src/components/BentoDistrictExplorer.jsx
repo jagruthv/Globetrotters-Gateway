@@ -32,6 +32,13 @@ import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
 import { getAuthenticPlacePhoto, getOfflineImageFallback } from '../utils/authenticPlacePhotos';
 import LiveWeatherBadge from './LiveWeatherBadge';
 import { ALL_59_DISTRICTS } from '../utils/offlineRouteEngine';
+import { 
+  getGateAcceptanceInfo,
+  getLastMileTrapWarning,
+  getCheckpostCurfewInfo,
+  getSeasonalityInfo,
+  getTempleDressCodeInfo
+} from '../utils/travelGroundRealities';
 
 // Pre-index coordinates for weather fallback across all 59 districts
 const DISTRICT_COORDS = {};
@@ -1275,6 +1282,13 @@ export default function BentoDistrictExplorer({
                     const rulesHazards = spot.rules_and_hazards || spot.rulesAndHazards;
                     const cellCoverage = spot.cellularCoverage || spot.cellular_coverage;
 
+                    // Ground Truth Classification
+                    const gateInfo = getGateAcceptanceInfo(spot.name, spot.feesDescription || spot.fees, spot.individualPrice);
+                    const lastMileTrap = getLastMileTrapWarning(spot.name, activeDistrictModal.name);
+                    const curfewInfo = getCheckpostCurfewInfo(spot.name, activeDistrictModal.name);
+                    const seasonInfo = getSeasonalityInfo(spot.name, spot.category);
+                    const dressCodeInfo = getTempleDressCodeInfo(spot.name, spot.category);
+
                     return (
                       <div
                         key={spot.name}
@@ -1335,18 +1349,58 @@ export default function BentoDistrictExplorer({
                                 <span className="truncate block font-medium">{spot.timings || 'Daytime Access'}</span>
                               </div>
                               <div>
-                                <span className="text-slate-500 block">Ticket / Entry Fee</span>
-                                <span className="text-emerald-400 block font-semibold truncate">{spot.feesDescription || 'Free Access'}</span>
+                                <span className="text-slate-500 block">Gate Ticket Mode</span>
+                                <span className={`block font-semibold truncate ${gateInfo.isFree ? 'text-emerald-400' : 'text-amber-300'}`}>
+                                  {gateInfo.isFree ? 'Free Public Entry' : (gateInfo.type === 'ASI_CENTRAL_GOVT' ? 'ASI Ticket Req.' : 'Counter Ticket')}
+                                </span>
                               </div>
                               <div>
                                 <span className="text-slate-500 block">Elevation</span>
                                 <span>{spot.elevation || 'Normal Ground'}</span>
                               </div>
                               <div>
-                                <span className="text-slate-500 block">Mobile Coverage</span>
-                                <span className="text-emerald-400 block truncate">{cellCoverage ? 'Verified' : 'Active 4G'}</span>
+                                <span className="text-slate-500 block">Mobile Signal</span>
+                                <span className={cellCoverage?.toLowerCase().includes('0') || cellCoverage?.toLowerCase().includes('dead') ? 'text-rose-400 block truncate font-bold' : 'text-emerald-400 block truncate'}>
+                                  {cellCoverage?.toLowerCase().includes('0') || cellCoverage?.toLowerCase().includes('dead') ? 'Zero Signal Area' : 'Active 4G'}
+                                </span>
                               </div>
                             </div>
+
+                            {/* Critical Last-Mile Road Trap Alert */}
+                            {lastMileTrap && (
+                              <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-start gap-2 text-[11px] text-rose-200 leading-tight">
+                                <AlertTriangle className="w-3.5 h-3.5 text-rose-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                  <strong className="text-rose-300">{lastMileTrap.title}: </strong>
+                                  <span>{lastMileTrap.description}</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Forest Checkpost Curfew Warning */}
+                            {curfewInfo && (
+                              <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2 text-[11px] text-amber-200 leading-tight">
+                                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                                <div>
+                                  <strong className="text-amber-300">Forest Checkpost Curfew ({curfewInfo.lockTime}): </strong>
+                                  <span>{curfewInfo.warning}</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Water Seasonality Status */}
+                            {seasonInfo && (
+                              <div className="p-2 rounded-xl bg-sky-500/10 border border-sky-400/20 text-[11px] text-sky-200 leading-tight flex items-center gap-1.5">
+                                <span>💧 <strong>Best Season:</strong> {seasonInfo.bestMonths} • <strong>Summer:</strong> {seasonInfo.summerAlert}</span>
+                              </div>
+                            )}
+
+                            {/* Temple Dress Code Alert */}
+                            {dressCodeInfo && (
+                              <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200 leading-tight">
+                                🛕 <strong>{dressCodeInfo.title}:</strong> {dressCodeInfo.dressCode}
+                              </div>
+                            )}
 
                             {/* Authentic Culinary & Craft Highlights */}
                             {(authenticFood || authenticCraft) && (

@@ -18,10 +18,14 @@ import {
   FileText,
   Printer,
   AlertCircle,
-  XCircle
+  XCircle,
+  AlertTriangle,
+  Smartphone
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { formatPassDate, formatPassDateShort, getPassDateStatus } from '../utils/cryptoPassService';
+import { getGateAcceptanceInfo } from '../utils/travelGroundRealities';
+import { downloadPassImage } from '../utils/passImageExporter';
 
 export default function HolographicGatePass({ 
   passData = null,
@@ -600,6 +604,27 @@ export default function HolographicGatePass({
           )
         )}
 
+        {/* Zero-Signal Hill Blackout Advisory */}
+        <div className="print:hidden w-full max-w-2xl p-3.5 rounded-2xl bg-sky-500/10 border border-sky-400/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300 font-sans-clean shadow-md">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 shrink-0">
+              <Smartphone className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold text-white">Zero-Signal Hill Blackout Advisory</span>
+              <span className="text-[11px] text-slate-400">Mobile signal drops to 0 bars in Eastern Ghats, Araku, and Srisailam. Save pass now.</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => downloadPassImage(activePass, qrCodeDataUrl)}
+            className="px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-950" />
+            <span>Save to Photos (PNG)</span>
+          </button>
+        </div>
+
         {/* THE MOVIE TICKET CONTAINER */}
         <motion.div
           id="printable-gate-ticket"
@@ -611,13 +636,13 @@ export default function HolographicGatePass({
           {/* Print-Only Official Apex Tourism Header */}
           <div className="hidden print:block p-5 border-b-2 border-slate-900 text-center">
             <div className="text-[11px] font-bold tracking-[0.2em] uppercase text-slate-900 font-mono">
-              Government of Andhra Pradesh • Government of Telangana
+              Andhra Pradesh & Telangana Cultural Heritage Corridors
             </div>
             <div className="text-xl font-black tracking-tight text-slate-950 uppercase mt-0.5">
-              Department of Tourism & Archaeology • Official Gate Pass
+              Globetrotter Gateway • Digital Travel Voucher & Route Pass
             </div>
             <div className="text-[10px] text-slate-600 font-mono mt-1">
-              Official Digital Pass • Verified Entry Ticket
+              Verified Self-Drive Itinerary • Offline Gate Voucher
             </div>
           </div>
 
@@ -629,10 +654,10 @@ export default function HolographicGatePass({
               </div>
               <div className="flex flex-col">
                 <span className="text-[11px] font-bold text-white tracking-wider font-mono">
-                  GLOBETROTTER OFFICIAL MONUMENT PASS
+                  GLOBETROTTER TRAVEL COMPANION PASS
                 </span>
                 <span className="text-[9px] text-amber-300/80 tracking-widest font-mono">
-                  OFFICIAL AP & TG GATE TICKET
+                  VERIFIED AP & TG ROUTE PASS
                 </span>
               </div>
             </div>
@@ -674,7 +699,7 @@ export default function HolographicGatePass({
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-white/[0.05] text-slate-200 border border-white/10 font-semibold font-mono uppercase">
-                  Fast-Track Gate Access
+                  Digital Travel Companion
                 </span>
                 <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold font-mono">
                   Order ID: {activePass.reference}
@@ -683,6 +708,19 @@ export default function HolographicGatePass({
               <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-sans-clean">
                 {activePass.circuitName}
               </h3>
+            </div>
+
+            {/* Gate Acceptance Reality Notice */}
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5 text-xs text-amber-200/90 font-sans-clean">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex flex-col gap-1">
+                <span className="font-bold text-amber-300">Gate Entry Reality Guide:</span>
+                <span className="text-[11px] text-slate-300 leading-relaxed">
+                  • <strong>ASI Heritage Monuments</strong> (Golconda, Charminar, Warangal Fort): Guards strictly scan official Central Govt ASI barcode tickets (₹25 at counter / asi.payumoney.com).<br/>
+                  • <strong>Natural Landscapes & Temples</strong> (Gandikota Canyon, Ramappa Temple): Free public admission — no ticket or pass required.<br/>
+                  • <strong>State Tourism Counters</strong> (Borra Caves): State ticket issued at gate counter (Cash/UPI accepted).
+                </span>
+              </div>
             </div>
 
             {/* Movie-Ticket 4-Column Metadata Grid */}
@@ -728,18 +766,18 @@ export default function HolographicGatePass({
               {/* Gate / Screen */}
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-mono text-slate-400 flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-amber-400" /> Gate Checkpoint
+                  <MapPin className="w-3 h-3 text-amber-400" /> Checkpoint
                 </span>
                 <span className="text-xs font-bold text-amber-300 mt-1">
-                  Gate 01 • Fast-Track
+                  Gate 01 • Entry
                 </span>
-                <span className="text-[10px] text-slate-500">Express Entry</span>
+                <span className="text-[10px] text-slate-500">Corridor Pass</span>
               </div>
 
               {/* Rate */}
               <div className="flex flex-col">
                 <span className="text-[10px] uppercase font-mono text-slate-400 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-emerald-400" /> Official Fare
+                  <Clock className="w-3 h-3 text-emerald-400" /> Fare / Fee
                 </span>
                 <span className="text-xs font-bold text-emerald-400 mt-1">
                   {activePass.gateFeeTotal}
@@ -757,6 +795,7 @@ export default function HolographicGatePass({
                 <div className="flex flex-wrap gap-1.5">
                   {activePass.placesAllowed.map((p) => {
                     const isRedeemed = isSpotVisited(p);
+                    const gateInfo = getGateAcceptanceInfo(p);
                     return (
                       <span
                         key={p}
@@ -778,6 +817,9 @@ export default function HolographicGatePass({
                           <>
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                             <span>{p}</span>
+                            <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded border ${gateInfo.badgeClass}`}>
+                              {gateInfo.isFree ? 'Free' : (gateInfo.type === 'ASI_CENTRAL_GOVT' ? 'ASI Counter' : 'Counter')}
+                            </span>
                           </>
                         )}
                       </span>
@@ -906,18 +948,30 @@ export default function HolographicGatePass({
                 </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  document.title = `Globetrotter-Gate-Pass-${activePass.reference}`;
-                  window.print();
-                }}
-                className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer font-sans-clean shadow-sm"
-                title="Download or print entry pass voucher"
-              >
-                <Download className="w-3.5 h-3.5 text-slate-950" />
-                <span>Save Pass (PDF)</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => downloadPassImage(activePass, qrCodeDataUrl)}
+                  className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer font-sans-clean shadow-sm active:scale-95"
+                  title="Save pass as PNG photo into gallery for offline ghat travel"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-950" />
+                  <span>Save to Photos (PNG)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    document.title = `Globetrotter-Gate-Pass-${activePass.reference}`;
+                    window.print();
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer font-sans-clean"
+                  title="Download or print entry pass voucher"
+                >
+                  <Printer className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Save PDF</span>
+                </button>
+              </div>
             </div>
 
             {/* Print-Only Gate Scanner Instruction Footnote */}
