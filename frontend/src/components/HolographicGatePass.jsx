@@ -185,7 +185,10 @@ export default function HolographicGatePass({
   // ── Render Tax Invoice Modal ────────────────────────────────────────────────
   const renderReceiptModal = () => {
     if (!selectedReceiptPass) return null;
-    const rawPrice = parseFloat(String(selectedReceiptPass.gateFeeTotal || '40').replace(/[^0-9.]/g, '')) || 40.0;
+    const feeStr = String(selectedReceiptPass.gateFeeTotal || '');
+    const isFree = feeStr.toLowerCase().includes('free') || feeStr.includes('0.00') || feeStr === '₹0' || feeStr === '0';
+    const parsedNumber = parseFloat(feeStr.replace(/[^0-9.]/g, ''));
+    const rawPrice = isFree ? 0 : (Number.isFinite(parsedNumber) ? parsedNumber : 0);
     const baseAmount = (rawPrice / 1.18).toFixed(2);
     const gstTotal = (rawPrice - parseFloat(baseAmount)).toFixed(2);
     const cgst = (parseFloat(gstTotal) / 2).toFixed(2);
@@ -556,8 +559,8 @@ export default function HolographicGatePass({
                 <CheckCircle className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-white font-sans-clean">Turnstile Checkpoint Cleared</span>
-                <span className="text-[10px] text-emerald-300/80 font-mono">Official State Pass Verified • Single Admission Valid</span>
+                <span className="text-xs font-bold text-white font-sans-clean">Gate Admission Cleared</span>
+                <span className="text-[10px] text-emerald-300/80 font-mono">Official Entry Pass Verified • Valid for Entry</span>
               </div>
             </div>
             <span className="px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider">
@@ -731,7 +734,7 @@ export default function HolographicGatePass({
                           {v.name}: Visited • Entry Used
                         </span>
                         <span className="text-[11px] text-slate-400">
-                          Admitted at {v.time || '10:30 AM'} ({v.date || 'Today'}) • {v.gate || 'Turnstile'}
+                          Admitted at {v.time || '10:30 AM'} ({v.date || 'Today'}) • {v.gate || 'Entrance Gate'}
                         </span>
                       </div>
                     </div>
@@ -777,7 +780,7 @@ export default function HolographicGatePass({
                     </div>
                   ) : (
                     <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean max-w-xs">
-                      Show this QR code at the entrance turnstile for fast-track entry.
+                      Show this QR code at the monument entrance gate for fast-track entry.
                     </p>
                   )}
                   <span className="text-[10px] text-amber-300 font-mono font-semibold tracking-wider">
@@ -882,7 +885,7 @@ export default function HolographicGatePass({
 
             {/* Print-Only Gate Scanner Instruction Footnote */}
             <div className="hidden print:flex flex-col items-center justify-between gap-1 pt-4 border-t-2 border-slate-900 text-[10px] text-slate-800 font-mono text-center">
-              <span className="font-bold">Present this printed voucher or digital QR at the monument turnstile scanner for admission.</span>
+              <span className="font-bold">Present this printed voucher or digital QR at the monument entrance scanner for admission.</span>
               <span>Pass Order: {activePass.reference} • Non-Transferable • State Tourism Helpline: 1363 (24/7 Toll-Free)</span>
             </div>
 
@@ -921,13 +924,13 @@ export default function HolographicGatePass({
 
             <div className="flex flex-col items-center gap-1 pt-2">
               <span className="px-3 py-1 rounded-full bg-slate-950 text-white text-[11px] font-mono font-bold tracking-wider uppercase">
-                Official Gate Turnstile Scan
+                Official Gate Entry Scan
               </span>
               <h3 className="text-xl font-black text-slate-950 mt-1">
                 {activePass.circuitName}
               </h3>
               <p className="text-xs text-slate-600 font-medium">
-                Hold phone toward conductor scanner or camera
+                Hold phone toward gate officer scanner or camera
               </p>
             </div>
 
@@ -936,7 +939,7 @@ export default function HolographicGatePass({
               {qrCodeDataUrl && (
                 <img
                   src={qrCodeDataUrl}
-                  alt="High-Contrast Turnstile QR Code"
+                  alt="High-Contrast Gate Entry QR Code"
                   className="w-full h-full object-contain"
                 />
               )}

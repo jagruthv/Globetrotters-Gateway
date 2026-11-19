@@ -72,6 +72,18 @@ export default function AiFluidTripStudio({
       console.warn('Failed to persist plan to localStorage:', e);
     }
   }, []);
+
+  // Derive whether the active plan matches the currently staged destinations
+  const currentPlacesHash = useMemo(() => {
+    return selectedPlaces.map(p => p.name).sort().join('|');
+  }, [selectedPlaces]);
+
+  const isPlanInSync = useMemo(() => {
+    if (!planResult) return false;
+    if (!planResult.placesHash) return true;
+    return planResult.placesHash === currentPlacesHash;
+  }, [planResult, currentPlacesHash]);
+
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [generationError, setGenerationError] = useState(null);
   const [chatSessionId] = useState(() => 'trip_chat_' + Math.random().toString(36).substring(2, 9));
@@ -291,6 +303,8 @@ export default function AiFluidTripStudio({
           timings: p.timings || `${p.openingTime || '09:00 AM'} – ${p.closingTime || '06:00 PM'}`,
           openingTime: p.openingTime || '09:00 AM',
           closingTime: p.closingTime || '06:00 PM',
+          bestTimeToVisit: p.golden_hour || p.goldenHour || p.bestVisitingHoursStart || 'Morning or late afternoon',
+          typicalDwellTime: p.typicalDwellTime || '1.5 Hours',
           latitude: coords.lat,
           longitude: coords.lng,
           individualPrice: ticket,
@@ -306,7 +320,7 @@ export default function AiFluidTripStudio({
     };
 
     try {
-      // 1. Attempt Spring Boot Backend (Real OSRM Road Distance Matrix + AI Reasoning)
+      // 1. Attempt Gemini 3.1 Flash Lite Edge Plan Generator
       const remotePlan = await tripService.generateAiPlan(payload);
       const calcDurationMs = calcDuration(startTime);
 
@@ -314,18 +328,18 @@ export default function AiFluidTripStudio({
         const normalized = {
           success: true,
           calcDurationMs,
-          modelUsed: 'Smart Route Optimizer',
+          modelUsed: 'AI Travel Engine',
           isOfflineFallback: false,
           days: remotePlan.days || remotePlan.itinerary || [],
           itinerary: remotePlan.itinerary || remotePlan.days || [],
           totalRoadKm: remotePlan.totalRoadKm,
           totalDriveHours: remotePlan.totalDriveHours,
           summary: remotePlan.summary,
-          travelAdvice: remotePlan.travelAdvice || []
+          travelAdvice: remotePlan.travelAdvice || [],
+          placesHash: selectedPlaces.map(p => p.name).sort().join('|')
         };
         setPlanResult(normalized);
         initializeChatThread(normalized);
-        setIsGenerating(false);
         return;
       }
       throw new Error('Backend plan empty, running local route engine');
@@ -339,7 +353,7 @@ export default function AiFluidTripStudio({
       });
       const calcDurationMs = calcDuration(startTime);
 
-      if (localPlan) {
+      if (localPlan && localPlan.days) {
         const normalized = {
           success: true,
           calcDurationMs,
@@ -348,15 +362,17 @@ export default function AiFluidTripStudio({
           days: localPlan.days || [],
           itinerary: localPlan.days || [],
           totalRoadKm: localPlan.meta?.totalKm,
-          totalDriveHours: localPlan.meta?.estimatedDriveHours + ' hrs',
+          totalDriveHours: (localPlan.meta?.estimatedDriveHours || 3) + ' hrs',
           summary: `Offline constraint plan sequencing ${selectedPlaces.length} attractions across ${localPlan.days?.length} days based on road distance and gate hours.`,
-          meta: localPlan.meta
+          meta: localPlan.meta,
+          placesHash: selectedPlaces.map(p => p.name).sort().join('|')
         };
         setPlanResult(normalized);
         initializeChatThread(normalized);
       } else {
         setGenerationError('Failed to generate tour plan. Please re-select locations.');
       }
+    } finally {
       setIsGenerating(false);
     }
   };
@@ -476,9 +492,11 @@ export default function AiFluidTripStudio({
       }
 
       if (targetPlace) {
-        const feeText = targetPlace.individualPrice === 0 || (targetPlace.fees && String(targetPlace.fees).toLowerCase().includes('free'))
-          ? 'Free Public Entry'
-          : `₹${targetPlace.individualPrice || targetPlace.fees || 40}`;
+        const isFree = targetPlace.individualPrice === 0 || (targetPlace.fees && String(targetPlace.fees).toLowerCase().includes('free'));
+        const priceNum = typeof targetPlace.individualPrice === 'number'
+          ? targetPlace.individualPrice
+          : (parseFloat(targetPlace.fees) || 0);
+        const feeText = isFree || priceNum === 0 ? 'Free Public Entry' : `₹${priceNum}`;
         const timing = targetPlace.timings || '9:00 AM – 5:30 PM';
         const hazards = targetPlace.rules_and_hazards || targetPlace.rulesAndHazards || 'Modest attire recommended. Carry drinking water and sun protection.';
         const food = targetPlace.culinarySpecialty ? `Verified local specialty: ${targetPlace.culinarySpecialty}.` : '';
@@ -895,6 +913,14 @@ export default function AiFluidTripStudio({
                     <span>{generationError}</span>
                   </div>
                 )}
+
+                {planResult && !isPlanInSync && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center gap-2 font-sans-clean">
+                    <Sparkles className="w-4 h-4 flex-shrink-0 text-amber-400" />
+                    <span>Destination selection updated. Click below to regenerate your day-by-day itinerary.</span>
+                  </div>
+                )}
+
                 <button
                   disabled={selectedPlaces.length === 0 || isGenerating}
                   onClick={() => handleGeneratePlan()}
@@ -924,7 +950,7 @@ export default function AiFluidTripStudio({
         </div>
 
         {/* Synthesized Itinerary View */}
-        {planResult && (
+        {planResult && isPlanInSync && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -968,7 +994,11 @@ export default function AiFluidTripStudio({
                     className="px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs flex items-center gap-2 transition-all shadow-md font-sans-clean cursor-pointer active:scale-[0.98]"
                   >
                     <Ticket className="w-4 h-4 text-slate-950" />
-                    <span>Book Entry Pass • ₹{planResult.packagePrice || stagedPassPrice}</span>
+                    <span>
+                      {(typeof planResult.packagePrice === 'number' ? planResult.packagePrice : stagedPassPrice) === 0
+                        ? 'Get Free Entry Pass (₹0)'
+                        : `Book Entry Pass • ₹${typeof planResult.packagePrice === 'number' ? planResult.packagePrice : stagedPassPrice}`}
+                    </span>
                   </button>
 
                   <button
@@ -1091,33 +1121,39 @@ export default function AiFluidTripStudio({
               )}
 
               {/* Day-by-Day Schedule Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className={`grid grid-cols-1 ${
+                (planResult.days || planResult.itinerary || []).length === 1 
+                  ? 'max-w-2xl mx-auto' 
+                  : (planResult.days || planResult.itinerary || []).length === 2 
+                  ? 'lg:grid-cols-2' 
+                  : 'md:grid-cols-2 lg:grid-cols-3'
+              } gap-6`}>
                 {(planResult.days || planResult.itinerary || []).map((dayPlan) => {
                   const dayStops = dayPlan.stops || dayPlan.legs || [];
                   return (
                     <div
                       key={dayPlan.dayNumber || dayPlan.day}
-                      className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-4"
+                      className="p-5 md:p-6 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col gap-4 shadow-xl"
                     >
                       <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                        <span className="text-sm font-bold text-amber-300 font-mono">
+                        <span className="text-sm font-bold text-amber-300 font-mono tracking-wide">
                           Day {dayPlan.dayNumber || dayPlan.day}
                         </span>
                         <span className="text-xs text-slate-400 font-mono">
-                          {dayPlan.estimatedDistance || `${dayPlan.dayKm || 80} km`} • {dayPlan.estimatedDuration || '3.5 hrs'}
+                          {dayPlan.estimatedDistance || `${dayPlan.dayKm || dayPlan.totalKm || 80} km`} • {dayPlan.estimatedDuration || dayPlan.estimatedDriveTime || '3.5 hrs'}
                         </span>
                       </div>
 
-                      <h4 className="text-sm font-bold text-white font-sans-clean">
-                        {dayPlan.title || dayPlan.theme || `Day ${dayPlan.dayNumber || dayPlan.day} Exploration`}
+                      <h4 className="text-base font-bold text-white font-sans-clean leading-snug">
+                        {dayPlan.theme || dayPlan.title || `Day ${dayPlan.dayNumber || dayPlan.day} Exploration`}
                       </h4>
 
                       <p className="text-xs text-slate-300 italic leading-relaxed">
-                        {dayPlan.summary || 'Scenic highway travel & sightseeing stops.'}
+                        {dayPlan.daySummary || dayPlan.summary || 'Scenic highway travel & sightseeing stops.'}
                       </p>
 
                       {/* Stops List */}
-                      <div className="space-y-3">
+                      <div className="space-y-3.5">
                         {dayStops.map((stop, sIdx) => {
                           const stopName = stop.name || stop.spotName || 'Landmark';
                           const matchedPlace = selectedPlaces.find(p => p.name?.toLowerCase() === stopName?.toLowerCase());
@@ -1129,7 +1165,7 @@ export default function AiFluidTripStudio({
                             return (
                               <div
                                 key={`meal-${sIdx}-${stopName}`}
-                                className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex flex-col gap-1.5"
+                                className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex flex-col gap-2"
                               >
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2 min-w-0">
@@ -1142,7 +1178,7 @@ export default function AiFluidTripStudio({
                                   </div>
                                   <div className="flex items-center gap-2 flex-shrink-0">
                                     <span className="text-[10px] text-amber-300 font-mono">
-                                      {stop.arrivalTime || '01:00 PM'} – {stop.departureTime || '01:45 PM'}
+                                      {stop.timeSlot || `${stop.arrivalTime || '01:00 PM'} – ${stop.departureTime || '01:45 PM'}`}
                                     </span>
                                   </div>
                                 </div>
@@ -1153,7 +1189,7 @@ export default function AiFluidTripStudio({
                                 {stop.foodTip && (
                                   <div className="pl-7 text-[11px] text-amber-200 flex items-center gap-1.5 font-sans-clean">
                                     <Utensils className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                                    <span className="truncate">{stop.foodTip}</span>
+                                    <span>{stop.foodTip}</span>
                                   </div>
                                 )}
                                 <div className="pl-7 pt-1">
@@ -1161,7 +1197,7 @@ export default function AiFluidTripStudio({
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stopName + ' restaurant ' + (stop.district || ''))}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-400 hover:text-slate-950 text-amber-200 text-[10px] font-semibold transition-all border border-amber-500/30"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-400 hover:text-slate-950 text-amber-200 text-[11px] font-semibold transition-all border border-amber-500/30"
                                   >
                                     <Navigation className="w-3 h-3 text-amber-400" />
                                     <span>Open in Google Maps</span>
@@ -1171,65 +1207,83 @@ export default function AiFluidTripStudio({
                             );
                           }
 
+                          const displayArrival = stop.arrivalTime || (stop.timeSlot ? stop.timeSlot.split('–')[0]?.trim() : (sIdx === 0 ? '09:00 AM' : sIdx === 1 ? '11:15 AM' : sIdx === 2 ? '02:30 PM' : '04:45 PM'));
+                          const displayDeparture = stop.departureTime || (stop.timeSlot ? stop.timeSlot.split('–')[1]?.trim() : (sIdx === 0 ? '10:30 AM' : sIdx === 1 ? '12:45 PM' : sIdx === 2 ? '04:00 PM' : '06:15 PM'));
+                          const displayTimeWindow = stop.timeSlot || `${displayArrival} – ${displayDeparture}`;
+
                           const displayFee = (stop.individualPrice != null && stop.individualPrice > 0)
                             ? `₹${stop.individualPrice} Entry`
                             : (stop.feesDescription || stop.fees || matchedPlace?.feesDescription || matchedPlace?.fees || 'Free Entry');
-                          const foodHighlight = stop.foodTip || matchedPlace?.culinarySpecialty || matchedPlace?.foodSpecialty;
+                          const foodHighlight = stop.culinaryTip || stop.foodTip || matchedPlace?.culinarySpecialty || matchedPlace?.foodSpecialty;
 
                           return (
                             <div
                               key={`${stopName}-${sIdx}`}
-                              className="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col gap-2"
+                              className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col gap-2.5 transition-all hover:border-white/20"
                             >
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <span className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-300 font-bold text-[10px] flex items-center justify-center font-mono flex-shrink-0">
+                              {/* Top Row: Spot Number + Full Destination Title + Weather Badge */}
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                                  <span className="w-6 h-6 rounded-full bg-amber-400/20 text-amber-300 font-bold text-xs flex items-center justify-center font-mono flex-shrink-0 mt-0.5">
                                     {sIdx + 1}
                                   </span>
-                                  <span className="text-xs font-bold text-white truncate font-sans-clean">
-                                    {stopName}
-                                  </span>
+                                  <div className="flex flex-col min-w-0">
+                                    <h5 className="text-sm font-bold text-white font-sans-clean leading-snug break-words">
+                                      {stopName}
+                                    </h5>
+                                    <div className="flex items-center gap-2 text-[11px] text-slate-400 font-sans-clean mt-1 flex-wrap">
+                                      <span className="text-slate-300 font-medium">{stop.district || matchedPlace?.district || 'Regional'}</span>
+                                      <span>•</span>
+                                      <span className="text-amber-300 font-mono font-medium">
+                                        {displayTimeWindow}
+                                      </span>
+                                      <span>•</span>
+                                      <span className="text-emerald-400 font-semibold">{displayFee}</span>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
+
+                                <div className="flex flex-col items-end gap-1 flex-shrink-0">
                                   <LiveWeatherBadge latitude={stopLat} longitude={stopLng} compact={true} />
-                                  <span className="text-[10px] text-amber-300 font-mono">
-                                    {stop.arrivalTime || '09:30 AM'}
-                                  </span>
+                                  {stop.bestTimeToVisit && (
+                                    <span className="text-[9.5px] text-amber-300/80 font-mono">
+                                      Best: {stop.bestTimeToVisit}
+                                    </span>
+                                  )}
                                 </div>
                               </div>
 
-                              <div className="flex items-center justify-between text-[11px] text-slate-400 font-sans-clean pl-7">
-                                <span>
-                                  {stop.district || 'Regional'} • {stop.dwellMinutes ? `Suggested Stay: ${Math.round(stop.dwellMinutes / 60 * 10) / 10}h` : '1.5h Visit'}
-                                </span>
-                                <span className="text-emerald-400 font-semibold font-sans-clean">
-                                  {displayFee}
-                                </span>
-                              </div>
-
-                              {foodHighlight && (
-                                <div className="pl-7 text-[11px] text-amber-200/90 flex items-center gap-1.5 font-sans-clean">
-                                  <Utensils className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                                  <span className="truncate">Local Taste: <strong>{foodHighlight}</strong></span>
+                              {/* AI Scheduling Rationale */}
+                              {stop.whyThisTime && (
+                                <div className="pl-8 text-[11px] text-slate-300 font-sans-clean italic bg-white/[0.02] p-2 rounded-lg border border-white/5 leading-relaxed">
+                                  "{stop.whyThisTime}"
                                 </div>
                               )}
 
-                              <div className="pl-7 pt-0.5 flex items-center justify-between gap-2 flex-wrap">
+                              {/* Local Taste & Culinary Highlight */}
+                              {foodHighlight && (
+                                <div className="pl-8 text-xs text-amber-200/90 flex items-center gap-2 font-sans-clean">
+                                  <Utensils className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                                  <span>Local Taste: <strong className="text-amber-100">{foodHighlight}</strong></span>
+                                </div>
+                              )}
+
+                              {/* Action Footer: Maps Link & Emergency Medical Distance */}
+                              <div className="pl-8 pt-1 flex items-center justify-between gap-2 flex-wrap">
                                 <a
                                   href={matchedPlace?.googleMapsUri || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stopName + ' ' + (stop.district || ''))}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-amber-400 hover:text-slate-950 text-slate-300 text-[10px] font-semibold transition-all border border-white/10 hover:border-amber-400/50"
-                                  title={`Open ${stopName} in Google Maps`}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-400/10 hover:bg-amber-400 text-amber-300 hover:text-slate-950 text-xs font-semibold transition-colors border border-amber-400/25"
                                 >
-                                  <Navigation className="w-3 h-3 text-amber-400" />
+                                  <Navigation className="w-3.5 h-3.5" />
                                   <span>Open in Google Maps</span>
                                 </a>
 
                                 {stop.emergencyMedicalDistance && (
                                   <div className="text-[10px] text-slate-400 flex items-center gap-1 font-sans-clean">
-                                    <ShieldCheck className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                                    <span className="truncate">{stop.emergencyMedicalDistance}</span>
+                                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+                                    <span>{stop.emergencyMedicalDistance}</span>
                                   </div>
                                 )}
                               </div>
@@ -1389,7 +1443,7 @@ export default function AiFluidTripStudio({
           </motion.div>
         )}
 
-        {/* 1-Page Printable / Downloadable Pocket Trip Dossier */}
+        {/* 1-Page Printable / Downloadable Pocket Trip Guide */}
         <PocketDossierModal
           isOpen={isPocketDossierOpen}
           onClose={() => setIsPocketDossierOpen(false)}

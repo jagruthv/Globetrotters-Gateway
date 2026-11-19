@@ -45,13 +45,13 @@ export default function PaymentProcessingModal({
   const timerRef = useRef(null);
 
   const rawVal = bookingDetails?.totalAmount !== undefined ? bookingDetails.totalAmount : bookingDetails?.price;
-  let parsedAmount = 40;
+  let parsedAmount = 0;
   if (rawVal !== undefined && rawVal !== null) {
     if (rawVal === 0 || rawVal === '0' || rawVal === '₹0' || String(rawVal).toLowerCase().includes('free')) {
       parsedAmount = 0;
     } else {
       const parsed = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
-      parsedAmount = Number.isFinite(parsed) ? parsed : 40;
+      parsedAmount = Number.isFinite(parsed) ? parsed : 0;
     }
   }
 
@@ -93,7 +93,7 @@ export default function PaymentProcessingModal({
       ? 'Free Public Entry (₹0.00)' 
       : isCounterPay 
         ? `₹${parsedAmount}.00 (Pay at Gate)` 
-        : `₹${parsedAmount}.00 (Paid • Test Mode)`;
+        : `₹${parsedAmount}.00 (Official Paid Entry)`;
 
     const passPayload = {
       reference: refNumber,
@@ -225,13 +225,13 @@ export default function PaymentProcessingModal({
                   />
                 </div>
                 <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono">
-                  <span>Simulating transaction</span>
-                  <span className="text-amber-400 font-bold">{secondsLeft}s remaining</span>
+                  <span>Processing digital pass</span>
+                  <span className="text-amber-400 font-bold">{secondsLeft}s</span>
                 </div>
               </div>
 
-              <div className="text-[11px] text-slate-500 bg-white/[0.02] border border-white/5 rounded-xl p-2.5 w-full">
-                Demo mode: No money deducted. Generating official entry pass.
+              <div className="text-[11px] text-slate-400 bg-white/[0.02] border border-white/5 rounded-xl p-2.5 w-full text-center">
+                Generating official digital pass with verified QR code.
               </div>
             </div>
           ) : (
@@ -241,15 +241,15 @@ export default function PaymentProcessingModal({
               <div className="flex flex-col items-center text-center gap-1.5 pt-1">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/20 text-amber-300 text-[11px] font-semibold">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Instant Booking • Demo Mode</span>
+                  <span>Instant Digital Pass</span>
                 </div>
                 <h3 className="text-xl font-bold tracking-tight text-white mt-1">
                   {parsedAmount === 0 ? 'Official Free Admission Pass' : 'Confirm Entry Pass'}
                 </h3>
                 <p className="text-xs text-slate-400 max-w-xs">
                   {parsedAmount === 0 
-                    ? 'Direct digital QR admission for public state heritage sights.'
-                    : 'Confirm your ticket for direct gate entry.'}
+                    ? 'Direct digital admission pass for public heritage sights.'
+                    : 'Get your official entry pass instantly on your device.'}
                 </p>
               </div>
 
@@ -269,14 +269,9 @@ export default function PaymentProcessingModal({
                 </div>
                 <div className="flex items-center justify-between pt-0.5">
                   <span className="text-sm font-bold text-white">Entry Fare</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                      Demo Mode
-                    </span>
-                    <span className="text-lg font-extrabold text-amber-400 font-mono">
-                      {parsedAmount === 0 ? 'Free Entry (₹0)' : `₹${parsedAmount}.00`}
-                    </span>
-                  </div>
+                  <span className="text-lg font-extrabold text-amber-400 font-mono">
+                    {parsedAmount === 0 ? 'Free Entry (₹0)' : `₹${parsedAmount}.00`}
+                  </span>
                 </div>
               </div>
 
@@ -290,7 +285,7 @@ export default function PaymentProcessingModal({
                     className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.98]"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Issue Free Digital Gate Pass (₹0)</span>
+                    <span>Issue Free Digital Pass (₹0)</span>
                   </button>
                 ) : (
                   <>
@@ -301,7 +296,7 @@ export default function PaymentProcessingModal({
                       className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer disabled:opacity-50 font-sans-clean active:scale-[0.98]"
                     >
                       <CreditCard className="w-4 h-4" />
-                      <span>Pay ₹{parsedAmount} • Instant Ticket</span>
+                      <span>Pay ₹{parsedAmount} & Get Pass</span>
                     </button>
 
                     <button
@@ -311,7 +306,7 @@ export default function PaymentProcessingModal({
                       className="w-full py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-slate-300 border border-white/10 font-medium text-xs flex items-center justify-center gap-2 transition-all cursor-pointer font-sans-clean"
                     >
                       <Zap className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Reserve Pass • Pay at Monument Counter</span>
+                      <span>Reserve Pass • Pay at Counter</span>
                     </button>
                   </>
                 )}

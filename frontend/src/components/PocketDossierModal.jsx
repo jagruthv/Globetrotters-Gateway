@@ -24,7 +24,9 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
 
   const days = planResult.days || planResult.itinerary || [];
   const totalKm = planResult.totalRoadKm || 120;
-  const packagePrice = planResult.packagePrice || 40;
+  const packagePrice = typeof planResult.packagePrice === 'number'
+    ? planResult.packagePrice
+    : (parseFloat(planResult.packagePrice) || 0);
 
   const handlePrint = () => {
     window.print();
@@ -37,7 +39,7 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
           className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md print:p-0 print:bg-white print:static"
           role="dialog"
           aria-modal="true"
-          aria-labelledby="pocket-dossier-title"
+          aria-labelledby="pocket-trip-guide-title"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 15 }}
@@ -53,7 +55,7 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                   <Printer className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 id="pocket-dossier-title" className="text-sm sm:text-base font-bold text-white font-sans-clean">
+                  <h3 id="pocket-trip-guide-title" className="text-sm sm:text-base font-bold text-white font-sans-clean">
                     Pocket Trip Guide
                   </h3>
                   <span className="text-[11px] text-slate-400 font-sans-clean">
@@ -112,7 +114,7 @@ export default function PocketDossierModal({ isOpen, onClose, planResult, select
                     Scenic Route: <strong>{totalKm} km</strong>
                   </div>
                   <div className="text-xs font-mono text-emerald-400 font-bold print:text-emerald-700">
-                    Pass Package: ₹{packagePrice}
+                    Pass Package: {packagePrice === 0 ? 'Free Entry (₹0)' : `₹${packagePrice}`}
                   </div>
                 </div>
               </div>

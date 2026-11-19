@@ -70,7 +70,7 @@ const CHECKPOINTS = [
     district: 'Alluri Sitharama Raju (ASR)', 
     state: 'Andhra Pradesh',
     fee: 80, 
-    gate: 'Gate B2 • Turnstile 01',
+    gate: 'Gate B2 • Entrance 01',
     keyword: 'borra'
   },
   { 
@@ -90,7 +90,7 @@ const CHECKPOINTS = [
     district: 'Anakapalli', 
     state: 'Andhra Pradesh',
     fee: 20, 
-    gate: 'Jetty Turnstile 01',
+    gate: 'Jetty Gate 01',
     keyword: 'kondakarla'
   },
   { 
@@ -611,7 +611,7 @@ export default function AgentPortalView({
             <Scan className="w-4 h-4 text-amber-400" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-sm text-white">Agent Turnstile Scanner</span>
+            <span className="font-bold text-sm text-white">Gate Admission Scanner</span>
             <span className="text-[10px] text-slate-400">AP & TG Tourism Corridor</span>
           </div>
         </div>
@@ -819,10 +819,10 @@ export default function AgentPortalView({
             </button>
           </div>
 
-          {/* Quick Demo Test Buttons */}
-          <div className="flex flex-wrap items-center gap-1.5 text-xs pt-1">
-            <span className="text-[10px] text-slate-400 font-mono">Demo:</span>
-            {activeBookedPass && (
+          {/* Active Booked Pass Quick Scan Shortcut */}
+          {activeBookedPass && (
+            <div className="flex items-center gap-2 text-xs pt-1">
+              <span className="text-[10px] text-slate-400 font-mono">Quick scan:</span>
               <button
                 onClick={() => {
                   setTokenInput(activeBookedPass.reference);
@@ -831,28 +831,10 @@ export default function AgentPortalView({
                 className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1"
               >
                 <Ticket className="w-3 h-3" />
-                <span>Booked Pass ({activeBookedPass.reference})</span>
+                <span>Active Pass ({activeBookedPass.reference})</span>
               </button>
-            )}
-            <button
-              onClick={() => {
-                setTokenInput('APTG-89421');
-                handleScanPass('APTG-89421');
-              }}
-              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] transition-colors cursor-pointer"
-            >
-              Sample Valid
-            </button>
-            <button
-              onClick={() => {
-                setTokenInput('INVALID-CODE-999');
-                handleScanPass('INVALID-CODE-999');
-              }}
-              className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 text-[11px] transition-colors cursor-pointer"
-            >
-              Sample Invalid
-            </button>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* RECENT SCANS LOG */}

@@ -854,7 +854,7 @@ export default function BentoDistrictExplorer({
                 })}
               </svg>
 
-              {/* Floating Hover Dossier Preview Card */}
+              {/* Floating Hover District Preview Card */}
               {hoveredMapDistrict && (
                 <div className="absolute bottom-4 right-4 max-w-xs p-4 rounded-2xl bg-black/90 backdrop-blur-xl border border-white/20 shadow-2xl text-left pointer-events-none">
                   <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -875,7 +875,7 @@ export default function BentoDistrictExplorer({
                     {hoveredMapDistrict.spots[0]?.description || 'Historic monuments, scenic views, and cultural landmarks.'}
                   </p>
                   <div className="mt-2 text-[10px] text-emerald-400 font-mono">
-                    Click node to view all sights & transit guide →
+                    Tap district to view all sights & travel guide →
                   </div>
                 </div>
               )}
@@ -1133,7 +1133,7 @@ export default function BentoDistrictExplorer({
 
       </div>
 
-      {/* District Dossier Inspection Modal with Responsive Mobile Bottom-Sheet */}
+      {/* District Detail Modal with Responsive Mobile Bottom-Sheet */}
       <AnimatePresence>
         {activeDistrictModal && (
           <div 
