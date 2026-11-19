@@ -117,23 +117,23 @@ export default function FloatingIslandNav({
 
         {/* Right Action: Tourist Safety, Settings & Auth Button */}
         <div className="flex items-center gap-1.5 sm:gap-2 pr-1 shrink-0">
-          {/* Persistent High-Visibility SOS Emergency Alert Trigger */}
+          {/* Emergency Safety Trigger */}
           <button
             type="button"
             onClick={onOpenSafetyModal}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 hover:text-rose-200 transition-all cursor-pointer shrink-0 text-xs font-bold"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-300 hover:text-rose-200 transition-colors cursor-pointer shrink-0 text-xs font-semibold"
             title="Emergency SOS & 24/7 Police / Ambulance (112, 108, 1363)"
             aria-label="Emergency SOS & 24/7 Police Helplines"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-            <span className="font-mono text-[10px] tracking-wider font-extrabold text-rose-300">SOS</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+            <span className="font-mono text-[10px] tracking-wider font-bold">SOS</span>
           </button>
 
           {/* Desktop & Mobile Settings Button - Always accessible */}
           <button
             type="button"
             onClick={onOpenSettings}
-            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
+            className="w-8 h-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
             title="Settings & Preferences"
             aria-label="Open Settings"
           >

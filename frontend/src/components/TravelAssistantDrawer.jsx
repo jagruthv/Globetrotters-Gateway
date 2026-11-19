@@ -439,7 +439,7 @@ export default function TravelAssistantDrawer({
         return [...prev, place];
       });
       try {
-        confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
+        confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 }, disableForReducedMotion: true, useWorker: false });
       } catch {
         // Confetti fallback
       }

@@ -59,12 +59,18 @@ export default function AgentVerificationModal({
       localStorage.setItem('globetrotter_is_agent', 'true');
       window.dispatchEvent(new Event('agent-status-changed'));
 
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#00F2FE', '#10B981', '#F59E0B']
-      });
+      try {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#00F2FE', '#10B981', '#F59E0B'],
+          disableForReducedMotion: true,
+          useWorker: false
+        });
+      } catch {
+        // Confetti fallback
+      }
 
       setTimeout(() => {
         setLoading(false);

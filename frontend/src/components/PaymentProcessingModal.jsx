@@ -120,7 +120,7 @@ export default function PaymentProcessingModal({
     setPaymentFinished(true);
     playBookingSuccessSound();
     try {
-      confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } });
+      confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 }, disableForReducedMotion: true, useWorker: false });
     } catch {
       // Confetti fallback
     }

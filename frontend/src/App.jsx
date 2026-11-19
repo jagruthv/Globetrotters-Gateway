@@ -462,32 +462,28 @@ export default function App() {
               </Suspense>
 
               {/* Ready to Explore Corridor Callout */}
-              <section className="relative py-20 px-4 md:px-12 overflow-hidden border-t border-white/5 text-center">
-                <div className="absolute inset-0 bg-gradient-to-b from-[#080A0F] via-amber-500/[0.02] to-[#080A0F] pointer-events-none" />
-                <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center gap-5">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-amber-300 text-xs font-sans-clean font-medium">
-                    Unified tourism corridors • AP & TG
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl font-extrabold text-white font-sans-clean">
-                    Start Your Heritage Journey Across 59 Districts
+              <section className="relative py-16 px-4 md:px-12 border-t border-white/5 text-center">
+                <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center gap-4">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white font-sans-clean">
+                    Explore all 59 districts of Andhra Pradesh & Telangana
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed font-sans-clean">
-                    Discover historical temples, lush hill stations, and natural underground caves. Pick a curated tour package or build your personalized day-by-day plan with our AI concierge.
+                  <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto leading-relaxed font-sans-clean">
+                    Search historical temples, hill stations, and nature reserves with verified timings, entry rules, and routes.
                   </p>
-                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                     <button
                       onClick={() => setActiveTab('explore')}
-                      className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all shadow-md cursor-pointer font-sans-clean"
+                      className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer font-sans-clean"
                     >
-                      <span>Explore 59 Districts</span>
+                      <span>Browse Atlas</span>
                       <ArrowRight className="w-3.5 h-3.5 text-slate-950" />
                     </button>
                     <button
                       onClick={() => handleOpenAssistant('Help me plan a personalized tour across Andhra Pradesh and Telangana')}
-                      className="px-5 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-white font-semibold text-xs flex items-center gap-2 transition-colors cursor-pointer font-sans-clean"
+                      className="px-4 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.08] border border-white/10 text-white font-medium text-xs flex items-center gap-2 transition-colors cursor-pointer font-sans-clean"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Plan Custom Trip with AI</span>
+                      <span>Plan Custom Trip</span>
                     </button>
                   </div>
                 </div>

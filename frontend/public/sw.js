@@ -8,7 +8,7 @@
  * 4. Offline gate pass caching for remote entrance checkpoints
  */
 
-const CACHE_NAME = 'globetrotter-v2.1.0';
+const CACHE_NAME = 'globetrotter-v2.3.0';
 const STATIC_PRECACHE = [
   '/',
   '/index.html',

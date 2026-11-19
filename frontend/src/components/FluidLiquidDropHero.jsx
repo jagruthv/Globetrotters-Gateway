@@ -17,7 +17,6 @@ import {
   AlertTriangle,
   FileText,
   Landmark,
-  QrCode,
   Sparkles
 } from 'lucide-react';
 
@@ -253,35 +252,10 @@ export default function FluidLiquidDropHero({
             Verified local routes, entry guidelines, and tickets for 59 districts and 646 places across both states.
           </p>
 
-          {/* Overview Metrics */}
-          <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 py-0.5 text-xs font-sans-clean">
-            <div className="flex items-center gap-1.5">
-              <span className="font-mono font-bold text-amber-400 text-xs sm:text-sm">59</span>
-              <span className="text-slate-400 text-[10px] sm:text-[11px]">Districts Verified</span>
-            </div>
-            <span className="text-white/20 hidden sm:inline">•</span>
-            <div className="flex items-center gap-1.5">
-              <span className="font-mono font-bold text-amber-400 text-xs sm:text-sm">646</span>
-              <span className="text-slate-400 text-[10px] sm:text-[11px]">Destinations</span>
-            </div>
-            <span className="text-white/20 hidden sm:inline">•</span>
-            <div className="flex items-center gap-1.5">
-              <span className="font-mono font-bold text-amber-400 text-xs sm:text-sm">8</span>
-              <span className="text-slate-400 text-[10px] sm:text-[11px]">Signature Tours</span>
-            </div>
-            <span className="text-white/20 hidden sm:inline">•</span>
-            <div className="flex items-center gap-1.5">
-              <span className="font-mono font-bold text-emerald-400 text-xs sm:text-sm">₹0</span>
-              <span className="text-slate-400 text-[10px] sm:text-[11px]">Extra Markup</span>
-            </div>
-          </div>
-
           {/* Quick Booking Console */}
-          <div className="w-full max-w-2xl rounded-2xl p-1 bg-white/[0.04] border border-white/10 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
-            <div className="w-full rounded-xl bg-[#06080D]/80 backdrop-blur-xl border border-white/10 p-2.5 sm:p-3.5 flex flex-col gap-2.5">
-              
-              {/* Row 1: Destination (6 cols / 50%), Date (3 cols / 25%), Travelers (3 cols / 25%) */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 pb-2.5 border-b border-white/10">
+          <div className="w-full max-w-2xl rounded-xl bg-[#0B0F17] border border-white/10 p-3 sm:p-4 flex flex-col gap-3 mt-1">
+            {/* Row 1: Destination (6 cols / 50%), Date (3 cols / 25%), Travelers (3 cols / 25%) */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 pb-3 border-b border-white/10">
                 
                 {/* 1. Destination Selector - 6 cols so destination name never truncates */}
                 <div className="sm:col-span-6 flex flex-col px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/15 transition-colors">
@@ -390,28 +364,27 @@ export default function FluidLiquidDropHero({
                   {!activeDest.isTicketed && !addAudioTour ? (
                     <button
                       onClick={() => setGuideModalOpen(true)}
-                      className="px-3.5 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] border border-white/15 text-white font-bold text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.14] border border-white/15 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      <FileText className="w-3 h-3 text-amber-400" />
+                      <FileText className="w-3.5 h-3.5 text-amber-400" />
                       <span>Free Guide & Map</span>
-                      <ChevronRight className="w-2.5 h-2.5" />
+                      <ChevronRight className="w-3 h-3" />
                     </button>
                   ) : (
                     <button
                       onClick={handlePrimaryAction}
-                      className="px-4 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 transition-all shadow-md active:scale-[0.98] cursor-pointer"
+                      className="px-4 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer"
                     >
                       <span>
                         {activeDest.isTicketed ? `Book e-Ticket • ₹${totalPayable}` : `Get Guide + Audio • ₹${totalPayable}`}
                       </span>
-                      <ChevronRight className="w-3 h-3 text-slate-950" />
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-950" />
                     </button>
                   )}
                 </div>
 
               </div>
 
-            </div>
           </div>
 
           {/* Secondary Action Anchors */}
@@ -442,138 +415,77 @@ export default function FluidLiquidDropHero({
 
         </div>
 
-        {/* Right Column: Institutional Heritage Spotlight Card */}
+        {/* Right Column: Natural Destination Card */}
         <div className="lg:col-span-5 flex flex-col items-center lg:items-end w-full">
-          <div className="w-full max-w-md xl:max-w-lg rounded-2xl p-1 bg-white/[0.05] border border-white/12 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
-            <div className="w-full rounded-xl bg-[#06080D]/85 backdrop-blur-xl border border-white/10 p-3 sm:p-4 flex flex-col gap-2.5">
+          <div className="w-full max-w-md xl:max-w-lg rounded-xl bg-[#0B0F17] border border-white/10 p-3 sm:p-4 flex flex-col gap-2.5">
+            {/* Destination Spotlight Image */}
+            <div className="relative h-44 sm:h-48 rounded-lg overflow-hidden bg-slate-900 group">
+              <img
+                src={activeDest.image}
+                alt={activeDest.name}
+                className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               
-              {/* Destination Category & Authority Badge */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-white/[0.04] text-amber-300 border border-amber-400/20 font-medium font-sans-clean">
-                  {activeDest.tag}
+              <div className="absolute bottom-2.5 left-3 right-3 flex items-end justify-between gap-2">
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-white font-sans-clean leading-snug">
+                    {activeDest.name}
+                  </h3>
+                  <span className="text-xs text-amber-200/90 flex items-center gap-1 mt-0.5">
+                    <MapPin className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                    <span>{activeDest.district}, {activeDest.state}</span>
+                  </span>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-black/60 border border-white/20 text-xs font-semibold text-white">
+                  {activeDest.isTicketed ? `₹${activeDest.groundRate}` : 'Free Entry'}
                 </span>
-                <span className="text-[10px] text-amber-300 font-semibold font-sans-clean flex items-center gap-1">
-                  <Landmark className="w-3 h-3 text-amber-400 flex-shrink-0" aria-hidden="true" />
-                  <span>{activeDest.rating}</span>
-                </span>
               </div>
+            </div>
 
-              {/* Destination Spotlight Image with Authentic Badges */}
-              <div className="relative h-32 sm:h-36 rounded-lg overflow-hidden bg-slate-900 shadow-inner group">
-                <img
-                  src={activeDest.image}
-                  alt={activeDest.name}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#080A0F]/90 via-transparent to-transparent" />
-                
-                {/* Photo Caption & Official Rate Pill */}
-                <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between gap-2">
-                  <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-bold text-white drop-shadow font-sans-clean leading-snug">
-                      {activeDest.name}
-                    </h3>
-                    <span className="text-[10px] text-amber-200/95 font-medium font-sans-clean flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                      <span>{activeDest.district} • {activeDest.state}</span>
-                    </span>
-                  </div>
-
-                  <span className={`px-2 py-0.5 rounded-full backdrop-blur-md border text-[9.5px] font-bold font-sans-clean flex-shrink-0 ${
-                    activeDest.isTicketed
-                      ? 'bg-amber-500/20 border-amber-400/40 text-amber-300'
-                      : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
-                  }`}>
-                    {activeDest.rateBadge}
-                  </span>
-                </div>
+            {/* Timings and Guidelines */}
+            <div className="grid grid-cols-2 gap-2 text-xs font-sans-clean">
+              <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex flex-col">
+                <span className="text-[10px] text-slate-400 uppercase tracking-wide">Visiting Hours</span>
+                <span className="text-slate-200 font-medium text-xs mt-0.5">{activeDest.bestHours}</span>
               </div>
-
-              {/* Curated Traveler Intel: 2 Columns without text truncation */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-sans-clean">
-                <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5 flex flex-col justify-center">
-                  <span className="text-[9px] text-slate-400 font-semibold flex items-center gap-1">
-                    <Compass className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
-                    <span>Highlights</span>
-                  </span>
-                  <span className="text-slate-200 text-[10px] leading-snug mt-1">
-                    {activeDest.highlights}
-                  </span>
-                </div>
-
-                <div className="p-2 rounded-lg bg-white/[0.03] border border-white/5 flex flex-col justify-center">
-                  <span className="text-[9px] text-slate-400 font-semibold flex items-center gap-1">
-                    <Clock className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
-                    <span>Visiting Timings</span>
-                  </span>
-                  <span className="text-slate-200 font-semibold text-[10px] leading-snug mt-1">
-                    {activeDest.bestHours}
-                  </span>
-                </div>
+              <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex flex-col">
+                <span className="text-[10px] text-slate-400 uppercase tracking-wide">Authority</span>
+                <span className="text-slate-200 font-medium text-xs mt-0.5 truncate">{activeDest.authority}</span>
               </div>
+            </div>
 
-              {/* Official Tourist Anti-Scam Notice: Complete sentence, no truncation */}
-              <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-400/20 flex items-start gap-2 text-[10px] text-amber-200/90 leading-snug">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span>{activeDest.advisory}</span>
+            {/* Advisory */}
+            <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 flex items-start gap-2 text-xs text-slate-300">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+              <span className="text-[11px] leading-relaxed">{activeDest.advisory}</span>
+            </div>
+
+            {/* Navigation controls */}
+            <div className="pt-1.5 border-t border-white/10 flex items-center justify-between text-xs">
+              <span className="text-[11px] text-slate-400">
+                {activeIdx + 1} of {HERO_DESTINATIONS.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleSelectDestination((activeIdx - 1 + HERO_DESTINATIONS.length) % HERO_DESTINATIONS.length)}
+                  aria-label="Previous destination"
+                  className="p-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-slate-300 transition-colors cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleSelectDestination((activeIdx + 1) % HERO_DESTINATIONS.length)}
+                  aria-label="Next destination"
+                  className="p-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-slate-300 transition-colors cursor-pointer"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
-
-              {/* Tactile Spotlight Carousel Navigation */}
-              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-slate-400 font-medium font-sans-clean">
-                    Spotlight {activeIdx + 1} of {HERO_DESTINATIONS.length}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  {HERO_DESTINATIONS.map((d, idx) => (
-                    <button
-                      key={d.id}
-                      onClick={() => handleSelectDestination(idx)}
-                      aria-label={`Switch to ${d.name}`}
-                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                        activeIdx === idx ? 'w-5 bg-amber-400' : 'w-2 bg-white/20 hover:bg-white/40'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={() => handleSelectDestination((activeIdx - 1 + HERO_DESTINATIONS.length) % HERO_DESTINATIONS.length)}
-                    aria-label="Previous destination"
-                    className="p-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-slate-300 transition-colors cursor-pointer"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleSelectDestination((activeIdx + 1) % HERO_DESTINATIONS.length)}
-                    aria-label="Next destination"
-                    className="p-1 rounded bg-white/[0.04] hover:bg-white/[0.1] text-slate-300 transition-colors cursor-pointer"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
 
-      </div>
-
-      {/* Trust & Authority Footer Strip */}
-      <div className="relative z-10 max-w-7xl mx-auto w-full pt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 border-t border-white/5 font-sans-clean">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Smart Tourism Gateway • 59 Districts of Andhra Pradesh & Telangana</span>
-        </div>
-        <div className="flex items-center gap-4 text-slate-400">
-          <span className="flex items-center gap-1"><Landmark className="w-3 h-3 text-amber-400" aria-hidden="true" /> Zero Ticket Markup Guarantee</span>
-          <span aria-hidden="true">•</span>
-          <span className="flex items-center gap-1"><QrCode className="w-3 h-3 text-amber-400" aria-hidden="true" /> Direct QR Gate Entry</span>
-          <span aria-hidden="true">•</span>
-          <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-emerald-400" aria-hidden="true" /> Verified Anti-Scam Protection</span>
-        </div>
       </div>
 
       {/* MODAL 1: Free Official Visitor Guide & Heritage Map */}

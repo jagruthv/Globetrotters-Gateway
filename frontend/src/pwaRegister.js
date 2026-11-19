@@ -33,14 +33,14 @@ export function registerServiceWorker() {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          // Check for worker updates in the background without aggressive reloading
+          // Check for worker updates in the background and activate immediately
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             if (installingWorker) {
               installingWorker.onstatechange = () => {
                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[Globetrotter PWA] Fresh background cache ready for next visit.');
-                  // Dispatch non-disruptive update notification event instead of force-reloading
+                  // Direct the new service worker to skip waiting so obsolete assets are purged at once
+                  installingWorker.postMessage({ type: 'SKIP_WAITING' });
                   window.dispatchEvent(new CustomEvent('globetrotter-update-available'));
                 }
               };
