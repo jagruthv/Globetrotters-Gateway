@@ -20,7 +20,8 @@ async function request(endpoint, options = {}) {
     const response = await fetch(url, { ...options, headers });
     
     if (response.status === 401) {
-      if (localStorage.getItem('globetrotter_token') && !endpoint.includes('/auth/login')) {
+      // Only purge credentials if explicit auth verification endpoint fails, never on background data/pass sync
+      if (endpoint === '/auth/verify' || endpoint === '/auth/me') {
         localStorage.removeItem('globetrotter_token');
         localStorage.removeItem('globetrotter_user');
         window.dispatchEvent(new Event('auth-change'));

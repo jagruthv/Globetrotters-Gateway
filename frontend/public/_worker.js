@@ -579,6 +579,16 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
       }
     }
 
+    if (url.pathname === '/api/bookings/my-passes' && request.method === 'GET') {
+      const authHeader = request.headers.get('Authorization') || '';
+      if (authHeader.startsWith('Bearer gt_jwt_') || !authHeader) {
+        return new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+        });
+      }
+    }
+
     // ── 4. Proxy all other /api/* endpoints to AWS EC2 Spring Boot Backend ──
     if (url.pathname.startsWith('/api/')) {
       if (request.method === 'OPTIONS') {
@@ -623,7 +633,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
       secHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
       secHeaders.set('Permissions-Policy', 'geolocation=(self), microphone=(self), camera=(self)');
       secHeaders.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-      secHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://checkout.razorpay.com https://control.msg91.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cpaas.messagecentral.com https://generativelanguage.googleapis.com https://accounts.google.com https://api.razorpay.com https://control.msg91.com http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com http://localhost:*; frame-src 'self' https://accounts.google.com https://api.razorpay.com https://control.msg91.com; frame-ancestors 'none';");
+      secHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://checkout.razorpay.com https://control.msg91.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cpaas.messagecentral.com https://generativelanguage.googleapis.com https://accounts.google.com https://api.razorpay.com https://control.msg91.com http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com http://localhost:*; frame-src 'self' https://accounts.google.com https://api.razorpay.com https://control.msg91.com; frame-ancestors 'none';");
 
       // Guarantee that Service Worker and root HTML are NEVER cached stale by intermediate CDNs or browsers
       if (url.pathname === '/sw.js' || url.pathname === '/' || url.pathname === '/index.html') {
