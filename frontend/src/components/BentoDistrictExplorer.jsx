@@ -237,12 +237,15 @@ function calculateRoadDistanceKm(lat1, lon1, lat2, lon2) {
 
 export default function BentoDistrictExplorer({ 
   onSelectPlaceForTrip, 
-  selectedPlaces = [] 
+  selectedPlaces = [],
+  isFeaturedOnly = false,
+  onViewAllDistricts = null
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeState, setActiveState] = useState('all');
   const [activeZone, setActiveZone] = useState('all');
   const [activeTheme, setActiveTheme] = useState('all');
+  const [displayLimit, setDisplayLimit] = useState(12);
   const [activeDistrictModal, setActiveDistrictModal] = useState(null);
   const [modalFilterMode, setModalFilterMode] = useState('all'); // 'all' or 'matching'
   const [userCoords, setUserCoords] = useState(null);
@@ -301,6 +304,10 @@ export default function BentoDistrictExplorer({
     if (activeState === 'all') return ZONES;
     return ZONES.filter(z => z.state === 'all' || z.state === activeState);
   }, [activeState]);
+
+  useEffect(() => {
+    setDisplayLimit(12);
+  }, [searchQuery, activeState, activeZone, activeTheme]);
 
   // Parse and extract valid 59 districts with spots
   const allDistricts = useMemo(() => {
@@ -458,6 +465,13 @@ export default function BentoDistrictExplorer({
 
     return list;
   }, [allDistricts, searchQuery, activeState, activeZone, activeTheme, sortByDistance, userCoords, favorites]);
+
+  const visibleDistricts = useMemo(() => {
+    if (isFeaturedOnly) {
+      return filteredDistricts.slice(0, 6);
+    }
+    return filteredDistricts.slice(0, displayLimit);
+  }, [filteredDistricts, isFeaturedOnly, displayLimit]);
 
   const isPlaceSelected = (placeName) => {
     return selectedPlaces.some((p) => p.name.toLowerCase() === placeName.toLowerCase());
@@ -867,15 +881,7 @@ export default function BentoDistrictExplorer({
         ) : (
           /* Asymmetrical Authentic Bento Box Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredDistricts.map((district, idx) => {
-              const orderedSpots = getRelevanceSortedSpots(district.spots, searchQuery);
-              const firstSpot = orderedSpots[0] || {};
-              const photoUrl = getAuthenticPlacePhoto(firstSpot.name, firstSpot.imageUrl);
-              const fallbackBanner = getOfflineImageFallback(firstSpot.name, firstSpot.category, district.name);
-              const isFirstSelected = isPlaceSelected(firstSpot.name);
-              const isFlagship = (idx % 5 === 0 && filteredDistricts.length > 4);
-              const isFirstFavorited = favorites.includes(firstSpot.name);
-
+            {visibleDistricts.map((district, idx) => {
               const qClean = searchQuery.toLowerCase().trim();
               const searchMatchedSpots = qClean
                 ? district.spots.filter(
@@ -887,15 +893,20 @@ export default function BentoDistrictExplorer({
                   )
                 : [];
 
+              const orderedSpots = getRelevanceSortedSpots(district.spots, searchQuery);
+              // Feature matched spot on search; otherwise use first spot
+              const activeSpot = searchMatchedSpots.length > 0 ? searchMatchedSpots[0] : (orderedSpots[0] || {});
+              const photoUrl = getAuthenticPlacePhoto(activeSpot.name, activeSpot.imageUrl, district.name);
+              const fallbackBanner = getOfflineImageFallback(activeSpot.name, activeSpot.category, district.name);
+              const isFirstSelected = isPlaceSelected(activeSpot.name);
+              const isFlagship = (idx % 5 === 0 && filteredDistricts.length > 4);
+              const isFirstFavorited = favorites.includes(activeSpot.name);
+
               return (
-                <motion.div
+                <div
                   key={district.name}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.15 }}
-                  transition={{ duration: 0.5, delay: (idx % 3) * 0.08 }}
                   onClick={() => setActiveDistrictModal(district)}
-                  className={`doppelrand group cursor-pointer ${isFlagship ? 'md:col-span-2 lg:col-span-2' : ''}`}
+                  className={`doppelrand group cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 ${isFlagship ? 'md:col-span-2 lg:col-span-2' : ''}`}
                 >
                   <div className="doppelrand-inner overflow-hidden flex flex-col h-full justify-between">
                     
@@ -903,12 +914,12 @@ export default function BentoDistrictExplorer({
                     <div className={`relative ${isFlagship ? 'h-56' : 'h-48'} w-full overflow-hidden bg-slate-900`}>
                       <img
                         src={photoUrl || fallbackBanner}
-                        alt={district.name}
+                        alt={activeSpot.name || district.name}
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = fallbackBanner;
                         }}
-                        className="w-full h-full object-cover brightness-105 contrast-105 saturate-115 transition-transform duration-700 ease-out group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                         loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-[#0B0F17]/40 to-transparent" />
@@ -940,15 +951,15 @@ export default function BentoDistrictExplorer({
                       <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2">
                         <div className="min-w-0">
                           <span className="text-[10px] text-amber-300 font-sans-clean font-semibold block">
-                            Key Attraction
+                            {searchMatchedSpots.length > 0 ? 'Search Matched Sight' : 'Key Attraction'}
                           </span>
                           <h4 className="text-base font-bold text-white truncate drop-shadow-md">
-                            {firstSpot.name || 'Famous Attraction'}
+                            {activeSpot.name || 'Famous Attraction'}
                           </h4>
                         </div>
-                        {firstSpot.individualPrice !== undefined && (
+                        {activeSpot.individualPrice !== undefined && (
                           <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-semibold text-emerald-400 font-mono flex-shrink-0">
-                            {firstSpot.individualPrice === 0 ? 'Free Entry' : `₹${firstSpot.individualPrice}`}
+                            {activeSpot.individualPrice === 0 ? 'Free Entry' : `₹${activeSpot.individualPrice}`}
                           </span>
                         )}
                       </div>
@@ -972,7 +983,7 @@ export default function BentoDistrictExplorer({
                             {/* Wishlist Heart Button */}
                             <button
                               type="button"
-                              onClick={(e) => toggleFavorite(firstSpot.name, e)}
+                              onClick={(e) => toggleFavorite(activeSpot.name, e)}
                               className={`p-1.5 rounded-full border transition-colors cursor-pointer flex-shrink-0 ${
                                 isFirstFavorited
                                   ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
@@ -988,14 +999,14 @@ export default function BentoDistrictExplorer({
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onSelectPlaceForTrip(firstSpot, district.name);
+                                onSelectPlaceForTrip(activeSpot, district.name);
                               }}
                               className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors flex-shrink-0 font-sans-clean cursor-pointer ${
                                 isFirstSelected
                                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
                                   : 'bg-white/[0.05] text-slate-300 hover:bg-amber-400 hover:text-slate-950 border border-white/10'
                               }`}
-                              title={isFirstSelected ? 'Already in tour plan' : `Add ${firstSpot.name} to plan`}
+                              title={isFirstSelected ? 'Already in tour plan' : `Add ${activeSpot.name} to plan`}
                             >
                               {isFirstSelected ? <Check className="w-3 h-3 text-emerald-400" /> : <Plus className="w-3 h-3" />}
                               <span>{isFirstSelected ? 'In Plan' : 'Quick Add'}</span>
@@ -1003,57 +1014,57 @@ export default function BentoDistrictExplorer({
                           </div>
                         </div>
                         <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed">
-                          {firstSpot.description || 'Famous temples, waterfalls, hill views, and historic monuments.'}
+                          {activeSpot.description || 'Famous temples, waterfalls, hill views, and historic monuments.'}
                         </p>
                       </div>
 
-                      {/* Search Matches Preview Row */}
-                      {searchQuery && searchMatchedSpots.length > 0 && (
-                        <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-amber-500/10 border border-amber-400/20 text-xs">
-                          <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">
-                            Matched Sights in {district.name.replace(' District', '')}:
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {searchMatchedSpots.slice(0, 3).map((s) => (
-                              <span
-                                key={s.name}
-                                className="px-2 py-0.5 rounded-md bg-black/40 border border-white/10 text-white text-[11px] flex items-center gap-1 font-sans-clean"
-                              >
-                                <span className="truncate max-w-[120px]">{s.name}</span>
-                                <span className="text-emerald-400 font-mono text-[10px]">
-                                  {s.individualPrice === 0 ? 'Free' : `₹${s.individualPrice || 40}`}
-                                </span>
-                              </span>
-                            ))}
-                            {searchMatchedSpots.length > 3 && (
-                              <span className="text-[10px] text-amber-400 font-mono self-center">
-                                +{searchMatchedSpots.length - 3} more
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Flagship Top Highlights Preview */}
-                      {isFlagship && district.spots.length > 1 && (
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] text-slate-500 font-sans-clean font-medium">Top Sights:</span>
-                          {orderedSpots.slice(0, 3).map((s) => (
-                            <span
-                              key={s.name}
-                              className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] text-slate-300 border border-white/5 font-sans-clean truncate max-w-[140px]"
-                            >
-                              {s.name}
+                      {/* Prominent Sights Preview: Matched spots on search, or top sights on default view */}
+                      <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-white/[0.02] border border-white/5 text-xs">
+                        <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-wider flex items-center justify-between">
+                          <span>{searchQuery && searchMatchedSpots.length > 0 ? `Matched Sights (${searchMatchedSpots.length}):` : 'Top Attractions:'}</span>
+                          {searchMatchedSpots.length > 3 && (
+                            <span className="text-[10px] text-slate-400 font-mono font-normal">
+                              +{searchMatchedSpots.length - 3} more
                             </span>
-                          ))}
+                          )}
+                        </span>
+                        <div className="flex flex-col gap-1">
+                          {(searchMatchedSpots.length > 0 ? searchMatchedSpots : orderedSpots).slice(0, 3).map((s) => {
+                            const isSelected = isPlaceSelected(s.name);
+                            return (
+                              <div
+                                key={s.name}
+                                className="flex items-center justify-between gap-1 p-1 rounded-lg hover:bg-white/5 transition-colors text-xs font-sans-clean"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <span className="text-slate-300 truncate max-w-[180px]">{s.name}</span>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  <span className="text-emerald-400 font-mono text-[10px]">
+                                    {s.individualPrice === 0 ? 'Free' : `₹${s.individualPrice || 40}`}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => onSelectPlaceForTrip(s, district.name)}
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-emerald-500/20 text-emerald-300'
+                                        : 'bg-white/5 hover:bg-amber-400 hover:text-slate-950 text-slate-300'
+                                    }`}
+                                  >
+                                    {isSelected ? '✓' : '+ Add'}
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      )}
+                      </div>
 
                       {/* Highlights Row */}
                       <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400 font-mono">
                         <div className="flex items-center gap-1.5 truncate max-w-[160px]">
                           <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                          <span className="truncate">{firstSpot.mandal || district.hq}</span>
+                          <span className="truncate">{activeSpot.mandal || district.hq}</span>
                         </div>
                         <div className="flex items-center gap-1 text-amber-400 font-semibold group-hover:translate-x-1 transition-transform">
                           <span>Explore All {district.spots.length} Places</span>
@@ -1064,9 +1075,37 @@ export default function BentoDistrictExplorer({
                     </div>
 
                   </div>
-                </motion.div>
+                </div>
               );
             })}
+
+            {/* Pagination Controls / Featured Switcher */}
+            {isFeaturedOnly ? (
+              <div className="col-span-full flex flex-col items-center justify-center py-6 gap-3">
+                <button
+                  type="button"
+                  onClick={onViewAllDistricts}
+                  className="px-6 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all shadow-lg cursor-pointer active:scale-95 font-sans-clean"
+                >
+                  <span>Explore All 59 Districts & Interactive Vector Map</span>
+                  <ChevronRight className="w-4 h-4 text-slate-950" />
+                </button>
+                <span className="text-[11px] text-slate-400 font-sans-clean">
+                  Complete verified dossiers, transparent fees & authentic food guides across AP & TG
+                </span>
+              </div>
+            ) : displayLimit < filteredDistricts.length ? (
+              <div className="col-span-full flex justify-center py-6">
+                <button
+                  type="button"
+                  onClick={() => setDisplayLimit((prev) => prev + 12)}
+                  className="px-6 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer font-sans-clean active:scale-95"
+                >
+                  <span>Load More Districts (Showing {Math.min(displayLimit, filteredDistricts.length)} of {filteredDistricts.length})</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
+                </button>
+              </div>
+            ) : null}
           </div>
         )}
 

@@ -51,6 +51,10 @@ spring:
         order_inserts: true
         order_updates: true
 
+  h2:
+    console:
+      enabled: false
+
   # ── Spring Cache (Caffeine in-memory) ──────────────────────────────────────
   # Circuits and Places rarely change — cache them for 10 minutes.
   # Eliminates repeated DB hits on every page load.

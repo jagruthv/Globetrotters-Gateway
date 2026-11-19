@@ -1,13 +1,13 @@
 /**
- * Globetrotter Gateway • Sovereign Service Worker
+ * Globetrotter Gateway • Sovereign Service Worker (v1.2.0)
  * 
  * Provides:
- * 1. 100% Offline App Shell Loading (Airplane Mode & 0% cellular deadzones)
- * 2. Stale-While-Revalidate caching for scripts, styles, and typography
+ * 1. 100% Offline App Shell Loading
+ * 2. Network-First asset strategy to prevent stale code retention
  * 3. Offline gate pass caching for remote entrance checkpoints
  */
 
-const CACHE_NAME = 'globetrotter-v1.0.0';
+const CACHE_NAME = 'globetrotter-v1.2.0';
 const STATIC_PRECACHE = [
   '/',
   '/index.html',
@@ -17,18 +17,18 @@ const STATIC_PRECACHE = [
   '/pwa-512.png'
 ];
 
-// 1. INSTALL
+// 1. INSTALL — Immediate Activation
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_PRECACHE).catch((err) => {
-        console.warn('[SW] Pre-caching partial warning:', err);
+        console.warn('[SW] Pre-caching notice:', err);
       });
     }).then(() => self.skipWaiting())
   );
 });
 
-// 2. ACTIVATE
+// 2. ACTIVATE — Purge all older caches aggressively
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -49,12 +49,22 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests (e.g. POST /api/verify/scan is handled by frontend offline ledger)
+  // Skip non-GET requests
   if (request.method !== 'GET') {
     return;
   }
 
-  // Never intercept Vite dev server requests, HMR, or raw source modules
+  // Never intercept external fonts or 3rd-party CDNs (let browser handle natively)
+  if (
+    url.hostname.includes('googleapis.com') ||
+    url.hostname.includes('gstatic.com') ||
+    url.hostname.includes('razorpay.com') ||
+    url.hostname.includes('google.com')
+  ) {
+    return;
+  }
+
+  // Never intercept Vite dev server or HMR
   if (
     url.pathname.includes('/@vite/') ||
     url.pathname.includes('/@fs/') ||
@@ -65,7 +75,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // A. Navigation (HTML document requests): Network first with cache fallback
+  // A. Navigation (HTML document requests): Network-first with cache fallback
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -85,22 +95,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // B. Google Fonts & external CDNs: Cache-First
-  if (url.hostname.includes('googleapis.com') || url.hostname.includes('gstatic.com')) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then((networkRes) => {
-          const clone = networkRes.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          return networkRes;
-        });
-      })
-    );
-    return;
-  }
-
-  // C. Local Static Assets (.js, .css, .svg, .png, .jpg): Cache-First with Background Revalidation
+  // B. Local Static Assets (.js, .css, .svg, .png, .jpg): Network-First with Cache Fallback
+  // Guarantees newly deployed bundles execute immediately
   if (
     url.pathname.startsWith('/assets/') ||
     url.pathname.startsWith('/images/') ||
@@ -110,31 +106,25 @@ self.addEventListener('fetch', (event) => {
     url.pathname.endsWith('.css')
   ) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        const fetchPromise = fetch(request)
-          .then((networkRes) => {
-            if (networkRes && networkRes.status === 200) {
-              const clone = networkRes.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-            }
-            return networkRes;
-          })
-          .catch(() => null);
-
-        if (cached) {
-          return cached;
-        }
-        return fetchPromise;
-      })
+      fetch(request)
+        .then((networkRes) => {
+          if (networkRes && networkRes.status === 200) {
+            const clone = networkRes.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return networkRes;
+        })
+        .catch(() => {
+          return caches.match(request);
+        })
     );
     return;
   }
 
-  // D. General fetch fallback
+  // C. General fetch fallback
   event.respondWith(
     caches.match(request).then((cached) => {
       return cached || fetch(request).catch(() => {
-        // Silent catch for disconnected offline fetches
         return new Response(JSON.stringify({ offline: true, message: 'Offline mode active' }), {
           status: 503,
           headers: { 'Content-Type': 'application/json' }

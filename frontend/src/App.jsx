@@ -1,23 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import FloatingIslandNav from './components/FloatingIslandNav';
 import MobileAppBottomDock from './components/MobileAppBottomDock';
 import FluidLiquidDropHero from './components/FluidLiquidDropHero';
-import BentoDistrictExplorer from './components/BentoDistrictExplorer';
-import AiFluidTripStudio from './components/AiFluidTripStudio';
-import CircuitShowcase from './components/CircuitShowcase';
-import HolographicGatePass from './components/HolographicGatePass';
-import AgentPortalView from './components/AgentPortalView';
-import AgentVerificationModal from './components/AgentVerificationModal';
-import VoiceConciergeModal from './components/VoiceConciergeModal';
-import TravelAssistantDrawer from './components/TravelAssistantDrawer';
 import AssistantFloatingTrigger from './components/AssistantFloatingTrigger';
-import CookieConsentBanner from './components/CookieConsentBanner';
-import SettingsModal from './components/SettingsModal';
-import TouristSafetyModal from './components/TouristSafetyModal';
-import AuthModal from './components/AuthModal';
-import PaymentProcessingModal from './components/PaymentProcessingModal';
 import ErrorBoundary from './components/ErrorBoundary';
+
+// Code-split heavy interactive views & modals for instant initial paint & zero memory thrashing
+const BentoDistrictExplorer = lazy(() => import('./components/BentoDistrictExplorer'));
+const AiFluidTripStudio = lazy(() => import('./components/AiFluidTripStudio'));
+const CircuitShowcase = lazy(() => import('./components/CircuitShowcase'));
+const HolographicGatePass = lazy(() => import('./components/HolographicGatePass'));
+const AgentPortalView = lazy(() => import('./components/AgentPortalView'));
+const AgentVerificationModal = lazy(() => import('./components/AgentVerificationModal'));
+const VoiceConciergeModal = lazy(() => import('./components/VoiceConciergeModal'));
+const TravelAssistantDrawer = lazy(() => import('./components/TravelAssistantDrawer'));
+const CookieConsentBanner = lazy(() => import('./components/CookieConsentBanner'));
+const SettingsModal = lazy(() => import('./components/SettingsModal'));
+const TouristSafetyModal = lazy(() => import('./components/TouristSafetyModal'));
+const AuthModal = lazy(() => import('./components/AuthModal'));
+const PaymentProcessingModal = lazy(() => import('./components/PaymentProcessingModal'));
+
+const LazyFallback = () => (
+  <div className="w-full py-20 flex flex-col items-center justify-center gap-3 text-slate-400 font-sans-clean">
+    <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+    <span className="text-xs">Loading experience...</span>
+  </div>
+);
 import { authService, bookingService } from './services/api';
 import { Heart, ArrowRight, ShieldCheck } from 'lucide-react';
 
@@ -360,10 +369,12 @@ export default function App() {
   // DEDICATED SEPARATE FIELD AGENT INTERFACE
   if (isAgentPortalActive) {
     return (
-      <AgentPortalView
-        onExitAgentMode={handleExitAgentMode}
-        passData={issuedPassData}
-      />
+      <Suspense fallback={<LazyFallback />}>
+        <AgentPortalView
+          onExitAgentMode={handleExitAgentMode}
+          passData={issuedPassData}
+        />
+      </Suspense>
     );
   }
 
@@ -399,17 +410,23 @@ export default function App() {
                 onDirectBookPass={handleDirectBookPass}
               />
 
-              {/* 59 Districts Cultural Exploration */}
-              <BentoDistrictExplorer
-                onSelectPlaceForTrip={handleSelectPlaceForTrip}
-                selectedPlaces={selectedPlaces}
-              />
+              {/* 59 Districts Cultural Exploration (Featured 6 Hubs on Home with Instant Switch to Full Explore) */}
+              <Suspense fallback={<LazyFallback />}>
+                <BentoDistrictExplorer
+                  onSelectPlaceForTrip={handleSelectPlaceForTrip}
+                  selectedPlaces={selectedPlaces}
+                  isFeaturedOnly={true}
+                  onViewAllDistricts={() => setActiveTab('explore')}
+                />
+              </Suspense>
 
               {/* Signature Heritage Circuits */}
-              <CircuitShowcase
-                onSelectCircuit={handleSelectCircuit}
-                onBookCircuit={handleBookCircuit}
-              />
+              <Suspense fallback={<LazyFallback />}>
+                <CircuitShowcase
+                  onSelectCircuit={handleSelectCircuit}
+                  onBookCircuit={handleBookCircuit}
+                />
+              </Suspense>
 
               {/* Ready to Explore Corridor Callout */}
               <section className="relative py-20 px-4 md:px-12 overflow-hidden border-t border-white/5 text-center">
@@ -453,10 +470,12 @@ export default function App() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="pt-28 pb-16"
             >
-              <BentoDistrictExplorer
-                onSelectPlaceForTrip={handleSelectPlaceForTrip}
-                selectedPlaces={selectedPlaces}
-              />
+              <Suspense fallback={<LazyFallback />}>
+                <BentoDistrictExplorer
+                  onSelectPlaceForTrip={handleSelectPlaceForTrip}
+                  selectedPlaces={selectedPlaces}
+                />
+              </Suspense>
             </motion.div>
           )}
 
@@ -469,7 +488,8 @@ export default function App() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="pt-28 pb-16"
             >
-              <AiFluidTripStudio
+              <Suspense fallback={<LazyFallback />}>
+                <AiFluidTripStudio
                 selectedPlaces={selectedPlaces}
                 onAddPlace={handleSelectPlaceForTrip}
                 onRemovePlace={handleRemovePlace}
@@ -479,7 +499,8 @@ export default function App() {
                 onInitiateBooking={handleInitiateBooking}
                 onBookCustomPlan={handleBookCustomPlan}
                 onOpenAssistant={() => setAssistantOpen(true)}
-              />
+                />
+              </Suspense>
             </motion.div>
           )}
 
@@ -492,10 +513,12 @@ export default function App() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="pt-28 pb-16"
             >
-              <CircuitShowcase
-                onSelectCircuit={handleSelectCircuit}
-                onBookCircuit={handleBookCircuit}
-              />
+              <Suspense fallback={<LazyFallback />}>
+                <CircuitShowcase
+                  onSelectCircuit={handleSelectCircuit}
+                  onBookCircuit={handleBookCircuit}
+                />
+              </Suspense>
             </motion.div>
           )}
 
@@ -508,12 +531,14 @@ export default function App() {
               transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
               className="pt-28 pb-16"
             >
-              <HolographicGatePass
+              <Suspense fallback={<LazyFallback />}>
+                <HolographicGatePass
                 passData={issuedPassData}
                 onOpenAudioGuide={() => setVoiceModalOpen(true)}
                 onExplorePackages={() => setActiveTab('circuits')}
                 onPlanTrip={() => setActiveTab('planner')}
-              />
+                />
+              </Suspense>
             </motion.div>
           )}
 
@@ -612,59 +637,89 @@ export default function App() {
         </ErrorBoundary>
       </main>
 
-      {/* Voice Concierge Audio Companion Modal */}
-      <VoiceConciergeModal
-        isOpen={voiceModalOpen}
-        onClose={() => setVoiceModalOpen(false)}
-      />
+      <Suspense fallback={null}>
+        {/* Voice Concierge Audio Companion Modal */}
+        {voiceModalOpen && (
+          <VoiceConciergeModal
+            isOpen={voiceModalOpen}
+            onClose={() => setVoiceModalOpen(false)}
+          />
+        )}
 
-      {/* Settings & Preferences Modal */}
-      <SettingsModal
-        isOpen={settingsModalOpen}
-        onClose={() => setSettingsModalOpen(false)}
-        onOpenAgentPortal={handleOpenAgentPortal}
-        onOpenAuth={() => {
-          setSettingsModalOpen(false);
-          setAuthModalReason('Sign in to save your passes across devices.');
-          setAuthModalOpen(true);
-        }}
-      />
+        {/* Settings & Preferences Modal */}
+        {settingsModalOpen && (
+          <SettingsModal
+            isOpen={settingsModalOpen}
+            onClose={() => setSettingsModalOpen(false)}
+            onOpenAgentPortal={handleOpenAgentPortal}
+            onOpenAuth={() => {
+              setSettingsModalOpen(false);
+              setAuthModalReason('Sign in to save your passes across devices.');
+              setAuthModalOpen(true);
+            }}
+          />
+        )}
 
-      {/* 24/7 Verified Tourist Safety & Emergency Helplines Modal */}
-      <TouristSafetyModal
-        isOpen={safetyModalOpen}
-        onClose={() => setSafetyModalOpen(false)}
-      />
+        {/* 24/7 Verified Tourist Safety & Emergency Helplines Modal */}
+        {safetyModalOpen && (
+          <TouristSafetyModal
+            isOpen={safetyModalOpen}
+            onClose={() => setSafetyModalOpen(false)}
+          />
+        )}
 
-      {/* Field Agent Verification & Accreditation Modal */}
-      <AgentVerificationModal
-        isOpen={agentVerificationOpen}
-        onClose={() => {
-          setAgentVerificationOpen(false);
-          if (activeTab === 'scanner') setActiveTab('home');
-        }}
-        onAgentApproved={() => {
-          setIsAgentPortalActive(true);
-          setAgentVerificationOpen(false);
-          window.history.pushState(null, '', '#/agent');
-        }}
-      />
+        {/* Field Agent Verification & Accreditation Modal */}
+        {agentVerificationOpen && (
+          <AgentVerificationModal
+            isOpen={agentVerificationOpen}
+            onClose={() => {
+              setAgentVerificationOpen(false);
+              if (activeTab === 'scanner') setActiveTab('home');
+            }}
+            onAgentApproved={() => {
+              setIsAgentPortalActive(true);
+              setAgentVerificationOpen(false);
+              window.history.pushState(null, '', '#/agent');
+            }}
+          />
+        )}
 
-      {/* Mandatory Checkout Authentication Modal */}
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        onAuthSuccess={handleAuthSuccess}
-        reason={authModalReason}
-      />
+        {/* Mandatory Checkout Authentication Modal */}
+        {authModalOpen && (
+          <AuthModal
+            isOpen={authModalOpen}
+            onClose={() => setAuthModalOpen(false)}
+            onAuthSuccess={handleAuthSuccess}
+            reason={authModalReason}
+          />
+        )}
 
-      {/* 5-Second Interactive Test Payment Gateway Modal */}
-      <PaymentProcessingModal
-        isOpen={paymentModalOpen}
-        onClose={() => setPaymentModalOpen(false)}
-        bookingDetails={activeBookingForPayment}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
+        {/* 5-Second Interactive Test Payment Gateway Modal */}
+        {paymentModalOpen && (
+          <PaymentProcessingModal
+            isOpen={paymentModalOpen}
+            onClose={() => setPaymentModalOpen(false)}
+            bookingDetails={activeBookingForPayment}
+            onPaymentSuccess={handlePaymentSuccess}
+          />
+        )}
+
+        {/* Persistent Global AI Travel Assistant Drawer */}
+        {assistantOpen && (
+          <TravelAssistantDrawer
+            isOpen={assistantOpen}
+            onClose={() => setAssistantOpen(false)}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            onInitiateBooking={handleInitiateBooking}
+            selectedPlaces={selectedPlaces}
+            setSelectedPlaces={setSelectedPlaces}
+          />
+        )}
+
+        {/* DPDP Act 2023 & GDPR Granular Cookie Consent Banner */}
+        <CookieConsentBanner />
+      </Suspense>
 
       {/* Native Mobile Bottom Navigation Dock (iOS / Android Feel) */}
       <MobileAppBottomDock
@@ -757,24 +812,11 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Persistent Global AI Travel Assistant Trigger & Drawer */}
+      {/* Persistent Global AI Travel Assistant Trigger */}
       <AssistantFloatingTrigger
         isOpen={assistantOpen}
         onToggle={() => setAssistantOpen((prev) => !prev)}
       />
-
-      <TravelAssistantDrawer
-        isOpen={assistantOpen}
-        onClose={() => setAssistantOpen(false)}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onInitiateBooking={handleInitiateBooking}
-        selectedPlaces={selectedPlaces}
-        setSelectedPlaces={setSelectedPlaces}
-      />
-
-      {/* DPDP Act 2023 & GDPR Granular Cookie Consent Banner */}
-      <CookieConsentBanner />
 
     </div>
   );
