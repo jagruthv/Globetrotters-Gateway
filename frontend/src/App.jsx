@@ -12,14 +12,14 @@ const AiFluidTripStudio = lazy(() => import('./components/AiFluidTripStudio'));
 const CircuitShowcase = lazy(() => import('./components/CircuitShowcase'));
 const HolographicGatePass = lazy(() => import('./components/HolographicGatePass'));
 const AgentPortalView = lazy(() => import('./components/AgentPortalView'));
+import AuthModal from './components/AuthModal';
+import TouristSafetyModal from './components/TouristSafetyModal';
+import PaymentProcessingModal from './components/PaymentProcessingModal';
 const AgentVerificationModal = lazy(() => import('./components/AgentVerificationModal'));
 const VoiceConciergeModal = lazy(() => import('./components/VoiceConciergeModal'));
 const TravelAssistantDrawer = lazy(() => import('./components/TravelAssistantDrawer'));
 const CookieConsentBanner = lazy(() => import('./components/CookieConsentBanner'));
 const SettingsModal = lazy(() => import('./components/SettingsModal'));
-const TouristSafetyModal = lazy(() => import('./components/TouristSafetyModal'));
-const AuthModal = lazy(() => import('./components/AuthModal'));
-const PaymentProcessingModal = lazy(() => import('./components/PaymentProcessingModal'));
 
 const LazyFallback = () => (
   <div className="w-full py-20 flex flex-col items-center justify-center gap-3 text-slate-400 font-sans-clean">

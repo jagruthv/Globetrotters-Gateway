@@ -608,25 +608,34 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
     }
 
     // Serve static assets via Cloudflare Pages with Defense-in-Depth Security Armor
-    const assetResp = await env.ASSETS.fetch(request);
-    const secHeaders = new Headers(assetResp.headers);
-    secHeaders.set('X-Frame-Options', 'DENY');
-    secHeaders.set('X-Content-Type-Options', 'nosniff');
-    secHeaders.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    secHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-    secHeaders.set('Permissions-Policy', 'geolocation=(self), microphone=(self), camera=(self)');
-    secHeaders.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
-    secHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://checkout.razorpay.com https://control.msg91.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cpaas.messagecentral.com https://generativelanguage.googleapis.com https://accounts.google.com https://api.razorpay.com https://control.msg91.com http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com http://localhost:*; frame-src 'self' https://accounts.google.com https://api.razorpay.com https://control.msg91.com; frame-ancestors 'none';");
+    try {
+      const assetResp = await env.ASSETS.fetch(request);
+      
+      // For 304 Not Modified or 204 No Content, return directly to prevent response body errors
+      if (assetResp.status === 304 || assetResp.status === 204) {
+        return assetResp;
+      }
 
-    // Guarantee that Service Worker and root HTML are NEVER cached stale by intermediate CDNs or browsers
-    if (url.pathname === '/sw.js' || url.pathname === '/' || url.pathname === '/index.html') {
-      secHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      const secHeaders = new Headers(assetResp.headers);
+      secHeaders.set('X-Frame-Options', 'DENY');
+      secHeaders.set('X-Content-Type-Options', 'nosniff');
+      secHeaders.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+      secHeaders.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+      secHeaders.set('Permissions-Policy', 'geolocation=(self), microphone=(self), camera=(self)');
+      secHeaders.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+      secHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://checkout.razorpay.com https://control.msg91.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https: http:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://cpaas.messagecentral.com https://generativelanguage.googleapis.com https://accounts.google.com https://api.razorpay.com https://control.msg91.com http://ec2-16-4-37-178.ap-south-1.compute.amazonaws.com http://localhost:*; frame-src 'self' https://accounts.google.com https://api.razorpay.com https://control.msg91.com; frame-ancestors 'none';");
+
+      // Guarantee that Service Worker and root HTML are NEVER cached stale by intermediate CDNs or browsers
+      if (url.pathname === '/sw.js' || url.pathname === '/' || url.pathname === '/index.html') {
+        secHeaders.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+
+      return new Response(assetResp.body, {
+        status: assetResp.status,
+        headers: secHeaders
+      });
+    } catch {
+      return env.ASSETS.fetch(request);
     }
-
-    return new Response(assetResp.body, {
-      status: assetResp.status,
-      statusText: assetResp.statusText,
-      headers: secHeaders
-    });
   }
 };
