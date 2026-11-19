@@ -398,6 +398,18 @@ export async function verifyPassOffline(
           touristName
         };
       }
+    } else {
+      // Cross-device cryptographic pass location check
+      if (cryptoResult.circuitId && cryptoResult.circuitId > 0 && cryptoResult.circuitId !== numPlaceId) {
+        return {
+          valid: false,
+          isCryptographic: true,
+          status: 'LOCATION_MISMATCH',
+          message: `Entry Denied: Pass is only valid for Checkpoint #${cryptoResult.circuitId}. Not valid for entry at ${checkpointName}.`,
+          bookingReference: ref,
+          touristName
+        };
+      }
     }
 
     markPassVisited(ref, numPlaceId, checkpointName, gateTerminalId);

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, Zap, CreditCard, Sparkles, Loader2, FlaskConical, Calendar } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { generateCryptographicPassToken, formatPassDate } from '../utils/cryptoPassService';
+import { CHECKPOINTS } from '../utils/checkpointData';
 
 function playBookingSuccessSound() {
   try {
@@ -113,9 +114,25 @@ export default function PaymentProcessingModal({
     const endMs = startMs + (durationDays - 1) * 24 * 60 * 60 * 1000;
     const validUntil = new Date(endMs).toISOString().split('T')[0];
 
-    // Generate real cryptographic HMAC-SHA256 signed pass token with embedded dates
-    let signedToken = '';
-    const targetPlaceId = Number(bookingDetails?.circuitId || bookingDetails?.placeId || 1);
+    // Determine accurate checkpoint ID for the pass
+    let targetPlaceId = Number(bookingDetails?.circuitId || bookingDetails?.placeId || 0);
+    if (!targetPlaceId) {
+      const destText = [
+        circuitName,
+        ...(Array.isArray(destinations) ? destinations : [])
+      ].join(' ').toLowerCase();
+      const matchedCp = CHECKPOINTS.find(cp => 
+        destText.includes(cp.keyword) || destText.includes(cp.name.toLowerCase())
+      );
+      if (matchedCp) {
+        targetPlaceId = matchedCp.id;
+      } else if (destinations.length > 1) {
+        targetPlaceId = 0; // multi-destination circuit
+      } else {
+        targetPlaceId = 1;
+      }
+    }
+
     try {
       signedToken = await generateCryptographicPassToken(
         refNumber, 
@@ -138,6 +155,7 @@ export default function PaymentProcessingModal({
     const passPayload = {
       reference: refNumber,
       token: signedToken,
+      circuitId: targetPlaceId,
       circuitName: circuitName,
       touristName: touristName,
       touristCount: numTourists,

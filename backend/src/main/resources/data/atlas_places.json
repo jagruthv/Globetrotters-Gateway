@@ -566,8 +566,8 @@
           "typicalDwellTime": "1.0 – 2.0 Hours (Scenic panorama, walking path, and leisure refreshment)",
           "active": true,
           "slug": "lambasingi-kashmir-of-andhra-pradesh",
-          "imageUrl": "",
-          "imageVerified": false
+          "imageUrl": "/images/aptourism/lambasingi.jpg",
+          "imageVerified": true
         },
         {
           "name": "Thajangi Reservoir & Adventure Camp",
@@ -910,8 +910,8 @@
           "typicalDwellTime": "1.0 – 2.0 Hours (Scenic panorama, walking path, and leisure refreshment)",
           "active": true,
           "slug": "papikondalu-godavari-river-cruise-boarding-points",
-          "imageUrl": "",
-          "imageVerified": false
+          "imageUrl": "/images/aptourism/papikondalu_boat_cruise.jpg",
+          "imageVerified": true
         },
         {
           "name": "Ananthagiri Coffee Plantations & Waterfalls",
@@ -953,8 +953,8 @@
           "typicalDwellTime": "2.0 – 3.5 Hours (Includes valley descent, stream wading, and scenic rest)",
           "active": true,
           "slug": "ananthagiri-coffee-plantations-waterfalls",
-          "imageUrl": "",
-          "imageVerified": false
+          "imageUrl": "/images/aptourism/anantagiri_hills.jpg",
+          "imageVerified": true
         }
       ]
     },
