@@ -15,10 +15,9 @@ import {
   Ticket
 } from 'lucide-react';
 import { authService } from '../services/api';
+import { launchMsg91Otp, isMsg91Loaded } from '../utils/msg91OtpClient';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = null }) {
-  // 'email_otp' | 'password' | 'phone'
-  const [activeMethod, setActiveMethod] = useState('email_otp');
   const [isRegister, setIsRegister] = useState(false);
   const [googleButtonRendered, setGoogleButtonRendered] = useState(false);
   const googleBtnRef = useRef(null);
@@ -233,32 +232,42 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
       return;
     }
     setError(null);
+    setLoading(true);
 
-    // Primary: Launch official MSG91 Secure OTP Widget directly to phone
-    if (isMsg91Loaded()) {
-      launchMsg91Otp({
+    // Primary: Launch official MSG91 Secure OTP Widget directly
+    try {
+      const launched = await launchMsg91Otp({
         phoneNumber: clean,
-        onSuccess: () => {
+        onSuccess: (data) => {
+          setLoading(false);
           const verifiedUser = {
             id: Date.now(),
             fullName: `Traveler +91 ${clean}`,
             phoneNumber: clean,
             isPhoneVerified: true,
             role: 'ROLE_TOURIST',
-            token: `msg91_${Date.now()}`
+            token: (data && (data.token || data.jwt || data.auth_key)) || `msg91_${Date.now()}`
           };
           handleFinishAuth(verifiedUser, `Phone verified via MSG91! Welcome ${verifiedUser.fullName}`);
         },
         onFailure: (err) => {
           console.warn('MSG91 launch notice:', err);
-          setError(err.message || 'MSG91 OTP verification failed.');
+          setLoading(false);
+          if (err && err.message) {
+            setError(err.message);
+          }
         }
       });
-      return;
+
+      if (launched) {
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('MSG91 launch caught error:', err);
     }
 
-    // Fallback: send via backend
-    setLoading(true);
+    // Fallback: send via backend gateway SMS
     try {
       await authService.sendMobileOtp(clean);
       setPhoneOtpStep('input_otp');
@@ -382,54 +391,38 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
               </div>
             </div>
 
-            {/* TAB SELECTOR: Email OTP vs Password vs Phone */}
-            <div className="grid grid-cols-3 p-1 rounded-xl bg-white/[0.03] border border-white/10 font-sans-clean text-xs">
+            {/* 2-TAB SELECTOR: Instant One-Time Password (OTP) vs Password Account */}
+            <div className="grid grid-cols-2 p-1 rounded-xl bg-white/[0.03] border border-white/10 font-sans-clean text-xs">
               <button
                 type="button"
                 onClick={() => {
-                  setActiveMethod('email_otp');
+                  setActiveTab('otp');
                   setError(null);
                 }}
                 className={`py-2 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  activeMethod === 'email_otp'
+                  activeTab === 'otp'
                     ? 'bg-white/10 text-white shadow-sm border border-white/10'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <Mail className="w-3.5 h-3.5 text-amber-400" />
-                <span>Email OTP</span>
+                <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                <span>One-Time Password (OTP)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => {
-                  setActiveMethod('password');
+                  setActiveTab('password');
                   setError(null);
                 }}
                 className={`py-2 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  activeMethod === 'password'
+                  activeTab === 'password'
                     ? 'bg-white/10 text-white shadow-sm border border-white/10'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <Lock className="w-3.5 h-3.5 text-sky-400" />
-                <span>Password</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveMethod('phone');
-                  setError(null);
-                }}
-                className={`py-2 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  activeMethod === 'phone'
-                    ? 'bg-white/10 text-white shadow-sm border border-white/10'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Mobile</span>
+                <span>Password Account</span>
               </button>
             </div>
 

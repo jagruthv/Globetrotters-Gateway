@@ -19,6 +19,7 @@ import {
   RotateCcw,
   Star,
   Accessibility,
+  Heart,
   Award,
   Mountain,
   Waves,
@@ -646,6 +647,18 @@ export default function BentoDistrictExplorer({
               const fallbackBanner = getOfflineImageFallback(firstSpot.name, firstSpot.category, district.name);
               const isFirstSelected = isPlaceSelected(firstSpot.name);
               const isFlagship = (idx % 5 === 0 && filteredDistricts.length > 4);
+              const isFirstFavorited = favorites.includes(firstSpot.name);
+
+              const qClean = searchQuery.toLowerCase().trim();
+              const searchMatchedSpots = qClean
+                ? district.spots.filter(
+                    (s) =>
+                      s.name?.toLowerCase().includes(qClean) ||
+                      s.category?.toLowerCase().includes(qClean) ||
+                      s.description?.toLowerCase().includes(qClean) ||
+                      (s.culinarySpecialty && s.culinarySpecialty.toLowerCase().includes(qClean))
+                  )
+                : [];
 
               return (
                 <motion.div
@@ -721,28 +734,71 @@ export default function BentoDistrictExplorer({
                           <h3 className="text-xl font-bold text-white group-hover:text-amber-300 transition-colors">
                             {district.name.replace(' District', '')}
                           </h3>
-                          {/* 1-Click Quick Add Top Spot Button */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onSelectPlaceForTrip(firstSpot, district.name);
-                            }}
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors flex-shrink-0 font-sans-clean cursor-pointer ${
-                              isFirstSelected
-                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
-                                : 'bg-white/[0.05] text-slate-300 hover:bg-amber-400 hover:text-slate-950 border border-white/10'
-                            }`}
-                            title={isFirstSelected ? 'Already in tour plan' : `Add ${firstSpot.name} to plan`}
-                          >
-                            {isFirstSelected ? <Check className="w-3 h-3 text-emerald-400" /> : <Plus className="w-3 h-3" />}
-                            <span>{isFirstSelected ? 'In Plan' : 'Quick Add'}</span>
-                          </button>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {/* Wishlist Heart Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => toggleFavorite(firstSpot.name, e)}
+                              className={`p-1.5 rounded-full border transition-colors cursor-pointer flex-shrink-0 ${
+                                isFirstFavorited
+                                  ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                                  : 'bg-white/[0.05] text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border-white/10'
+                              }`}
+                              title={isFirstFavorited ? 'Remove from wishlist' : 'Save to wishlist'}
+                              aria-label={isFirstFavorited ? 'Remove from wishlist' : 'Save to wishlist'}
+                            >
+                              <Heart className={`w-3.5 h-3.5 ${isFirstFavorited ? 'fill-rose-400 text-rose-400' : ''}`} />
+                            </button>
+                            {/* 1-Click Quick Add Top Spot Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onSelectPlaceForTrip(firstSpot, district.name);
+                              }}
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 transition-colors flex-shrink-0 font-sans-clean cursor-pointer ${
+                                isFirstSelected
+                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40'
+                                  : 'bg-white/[0.05] text-slate-300 hover:bg-amber-400 hover:text-slate-950 border border-white/10'
+                              }`}
+                              title={isFirstSelected ? 'Already in tour plan' : `Add ${firstSpot.name} to plan`}
+                            >
+                              {isFirstSelected ? <Check className="w-3 h-3 text-emerald-400" /> : <Plus className="w-3 h-3" />}
+                              <span>{isFirstSelected ? 'In Plan' : 'Quick Add'}</span>
+                            </button>
+                          </div>
                         </div>
                         <p className="text-xs text-slate-400 line-clamp-2 mt-1 leading-relaxed">
                           {firstSpot.description || 'Famous temples, waterfalls, hill views, and historic monuments.'}
                         </p>
                       </div>
+
+                      {/* Search Matches Preview Row */}
+                      {searchQuery && searchMatchedSpots.length > 0 && (
+                        <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-amber-500/10 border border-amber-400/20 text-xs">
+                          <span className="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">
+                            Matched Sights in {district.name.replace(' District', '')}:
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {searchMatchedSpots.slice(0, 3).map((s) => (
+                              <span
+                                key={s.name}
+                                className="px-2 py-0.5 rounded-md bg-black/40 border border-white/10 text-white text-[11px] flex items-center gap-1 font-sans-clean"
+                              >
+                                <span className="truncate max-w-[120px]">{s.name}</span>
+                                <span className="text-emerald-400 font-mono text-[10px]">
+                                  {s.individualPrice === 0 ? 'Free' : `₹${s.individualPrice || 40}`}
+                                </span>
+                              </span>
+                            ))}
+                            {searchMatchedSpots.length > 3 && (
+                              <span className="text-[10px] text-amber-400 font-mono self-center">
+                                +{searchMatchedSpots.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Flagship Top Highlights Preview */}
                       {isFlagship && district.spots.length > 1 && (
@@ -859,6 +915,9 @@ export default function BentoDistrictExplorer({
                 {activeDistrictModal.spots
                   .filter((spot) => {
                     if (modalFilterMode !== 'matching') return true;
+                    if (activeTheme === 'wishlist') {
+                      return favorites.includes(spot.name);
+                    }
                     if (searchQuery) {
                       const q = searchQuery.toLowerCase().trim();
                       return (
@@ -1008,27 +1067,43 @@ export default function BentoDistrictExplorer({
                                 </a>
                               ) : <div />}
 
-                              <button
-                                type="button"
-                                onClick={() => onSelectPlaceForTrip(spot, activeDistrictModal.name)}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 font-sans-clean cursor-pointer active:scale-[0.98] ${
-                                  selected
-                                    ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
-                                    : 'bg-amber-400 text-slate-950 hover:bg-amber-300'
-                                }`}
-                              >
-                                {selected ? (
-                                  <>
-                                    <Check className="w-3.5 h-3.5" />
-                                    <span>In Tour Plan</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Plus className="w-3.5 h-3.5" />
-                                    <span>Add to My Tour Plan</span>
-                                  </>
-                                )}
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={(e) => toggleFavorite(spot.name, e)}
+                                  className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                    favorites.includes(spot.name)
+                                      ? 'bg-rose-500/20 border border-rose-500/40 text-rose-300'
+                                      : 'bg-white/[0.05] hover:bg-rose-500/15 border border-white/10 text-slate-300 hover:text-rose-300'
+                                  }`}
+                                  title={favorites.includes(spot.name) ? 'Remove from saved wishlist' : 'Save to wishlist'}
+                                >
+                                  <Heart className={`w-3.5 h-3.5 ${favorites.includes(spot.name) ? 'fill-rose-400 text-rose-400' : ''}`} />
+                                  <span>{favorites.includes(spot.name) ? 'Saved' : 'Wishlist'}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => onSelectPlaceForTrip(spot, activeDistrictModal.name)}
+                                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 font-sans-clean cursor-pointer active:scale-[0.98] ${
+                                    selected
+                                      ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-300'
+                                      : 'bg-amber-400 text-slate-950 hover:bg-amber-300'
+                                  }`}
+                                >
+                                  {selected ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5" />
+                                      <span>In Tour Plan</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Plus className="w-3.5 h-3.5" />
+                                      <span>Add to My Tour Plan</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
                             </div>
 
                           </div>
