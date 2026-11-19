@@ -161,11 +161,16 @@ function findLocalPass(tokenOrRef) {
     const passes = JSON.parse(raw);
     if (!Array.isArray(passes)) return null;
 
-    const clean = tokenOrRef.trim().toUpperCase();
+    let target = (tokenOrRef || '').trim();
+    const urlMatch = target.match(/[?&]t=([^&#]+)/);
+    if (urlMatch && urlMatch[1]) {
+      target = decodeURIComponent(urlMatch[1]).trim();
+    }
+    const clean = target.toUpperCase();
     return passes.find((p) => {
       if (!p) return false;
       const refMatch = p.reference && p.reference.toUpperCase() === clean;
-      const tokenMatch = p.token && (p.token === tokenOrRef || p.token.includes(tokenOrRef));
+      const tokenMatch = p.token && (p.token === target || target.includes(p.token) || (p.reference && target.includes(p.reference)));
       return refMatch || tokenMatch;
     });
   } catch {
@@ -192,7 +197,11 @@ export async function verifyPassOffline(
     };
   }
 
-  const cleanToken = passToken.trim();
+  let cleanToken = passToken.trim();
+  const urlMatch = cleanToken.match(/[?&]t=([^&#]+)/);
+  if (urlMatch && urlMatch[1]) {
+    cleanToken = decodeURIComponent(urlMatch[1]).trim();
+  }
   const numPlaceId = Number(placeId);
   const kw = (keyword || '').toLowerCase();
 

@@ -283,6 +283,10 @@ export default function AgentPortalView({
   const startCamera = async (mode = facingMode) => {
     setCameraError(null);
     try {
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        throw new Error('Camera hardware or browser API not available.');
+      }
+
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((t) => t.stop());
       }
@@ -313,8 +317,11 @@ export default function AgentPortalView({
         videoRef.current.srcObject = stream;
         videoRef.current.play().catch(() => {});
       }
-    } catch {
-      setCameraError('Camera access not available. You can enter or paste the ticket code manually.');
+    } catch (err) {
+      const errMsg = err?.name === 'NotAllowedError'
+        ? 'Camera permission denied. Please allow camera access in browser site settings, or enter the ticket code below.'
+        : 'Camera access not available. You can enter or paste the ticket code manually.';
+      setCameraError(errMsg);
       setIsCameraActive(false);
       setCameraScanning(false);
     }
