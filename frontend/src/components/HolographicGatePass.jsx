@@ -17,7 +17,8 @@ import {
   X,
   History,
   FileText,
-  Printer
+  Printer,
+  AlertCircle
 } from 'lucide-react';
 import QRCode from 'qrcode';
 
@@ -31,8 +32,19 @@ export default function HolographicGatePass({
   const [sunlightScanMode, setSunlightScanMode] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [selectedReceiptPass, setSelectedReceiptPass] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Re-read storage whenever an agent scans and marks a monument visited
+  useEffect(() => {
+    const handleVisitedUpdate = () => {
+      setRefreshTrigger(prev => prev + 1);
+    };
+    window.addEventListener('pass-visited-updated', handleVisitedUpdate);
+    return () => window.removeEventListener('pass-visited-updated', handleVisitedUpdate);
+  }, []);
 
   const allPasses = React.useMemo(() => {
+    void refreshTrigger;
     const list = [];
     if (passData && passData.reference !== 'GT-PASS-DEMO' && !passData.token?.includes('e3b0c442')) {
       list.push(passData);
@@ -78,7 +90,7 @@ export default function HolographicGatePass({
     }
 
     return list;
-  }, [passData]);
+  }, [passData, refreshTrigger]);
 
   const [selectedPassIndex, setSelectedPassIndex] = useState(() => {
     if (typeof window === 'undefined') return 0;
@@ -123,6 +135,12 @@ export default function HolographicGatePass({
   }, [passData?.reference]);
 
   const activePass = allPasses[selectedPassIndex] || allPasses[0] || null;
+
+  const isBorraVisited = Boolean(
+    activePass?.isBorraCavesVisited ||
+    activePass?.visitedPlaces?.some(v => v.placeId === 2 || (v.name && v.name.toLowerCase().includes('borra')))
+  );
+  const borraVisitRecord = activePass?.visitedPlaces?.find(v => v.placeId === 2 || (v.name && v.name.toLowerCase().includes('borra')));
 
   // Real Dynamic QR Code Generator (Encodes clean ticket verification URL)
   useEffect(() => {
@@ -661,16 +679,56 @@ export default function HolographicGatePass({
                   Attractions covered under this pass
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {activePass.placesAllowed.map((p) => (
-                    <span
-                      key={p}
-                      className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-[11px] text-slate-300 font-sans-clean flex items-center gap-1.5"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                      <span>{p}</span>
-                    </span>
-                  ))}
+                  {activePass.placesAllowed.map((p) => {
+                    const isPlaceBorra = p.toLowerCase().includes('borra');
+                    const isRedeemed = isPlaceBorra && isBorraVisited;
+                    return (
+                      <span
+                        key={p}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-sans-clean flex items-center gap-1.5 transition-colors ${
+                          isRedeemed
+                            ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
+                            : 'bg-white/[0.04] border border-white/10 text-slate-300'
+                        }`}
+                      >
+                        {isRedeemed ? (
+                          <>
+                            <CheckCircle className="w-3 h-3 text-emerald-400 shrink-0" />
+                            <span className="line-through opacity-85">{p}</span>
+                            <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                              Visited
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                            <span>{p}</span>
+                          </>
+                        )}
+                      </span>
+                    );
+                  })}
                 </div>
+              </div>
+            )}
+
+            {/* Borra Caves Visited Notification */}
+            {isBorraVisited && (
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs font-sans-clean">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="font-bold text-emerald-300">
+                      Borra Caves: Visited • Entry Used
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      Checked in at {borraVisitRecord?.time || '10:30 AM'} ({borraVisitRecord?.date || 'Today'}) • Gate B2
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] font-semibold font-mono px-2 py-0.5 rounded bg-rose-500/15 border border-rose-500/30 text-rose-300 shrink-0">
+                  Re-entry Prohibited
+                </span>
               </div>
             )}
 
@@ -701,9 +759,16 @@ export default function HolographicGatePass({
                   <span className="text-xs font-bold text-white font-sans-clean">
                     Entry QR Code
                   </span>
-                  <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean max-w-xs">
-                    Show this QR code at the entrance turnstile for fast-track entry.
-                  </p>
+                  {isBorraVisited ? (
+                    <div className="mt-0.5 p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[10px] font-sans-clean flex items-center gap-1.5 max-w-xs">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                      <span>Single entry for Borra Caves has been redeemed. Re-entry strictly prohibited.</span>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-slate-400 leading-relaxed font-sans-clean max-w-xs">
+                      Show this QR code at the entrance turnstile for fast-track entry.
+                    </p>
+                  )}
                   <span className="text-[10px] text-amber-300 font-mono font-semibold tracking-wider">
                     Ticket Code: {activePass.reference}
                   </span>

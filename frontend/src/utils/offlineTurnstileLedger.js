@@ -38,7 +38,7 @@ export function saveOfflineLedgerEntries(entries) {
   }
 }
 
-function getAdmittedPasses() {
+export function getAdmittedPasses() {
   try {
     const raw = localStorage.getItem(ADMITTED_SET_KEY);
     return raw ? JSON.parse(raw) : {};
@@ -47,7 +47,7 @@ function getAdmittedPasses() {
   }
 }
 
-function recordAdmittedPass(token, placeId) {
+export function recordAdmittedPass(token, placeId) {
   try {
     const admitted = getAdmittedPasses();
     const key = `${token.trim()}::${placeId}`;
@@ -58,6 +58,49 @@ function recordAdmittedPass(token, placeId) {
     localStorage.setItem(ADMITTED_SET_KEY, JSON.stringify(admitted));
   } catch (e) {
     if (import.meta.env.DEV) console.warn('[Turnstile Ledger] Replay cache notice:', e);
+  }
+}
+
+export function markPassVisited(tokenOrRef, placeId = 2, placeName = 'Borra Caves') {
+  try {
+    recordAdmittedPass(tokenOrRef, placeId);
+    const raw = localStorage.getItem('globetrotter_passes');
+    if (!raw) return;
+    const passes = JSON.parse(raw);
+    if (!Array.isArray(passes)) return;
+
+    const clean = tokenOrRef.trim().toUpperCase();
+    let modified = false;
+    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const nowDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    passes.forEach((p) => {
+      if (!p) return;
+      const refMatch = p.reference && p.reference.toUpperCase() === clean;
+      const tokenMatch = p.token && (p.token === tokenOrRef || p.token.includes(tokenOrRef) || tokenOrRef.includes(p.reference));
+      if (refMatch || tokenMatch) {
+        if (!p.visitedPlaces) p.visitedPlaces = [];
+        const alreadyInList = p.visitedPlaces.some(v => v.placeId === Number(placeId) || (v.name && v.name.toLowerCase().includes(placeName.toLowerCase())));
+        if (!alreadyInList) {
+          p.visitedPlaces.push({
+            placeId: Number(placeId),
+            name: placeName,
+            time: nowTime,
+            date: nowDate,
+            gate: 'Gate B2 • Turnstile 01'
+          });
+          p.isBorraCavesVisited = true;
+          modified = true;
+        }
+      }
+    });
+
+    if (modified) {
+      localStorage.setItem('globetrotter_passes', JSON.stringify(passes));
+      window.dispatchEvent(new CustomEvent('pass-visited-updated', { detail: { placeId, placeName } }));
+    }
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn('[Turnstile Ledger] markPassVisited notice:', e);
   }
 }
 
@@ -101,14 +144,19 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
   // 1. Anti-Passback / Replay Protection Check
   const admitted = getAdmittedPasses();
   const replayKey = `${cleanToken}::${placeId}`;
-  if (admitted[replayKey]) {
-    const priorEntry = admitted[replayKey];
+  const localMatchCheck = findLocalPass(cleanToken);
+  const refReplayKey = localMatchCheck ? `${localMatchCheck.reference}::${placeId}` : null;
+  const isAlreadyVisited = localMatchCheck?.visitedPlaces?.some(v => v.placeId === Number(placeId) || (v.name && v.name.toLowerCase().includes('borra'))) ||
+                           localMatchCheck?.isBorraCavesVisited;
+
+  if (admitted[replayKey] || (refReplayKey && admitted[refReplayKey]) || isAlreadyVisited) {
+    const priorEntry = admitted[replayKey] || (refReplayKey ? admitted[refReplayKey] : null);
     return {
       valid: false,
       isPassback: true,
       status: 'PASSBACK_REJECTED',
-      message: `Anti-passback alert: Pass already checked in at this gate (${new Date(priorEntry.timestamp).toLocaleTimeString()}). Re-entry denied.`,
-      priorTimestamp: priorEntry.admittedAt
+      message: `Entry Denied: Tourist already visited Borra Caves. Single admission has been redeemed and cannot be reused.`,
+      priorTimestamp: priorEntry?.admittedAt || new Date().toISOString()
     };
   }
 
@@ -130,7 +178,8 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
     const localMatch = findLocalPass(ref);
     const touristName = localMatch?.touristName || 'Verified Corridor Passholder';
 
-    // Record admission in anti-passback shield
+    // Record admission and update tourist pass visited status
+    markPassVisited(ref, placeId, 'Borra Caves');
     recordAdmittedPass(cleanToken, placeId);
 
     // Append to offline audit log
@@ -170,6 +219,7 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
     cleanToken.length >= 8;
 
   if (localPass) {
+    markPassVisited(localPass.reference, placeId, 'Borra Caves');
     recordAdmittedPass(cleanToken, placeId);
 
     const newEntry = {

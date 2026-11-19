@@ -22,7 +22,9 @@ import jsQR from 'jsqr';
 import { scannerService } from '../services/api';
 import { 
   verifyPassOffline, 
-  syncLedgerToCentralCore 
+  syncLedgerToCentralCore,
+  getAdmittedPasses,
+  markPassVisited
 } from '../utils/offlineTurnstileLedger';
 
 function playScannerSound(isGranted) {
@@ -62,13 +64,7 @@ function playScannerSound(isGranted) {
 }
 
 const CHECKPOINTS = [
-  { id: 1, name: 'Araku Tribal Museum (Alluri Sitharama Raju)', gate: 'Gate A1' },
-  { id: 2, name: 'Borra Caves Cave Entrance (Alluri Sitharama Raju)', gate: 'Gate B2' },
-  { id: 3, name: 'Belum Caves Main Gate (Nandyal)', gate: 'Gate C1' },
-  { id: 4, name: 'Coringa Mangrove Boardwalk (Kakinada)', gate: 'North Gate' },
-  { id: 5, name: 'Golconda Fort Main Gate (Hyderabad)', gate: 'Fateh Darwaza Gate' },
-  { id: 6, name: 'Ramappa Temple UNESCO Sanctum (Mulugu)', gate: 'Main Mandapa Gate' },
-  { id: 7, name: 'Gandikota Fort Gorge View (YSR Kadapa)', gate: 'Canyon Viewpoint Gate' }
+  { id: 2, name: 'Borra Caves Cave Entrance (Alluri Sitharama Raju)', gate: 'Gate B2' }
 ];
 
 export default function AgentPortalView({ 
@@ -76,7 +72,7 @@ export default function AgentPortalView({
   passData = null
 }) {
   const [tokenInput, setTokenInput] = useState(passData?.token || '');
-  const [selectedPlaceId, setSelectedPlaceId] = useState(1);
+  const selectedPlaceId = 2; // Fixed & locked strictly to Borra Caves
   const [verdict, setVerdict] = useState(null); // { success: boolean, touristName: string, message: string }
   const [isScanning, setIsScanning] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
@@ -163,20 +159,52 @@ export default function AgentPortalView({
     };
   }, []);
 
-  // Start Camera
+  // Start Camera with resilient mobile multi-tier constraints
   const startCamera = async (mode = facingMode) => {
     setCameraError(null);
     try {
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((t) => t.stop());
       }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: mode, width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
+
+      let stream = null;
+      // Tier 1: Try requested mode with ideal resolution
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: mode },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+      } catch (err1) {
+        if (import.meta.env.DEV) console.warn('Tier 1 camera constraints fallback:', err1);
+        // Tier 2: Try relaxed facingMode without resolution lock
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: mode }
+          });
+        } catch (err2) {
+          if (import.meta.env.DEV) console.warn('Tier 2 camera constraints fallback:', err2);
+          // Tier 3: Open any video camera available on device
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true
+          });
+        }
+      }
+
       mediaStreamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        videoRef.current.setAttribute('autoplay', 'true');
+        videoRef.current.setAttribute('muted', 'true');
+        try {
+          await videoRef.current.play();
+        } catch (playErr) {
+          if (import.meta.env.DEV) console.warn('Video auto-play fallback:', playErr);
+        }
       }
       setIsCameraActive(true);
       setCameraScanning(true);
@@ -337,7 +365,45 @@ export default function AgentPortalView({
     setVerdict(null);
 
     const placeObj = CHECKPOINTS.find((c) => c.id === Number(selectedPlaceId));
-    const checkpointName = placeObj ? placeObj.name : 'Monument Gate';
+    const checkpointName = placeObj ? placeObj.name : 'Borra Caves Cave Entrance (Alluri Sitharama Raju)';
+
+    // 0. Anti-Revisit Check: If tourist already visited Borra Caves, agent CANNOT allow again
+    const storedPasses = (() => {
+      try {
+        const raw = localStorage.getItem('globetrotter_passes');
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    })();
+    const cleanRef = tokenToVerify.trim().toUpperCase();
+    const matchedPass = Array.isArray(storedPasses) ? storedPasses.find(p => 
+      (p?.reference && p.reference.toUpperCase() === cleanRef) ||
+      (p?.token && (p.token === tokenToVerify || tokenToVerify.includes(p.reference)))
+    ) : null;
+
+    const admittedCache = getAdmittedPasses();
+    const isAlreadyVisited = 
+      Boolean(matchedPass?.isBorraCavesVisited) ||
+      Boolean(matchedPass?.visitedPlaces?.some(v => v.placeId === 2 || (v.name && v.name.toLowerCase().includes('borra')))) ||
+      Boolean(admittedCache[`${tokenToVerify.trim()}::2`]) ||
+      Boolean(matchedPass?.reference && admittedCache[`${matchedPass.reference}::2`]);
+
+    if (isAlreadyVisited) {
+      setIsScanning(false);
+      playScannerSound(false);
+      const result = {
+        success: false,
+        touristName: matchedPass?.touristName || 'Ticket Holder',
+        message: 'ENTRY DENIED • ALREADY VISITED: Single admission for Borra Caves was already redeemed. Re-entry strictly prohibited.',
+        checkpoint: checkpointName,
+        token: tokenToVerify
+      };
+      setVerdict(result);
+      recordScanResult(result, false, tokenToVerify, checkpointName);
+      setTimeout(() => setVerdict(null), 5000);
+      return;
+    }
 
     // 1. Local Offline Engine verification
     if (!isOnline) {
@@ -345,12 +411,15 @@ export default function AgentPortalView({
         const offRes = await verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
         setIsScanning(false);
         const isOk = offRes.valid;
+        if (isOk) {
+          markPassVisited(tokenToVerify, selectedPlaceId, 'Borra Caves');
+        }
         playScannerSound(isOk);
 
         const result = {
           success: isOk,
-          touristName: offRes.touristName || (isOk ? 'Verified Visitor' : 'Unregistered Ticket'),
-          message: isOk ? 'ENTRY GRANTED • ADMIT 1' : offRes.message || 'ENTRY DENIED • INVALID TICKET',
+          touristName: offRes.touristName || matchedPass?.touristName || (isOk ? 'Verified Visitor' : 'Unregistered Ticket'),
+          message: isOk ? 'ENTRY GRANTED • ADMIT 1 (Single Entry Activated)' : offRes.message || 'ENTRY DENIED • INVALID TICKET',
           checkpoint: checkpointName,
           token: tokenToVerify
         };
@@ -370,11 +439,12 @@ export default function AgentPortalView({
         turnstileId: 'Gate-01'
       });
 
+      markPassVisited(tokenToVerify, selectedPlaceId, 'Borra Caves');
       playScannerSound(true);
       const result = {
         success: true,
-        touristName: res.touristName || 'Verified Visitor',
-        message: 'ENTRY GRANTED • ADMIT 1',
+        touristName: res.touristName || matchedPass?.touristName || 'Verified Visitor',
+        message: 'ENTRY GRANTED • ADMIT 1 (Borra Caves Entry Activated)',
         checkpoint: checkpointName,
         token: tokenToVerify
       };
@@ -386,12 +456,15 @@ export default function AgentPortalView({
       // Fallback to local offline ledger
       const offRes = await verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
       const isOk = offRes.valid;
+      if (isOk) {
+        markPassVisited(tokenToVerify, selectedPlaceId, 'Borra Caves');
+      }
       playScannerSound(isOk);
 
       const result = {
         success: isOk,
-        touristName: offRes.touristName || (isOk ? 'Verified Visitor' : 'Unregistered Ticket'),
-        message: isOk ? 'ENTRY GRANTED • ADMIT 1' : offRes.message || 'ENTRY DENIED • INVALID TICKET',
+        touristName: offRes.touristName || matchedPass?.touristName || (isOk ? 'Verified Visitor' : 'Unregistered Ticket'),
+        message: isOk ? 'ENTRY GRANTED • ADMIT 1 (Single Entry Activated)' : offRes.message || 'ENTRY DENIED • INVALID TICKET',
         checkpoint: checkpointName,
         token: tokenToVerify
       };
@@ -608,23 +681,27 @@ export default function AgentPortalView({
             </div>
           </div>
 
-          {/* Checkpoint Dropdown */}
+          {/* Checkpoint Location: Locked to Borra Caves */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-amber-400" />
-              <span>Assigned monument gate</span>
-            </label>
-            <select
-              value={selectedPlaceId}
-              onChange={(e) => setSelectedPlaceId(Number(e.target.value))}
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400 cursor-pointer font-sans-clean"
-            >
-              {CHECKPOINTS.map((cp) => (
-                <option key={cp.id} value={cp.id} className="bg-[#0E121A] text-white">
-                  {cp.name} • {cp.gate}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-300 font-sans-clean flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                <span>Assigned Monument Checkpoint</span>
+              </label>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300">
+                Fixed Location
+              </span>
+            </div>
+            <div className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-amber-400/30 text-white text-sm font-sans-clean flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="font-bold text-amber-300">Borra Caves Cave Entrance</span>
+                <span className="text-xs text-slate-400 hidden sm:inline">(Alluri Sitharama Raju)</span>
+              </div>
+              <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-amber-400/15 text-amber-300 border border-amber-400/30 shrink-0">
+                Gate B2 • Turnstile 01
+              </span>
+            </div>
           </div>
 
           {/* LIVE CAMERA SCANNER VIEWPORT */}
@@ -667,7 +744,9 @@ export default function AgentPortalView({
               <div className="relative w-full aspect-video sm:aspect-[21/9] max-h-72 rounded-2xl overflow-hidden bg-black border-2 border-amber-400/40 shadow-inner flex items-center justify-center">
                 <video
                   ref={videoRef}
+                  autoPlay
                   playsInline
+                  webkit-playsinline="true"
                   muted
                   className="w-full h-full object-cover"
                 />
