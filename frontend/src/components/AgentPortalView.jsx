@@ -367,7 +367,7 @@ export default function AgentPortalView({
     const placeObj = CHECKPOINTS.find((c) => c.id === Number(selectedPlaceId));
     const checkpointName = placeObj ? placeObj.name : 'Borra Caves Cave Entrance (Alluri Sitharama Raju)';
 
-    // 0. Anti-Revisit Check: If tourist already visited Borra Caves, agent CANNOT allow again
+    // 0. Location Validation: Verify if this pass actually includes Borra Caves!
     const storedPasses = (() => {
       try {
         const raw = localStorage.getItem('globetrotter_passes');
@@ -382,6 +382,35 @@ export default function AgentPortalView({
       (p?.token && (p.token === tokenToVerify || tokenToVerify.includes(p.reference)))
     ) : null;
 
+    const includesBorraCaves = (pass) => {
+      if (!pass) return false;
+      const kw = 'borra';
+      if (Array.isArray(pass.destinations) && pass.destinations.some(d => typeof d === 'string' && d.toLowerCase().includes(kw))) return true;
+      if (Array.isArray(pass.placesAllowed) && pass.placesAllowed.some(p => typeof p === 'string' && p.toLowerCase().includes(kw))) return true;
+      if (typeof pass.circuitName === 'string' && pass.circuitName.toLowerCase().includes(kw)) return true;
+      if (typeof pass.destination === 'string' && pass.destination.toLowerCase().includes(kw)) return true;
+      if (pass.circuitId === 2 || String(pass.circuitId).toLowerCase().includes(kw)) return true;
+      return false;
+    };
+
+    if (matchedPass && !includesBorraCaves(matchedPass)) {
+      setIsScanning(false);
+      playScannerSound(false);
+      const passTarget = matchedPass.circuitName || matchedPass.destination || 'other attractions';
+      const result = {
+        success: false,
+        touristName: matchedPass.touristName || 'Ticket Holder',
+        message: `ENTRY DENIED • WRONG LOCATION: Pass is only valid for "${passTarget}". It does not grant entry to Borra Caves.`,
+        checkpoint: checkpointName,
+        token: tokenToVerify
+      };
+      setVerdict(result);
+      recordScanResult(result, false, tokenToVerify, checkpointName);
+      setTimeout(() => setVerdict(null), 5000);
+      return;
+    }
+
+    // 1. Anti-Revisit Check: If tourist already visited Borra Caves, agent CANNOT allow again
     const admittedCache = getAdmittedPasses();
     const isAlreadyVisited = 
       Boolean(matchedPass?.isBorraCavesVisited) ||
@@ -405,7 +434,7 @@ export default function AgentPortalView({
       return;
     }
 
-    // 1. Local Offline Engine verification
+    // 2. Local Offline Engine verification
     if (!isOnline) {
       setTimeout(async () => {
         const offRes = await verifyPassOffline(tokenToVerify, selectedPlaceId, checkpointName);
@@ -431,13 +460,28 @@ export default function AgentPortalView({
       return;
     }
 
-    // 2. Cloud Server verification with offline fallback
+    // 3. Cloud Server verification with offline fallback
     try {
       const res = await scannerService.verifyPass({
         token: tokenToVerify,
         placeId: selectedPlaceId,
         turnstileId: 'Gate-01'
       });
+
+      if (!res.valid) {
+        playScannerSound(false);
+        const result = {
+          success: false,
+          touristName: res.touristName || matchedPass?.touristName || 'Ticket Holder',
+          message: res.message || 'ENTRY DENIED • TICKET NOT VALID FOR BORRA CAVES',
+          checkpoint: checkpointName,
+          token: tokenToVerify
+        };
+        setVerdict(result);
+        recordScanResult(result, false, tokenToVerify, checkpointName);
+        setTimeout(() => setVerdict(null), 5000);
+        return;
+      }
 
       markPassVisited(tokenToVerify, selectedPlaceId, 'Borra Caves');
       playScannerSound(true);

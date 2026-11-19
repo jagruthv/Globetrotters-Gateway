@@ -19,6 +19,34 @@ import { verifyPassCryptographicSignature } from './cryptoPassService.js';
 const LEDGER_KEY = 'globetrotter_turnstile_ledger';
 const ADMITTED_SET_KEY = 'globetrotter_admitted_passes_cache';
 
+export function isPassValidForLocation(pass, locationId = 2, keyword = 'borra') {
+  if (!pass) return false;
+  const kw = keyword.toLowerCase();
+
+  // Check array of destinations
+  if (Array.isArray(pass.destinations) && pass.destinations.some(d => typeof d === 'string' && d.toLowerCase().includes(kw))) {
+    return true;
+  }
+  // Check array of places allowed
+  if (Array.isArray(pass.placesAllowed) && pass.placesAllowed.some(p => typeof p === 'string' && p.toLowerCase().includes(kw))) {
+    return true;
+  }
+  // Check circuit name
+  if (typeof pass.circuitName === 'string' && pass.circuitName.toLowerCase().includes(kw)) {
+    return true;
+  }
+  // Check single destination
+  if (typeof pass.destination === 'string' && pass.destination.toLowerCase().includes(kw)) {
+    return true;
+  }
+  // Check circuit ID
+  if (pass.circuitId === Number(locationId) || String(pass.circuitId).toLowerCase().includes(kw)) {
+    return true;
+  }
+
+  return false;
+}
+
 export function getOfflineLedgerEntries() {
   try {
     const raw = localStorage.getItem(LEDGER_KEY);
@@ -178,6 +206,19 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
     const localMatch = findLocalPass(ref);
     const touristName = localMatch?.touristName || 'Verified Corridor Passholder';
 
+    // Verify whether pass includes Borra Caves
+    if (localMatch && !isPassValidForLocation(localMatch, placeId, 'borra')) {
+      const passTarget = localMatch.circuitName || localMatch.destination || 'other destinations';
+      return {
+        valid: false,
+        isCryptographic: true,
+        status: 'LOCATION_MISMATCH',
+        message: `Entry Denied: Pass is only valid for "${passTarget}". Not valid for entry at Borra Caves.`,
+        bookingReference: ref,
+        touristName
+      };
+    }
+
     // Record admission and update tourist pass visited status
     markPassVisited(ref, placeId, 'Borra Caves');
     recordAdmittedPass(cleanToken, placeId);
@@ -213,12 +254,20 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
 
   // 3. Sovereign Reference Code Verification (e.g. APTG-89421 or GT-2026-XXXXX)
   const localPass = findLocalPass(cleanToken);
-  const isValidSyntax = 
-    /^APTG-\d{4,6}$/i.test(cleanToken) || 
-    /^GT-\d{4}-[A-Z0-9-]+$/i.test(cleanToken) ||
-    cleanToken.length >= 8;
 
   if (localPass) {
+    if (!isPassValidForLocation(localPass, placeId, 'borra')) {
+      const passTarget = localPass.circuitName || localPass.destination || 'another destination';
+      return {
+        valid: false,
+        isCryptographic: false,
+        status: 'LOCATION_MISMATCH',
+        message: `Entry Denied: Pass is issued for "${passTarget}". It does not grant entry to Borra Caves.`,
+        bookingReference: localPass.reference,
+        touristName: localPass.touristName || 'Ticket Holder'
+      };
+    }
+
     markPassVisited(localPass.reference, placeId, 'Borra Caves');
     recordAdmittedPass(cleanToken, placeId);
 
@@ -250,43 +299,14 @@ export async function verifyPassOffline(passToken, placeId, gateTerminalId = 'Ga
     };
   }
 
-  if (isValidSyntax) {
-    // Valid format fallback for field terminals
-    recordAdmittedPass(cleanToken, placeId);
-
-    const newEntry = {
-      id: `scan_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-      passToken: cleanToken,
-      placeId: Number(placeId),
-      gateTerminalId,
-      verifiedAt: new Date().toISOString(),
-      displayTime: new Date().toLocaleTimeString(),
-      syncStatus: 'PENDING_BATCH_SYNC',
-      reference: cleanToken,
-      corridor: 'AP-TG Heritage Corridor',
-      verificationMethod: 'REFERENCE_SYNTAX_VALIDATION'
-    };
-
-    const existingEntries = getOfflineLedgerEntries();
-    saveOfflineLedgerEntries([newEntry, ...existingEntries]);
-
-    return {
-      valid: true,
-      isCryptographic: false,
-      status: 'OFFLINE_GRANTED',
-      message: 'Pass Verified • Gate Admitted (Offline Record Registered)',
-      bookingReference: cleanToken,
-      touristName: 'Verified Corridor Passholder',
-      timestamp: newEntry.displayTime,
-      offlineEntryId: newEntry.id
-    };
-  }
-
-  // 4. Token rejected
+  // Reject unknown tickets that have no verified booking for Borra Caves
   return {
     valid: false,
-    status: 'INVALID_TICKET_FORMAT',
-    message: 'Ticket Verification Failed: Unrecognized ticket code or issuer authority.'
+    isCryptographic: false,
+    status: 'UNKNOWN_TICKET',
+    message: 'Entry Denied: No valid booking record found for Borra Caves.',
+    bookingReference: cleanToken,
+    touristName: 'Unregistered Visitor'
   };
 }
 
