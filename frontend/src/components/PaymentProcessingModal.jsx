@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, X, CheckCircle2, Zap } from 'lucide-react';
+import { ShieldCheck, X, CheckCircle2, Zap, CreditCard } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { generateCryptographicPassToken } from '../utils/cryptoPassService';
+import { launchRazorpayCheckout, isRazorpayLoaded } from '../utils/razorpayClient';
 
 const STATUS_MESSAGES = {
   5: 'Connecting to state tourism payment gateway...',
@@ -50,6 +51,7 @@ export default function PaymentProcessingModal({
 }) {
   const [secondsRemaining, setSecondsRemaining] = useState(5);
   const [paymentFinished, setPaymentFinished] = useState(false);
+  const [isPayingWithRazorpay, setIsPayingWithRazorpay] = useState(false);
 
   const completeBooking = useCallback(async () => {
     const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -94,6 +96,15 @@ export default function PaymentProcessingModal({
       status: 'ACTIVE_AUTHENTICATED'
     };
 
+    try {
+      const stored = localStorage.getItem('globetrotter_passes');
+      const list = stored ? JSON.parse(stored) : [];
+      const updated = [passPayload, ...(Array.isArray(list) ? list.filter(p => p && p.reference !== passPayload.reference) : [])];
+      localStorage.setItem('globetrotter_passes', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Failed to persist pass:', e);
+    }
+
     if (onPaymentSuccess) {
       onPaymentSuccess(passPayload);
     }
@@ -109,7 +120,7 @@ export default function PaymentProcessingModal({
   }
 
   useEffect(() => {
-    if (!isOpen || paymentFinished) return;
+    if (!isOpen || paymentFinished || isPayingWithRazorpay) return;
 
     if (secondsRemaining <= 0) {
       const timer = setTimeout(() => {
@@ -135,10 +146,53 @@ export default function PaymentProcessingModal({
     }, 1000);
 
     return () => clearTimeout(interval);
-  }, [isOpen, secondsRemaining, paymentFinished, completeBooking]);
+  }, [isOpen, secondsRemaining, paymentFinished, isPayingWithRazorpay, completeBooking]);
 
   const handleInstantSkip = () => {
     setSecondsRemaining(0);
+  };
+
+  const handleRazorpayPayment = async () => {
+    setIsPayingWithRazorpay(true);
+    const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+    const refNumber = `GT-${new Date().getFullYear()}-${randomCode}`;
+    const rawVal = bookingDetails?.totalAmount !== undefined ? bookingDetails.totalAmount : bookingDetails?.price;
+    let amount = 40;
+    if (rawVal !== undefined && rawVal !== null) {
+      if (rawVal === 0 || rawVal === '0' || rawVal === '₹0' || String(rawVal).toLowerCase().includes('free')) {
+        amount = 0;
+      } else {
+        const parsed = parseFloat(String(rawVal).replace(/[^0-9.]/g, ''));
+        amount = Number.isFinite(parsed) ? parsed : 40;
+      }
+    }
+
+    await launchRazorpayCheckout({
+      bookingReference: refNumber,
+      circuitTitle: bookingDetails?.circuitName || 'Official Corridor Pass',
+      amount: amount,
+      customerName: bookingDetails?.touristName || 'Verified Visitor',
+      customerEmail: bookingDetails?.touristEmail || '',
+      customerPhone: bookingDetails?.touristPhone || '',
+      onSuccess: () => {
+        setIsPayingWithRazorpay(false);
+        setPaymentFinished(true);
+        playBookingSuccessSound();
+        try {
+          confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+        } catch {
+          // confetti fallback
+        }
+        completeBooking();
+      },
+      onError: (err) => {
+        setIsPayingWithRazorpay(false);
+        console.warn('Razorpay checkout error:', err);
+      },
+      onDismiss: () => {
+        setIsPayingWithRazorpay(false);
+      }
+    });
   };
 
   if (!isOpen) return null;
@@ -268,14 +322,29 @@ export default function PaymentProcessingModal({
               Cancel
             </button>
 
-            <button
-              onClick={handleInstantSkip}
-              disabled={paymentFinished}
-              className="px-5 py-2.5 rounded-full bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer disabled:opacity-50"
-            >
-              <Zap className="w-3.5 h-3.5 fill-current" />
-              <span>Instant Pass</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleInstantSkip}
+                disabled={paymentFinished || isPayingWithRazorpay}
+                className="px-3.5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                title="Issue pass instantly in fast-track demo mode"
+              >
+                <Zap className="w-3.5 h-3.5 text-amber-400 fill-current" />
+                <span>Instant Pass</span>
+              </button>
+
+              {isRazorpayLoaded() && (
+                <button
+                  onClick={handleRazorpayPayment}
+                  disabled={paymentFinished || isPayingWithRazorpay}
+                  className="px-4 py-2.5 rounded-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer disabled:opacity-50"
+                  title="Open official Razorpay payment gateway (UPI, Cards, Netbanking)"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>{isPayingWithRazorpay ? 'Opening...' : 'Pay with Razorpay'}</span>
+                </button>
+              )}
+            </div>
           </div>
         </motion.div>
       </div>

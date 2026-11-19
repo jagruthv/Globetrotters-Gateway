@@ -252,6 +252,14 @@ export default function App() {
   };
 
   const handlePaymentSuccess = (newPass) => {
+    try {
+      const stored = localStorage.getItem('globetrotter_passes');
+      const list = stored ? JSON.parse(stored) : [];
+      const updated = [newPass, ...(Array.isArray(list) ? list.filter(p => p && p.reference !== newPass.reference) : [])];
+      localStorage.setItem('globetrotter_passes', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('Failed to persist pass to localStorage:', e);
+    }
     setPaymentModalOpen(false);
     setActiveBookingForPayment(null);
     setIssuedPassData(newPass);

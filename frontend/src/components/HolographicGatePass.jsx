@@ -87,6 +87,15 @@ export default function HolographicGatePass({
     return () => window.removeEventListener('hashchange', handleHash);
   }, [allPasses]);
 
+  // When a new pass is issued or passed via props, focus on the newest pass (index 0)
+  const prevPassRef = React.useRef(passData?.reference);
+  useEffect(() => {
+    if (passData?.reference && passData.reference !== prevPassRef.current) {
+      prevPassRef.current = passData.reference;
+      setSelectedPassIndex(0);
+    }
+  }, [passData?.reference]);
+
   const activePass = allPasses[selectedPassIndex] || allPasses[0] || null;
 
   // Real Dynamic QR Code Generator (Encodes clean ticket verification URL or ticket reference)
