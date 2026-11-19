@@ -261,7 +261,20 @@ export async function verifyPassOffline(
     const cryptoResult = await verifyPassCryptographicSignature(cleanToken);
 
     if (!cryptoResult.valid) {
-      // Graceful fallback: check if the booking reference exists in the confirmed local bookings ledger
+      // If the cryptographic validator explicitly rejected the pass due to future/expired date,
+      // strictly block admission with zero bypass!
+      if (cryptoResult.status === 'FUTURE_DATE_PASS' || cryptoResult.status === 'EXPIRED_PASS') {
+        return {
+          valid: false,
+          isCryptographic: true,
+          status: cryptoResult.status,
+          message: cryptoResult.message,
+          bookingReference: cryptoResult.bookingRef || 'GT-PASS',
+          touristName: 'Ticket Holder'
+        };
+      }
+
+      // Graceful fallback for non-date crypto discrepancies: check confirmed local ledger
       const parts = cleanToken.split(':');
       const fallbackRef = parts.length >= 2 ? parts[1] : null;
       const localBooking = fallbackRef ? findLocalPass(fallbackRef) : null;
@@ -333,6 +346,33 @@ export async function verifyPassOffline(
     const ref = cryptoResult.bookingRef || 'GT-SIGNED-PASS';
     const localMatch = findLocalPass(ref);
     const touristName = localMatch?.touristName || 'Verified Passholder';
+
+    // Verify date from crypto payload even if localMatch does not exist on this device
+    const todayIso = new Date().toISOString().split('T')[0];
+    if (cryptoResult.validFrom && String(cryptoResult.validFrom).match(/^\d{4}-\d{2}-\d{2}$/)) {
+      if (todayIso < cryptoResult.validFrom) {
+        return {
+          valid: false,
+          isCryptographic: true,
+          status: 'FUTURE_DATE_PASS',
+          message: `Entry Denied: Pass is scheduled for future date (${cryptoResult.validFrom}). Early admission before scheduled visit date is strictly prohibited.`,
+          bookingReference: ref,
+          touristName
+        };
+      }
+    }
+    if (cryptoResult.validUntil && String(cryptoResult.validUntil).match(/^\d{4}-\d{2}-\d{2}$/)) {
+      if (todayIso > cryptoResult.validUntil) {
+        return {
+          valid: false,
+          isCryptographic: true,
+          status: 'EXPIRED_PASS',
+          message: `Entry Denied: Pass validity expired on ${cryptoResult.validUntil}.`,
+          bookingReference: ref,
+          touristName
+        };
+      }
+    }
 
     if (localMatch) {
       const dateCheck = checkPassDateValidity(localMatch);

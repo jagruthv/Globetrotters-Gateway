@@ -118,4 +118,21 @@ class QrCodeServiceTest {
         assertEquals((byte) 'N', imageBytes[2]);
         assertEquals((byte) 'G', imageBytes[3]);
     }
+
+    @Test
+    @DisplayName("verifyPassToken enforces sovereign visit dates on 8-part tokens")
+    void testVerifyPassTokenWithDates() {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate tomorrow = today.plusDays(1);
+        java.time.LocalDate yesterday = today.minusDays(1);
+
+        String todayToken = qrCodeService.generateSignedPassToken("GT-DATE-TODAY", 1L, 1L, today.toString(), today.toString());
+        assertTrue(qrCodeService.verifyPassToken(todayToken), "Today's pass should be valid");
+
+        String futureToken = qrCodeService.generateSignedPassToken("GT-DATE-FUTURE", 1L, 1L, tomorrow.toString(), tomorrow.toString());
+        assertFalse(qrCodeService.verifyPassToken(futureToken), "Future date pass must be rejected");
+
+        String expiredToken = qrCodeService.generateSignedPassToken("GT-DATE-EXPIRED", 1L, 1L, yesterday.toString(), yesterday.toString());
+        assertFalse(qrCodeService.verifyPassToken(expiredToken), "Expired pass must be rejected");
+    }
 }

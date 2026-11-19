@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, CheckCircle2, Zap, CreditCard, Sparkles, Loader2, FlaskConical } from 'lucide-react';
+import { X, CheckCircle2, Zap, CreditCard, Sparkles, Loader2, FlaskConical, Calendar } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { generateCryptographicPassToken } from '../utils/cryptoPassService';
+import { generateCryptographicPassToken, formatPassDate } from '../utils/cryptoPassService';
 
 function playBookingSuccessSound() {
   try {
@@ -31,6 +31,21 @@ function playBookingSuccessSound() {
   } catch {
     // Audio autoplay restrictions ignored
   }
+}
+
+const MODULE_NOW = new Date();
+const MODULE_TODAY_ISO = MODULE_NOW.toISOString().split('T')[0];
+const MODULE_TOMORROW_ISO = new Date(MODULE_NOW.getTime() + 86400000).toISOString().split('T')[0];
+
+function getSummaryDateInfo(bookingDate) {
+  const start = (bookingDate && String(bookingDate).match(/^\d{4}-\d{2}-\d{2}$/))
+    ? String(bookingDate)
+    : (bookingDate === 'Tomorrow' ? MODULE_TOMORROW_ISO : MODULE_TODAY_ISO);
+  return {
+    summaryStartDate: start,
+    isDateToday: start === MODULE_TODAY_ISO,
+    isDateTomorrow: start === MODULE_TOMORROW_ISO
+  };
 }
 
 export default function PaymentProcessingModal({
@@ -92,11 +107,17 @@ export default function PaymentProcessingModal({
     const endMs = startMs + (durationDays - 1) * 24 * 60 * 60 * 1000;
     const validUntil = new Date(endMs).toISOString().split('T')[0];
 
-    // Generate real cryptographic HMAC-SHA256 signed pass token
+    // Generate real cryptographic HMAC-SHA256 signed pass token with embedded dates
     let signedToken = '';
     const targetPlaceId = Number(bookingDetails?.circuitId || bookingDetails?.placeId || 1);
     try {
-      signedToken = await generateCryptographicPassToken(refNumber, targetPlaceId, numTourists);
+      signedToken = await generateCryptographicPassToken(
+        refNumber, 
+        targetPlaceId, 
+        numTourists, 
+        startDate, 
+        validUntil
+      );
     } catch {
       signedToken = refNumber;
     }
@@ -179,6 +200,8 @@ export default function PaymentProcessingModal({
   if (!isOpen) return null;
 
   const progressPercent = Math.min(100, Math.max(0, ((5 - secondsLeft) / 5) * 100));
+
+  const { summaryStartDate, isDateToday, isDateTomorrow } = getSummaryDateInfo(bookingDetails?.date);
 
   return (
     <AnimatePresence>
@@ -280,6 +303,15 @@ export default function PaymentProcessingModal({
                   <span className="text-slate-400">Pass / Circuit</span>
                   <span className="font-semibold text-emerald-400 truncate max-w-[200px]">
                     {bookingDetails?.circuitName || 'Monument Entry Pass'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                  <span className="text-slate-400">Visit Date</span>
+                  <span className="font-semibold text-white flex items-center gap-1.5 font-mono text-[11px]">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{formatPassDate(summaryStartDate)}</span>
+                    {isDateToday && <span className="text-emerald-400 font-bold">(Today)</span>}
+                    {isDateTomorrow && <span className="text-amber-400 font-bold">(Tomorrow)</span>}
                   </span>
                 </div>
                 <div className="flex items-center justify-between pt-0.5">

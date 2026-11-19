@@ -4,7 +4,6 @@ import {
   CheckCircle, 
   Share2, 
   Download, 
-  Headphones, 
   Calendar, 
   Clock, 
   Ticket, 
@@ -18,13 +17,14 @@ import {
   History,
   FileText,
   Printer,
-  AlertCircle
+  AlertCircle,
+  XCircle
 } from 'lucide-react';
 import QRCode from 'qrcode';
+import { formatPassDate, formatPassDateShort, getPassDateStatus } from '../utils/cryptoPassService';
 
 export default function HolographicGatePass({ 
   passData = null,
-  onOpenAudioGuide,
   onExplorePackages,
   onPlanTrip
 }) {
@@ -135,6 +135,7 @@ export default function HolographicGatePass({
   }, [passData?.reference]);
 
   const activePass = allPasses[selectedPassIndex] || allPasses[0] || null;
+  const dateStatus = getPassDateStatus(activePass?.validFrom, activePass?.validUntil);
 
   const visitedPlaces = activePass?.visitedPlaces || [];
   const isAnyVisited = visitedPlaces.length > 0 || Boolean(activePass?.isBorraCavesVisited);
@@ -150,13 +151,13 @@ export default function HolographicGatePass({
     });
   };
 
-  // Real Dynamic QR Code Generator (Encodes clean ticket verification URL)
+  // Real Dynamic QR Code Generator (Encodes cryptographic signed ticket token)
   useEffect(() => {
     if (activePass?.reference || activePass?.token) {
-      const ref = activePass.reference || activePass.token;
+      const tokenPayload = activePass.token || activePass.reference;
       const qrPayload = typeof window !== 'undefined'
-        ? `${window.location.origin}/#/verify?t=${encodeURIComponent(ref)}`
-        : ref;
+        ? `${window.location.origin}/#/verify?t=${encodeURIComponent(tokenPayload)}`
+        : tokenPayload;
 
       QRCode.toDataURL(qrPayload, {
         width: 480,
@@ -545,20 +546,58 @@ export default function HolographicGatePass({
 
         {/* Conductor / Scanner Verification Alert */}
         {typeof window !== 'undefined' && window.location.hash.toLowerCase().includes('verify') && (
-          <div className="print:hidden w-full max-w-2xl px-5 py-3 rounded-2xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-between gap-3 text-emerald-300 shadow-lg">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-emerald-400/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 shrink-0">
-                <CheckCircle className="w-5 h-5" />
+          dateStatus.isFuture ? (
+            <div className="print:hidden w-full max-w-2xl px-5 py-3.5 rounded-2xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-between gap-3 text-amber-300 shadow-lg">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-white font-sans-clean">Admission Not Active Yet</span>
+                  <span className="text-[10px] text-amber-300/90 font-mono">
+                    Pass is scheduled for {formatPassDate(dateStatus.validFrom)}. Early admission before scheduled visit date is strictly prohibited.
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-white font-sans-clean">Gate Admission Cleared</span>
-                <span className="text-[10px] text-emerald-300/80 font-mono">Official Entry Pass Verified • Valid for Entry</span>
-              </div>
+              <span className="px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-mono font-bold uppercase tracking-wider">
+                Scheduled
+              </span>
             </div>
-            <span className="px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider">
-              Admitted
-            </span>
-          </div>
+          ) : dateStatus.isExpired ? (
+            <div className="print:hidden w-full max-w-2xl px-5 py-3.5 rounded-2xl bg-rose-500/15 border border-rose-400/40 flex items-center justify-between gap-3 text-rose-300 shadow-lg">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-rose-400/20 border border-rose-400/30 flex items-center justify-center text-rose-400 shrink-0">
+                  <XCircle className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-white font-sans-clean">Entry Denied • Pass Expired</span>
+                  <span className="text-[10px] text-rose-300/90 font-mono">
+                    Pass expired on {formatPassDate(dateStatus.validUntil)}. Please purchase a new pass for today.
+                  </span>
+                </div>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-rose-400/20 text-rose-300 text-[10px] font-mono font-bold uppercase tracking-wider">
+                Expired
+              </span>
+            </div>
+          ) : (
+            <div className="print:hidden w-full max-w-2xl px-5 py-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-between gap-3 text-emerald-300 shadow-lg">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-emerald-400/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 shrink-0">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-white font-sans-clean">Gate Admission Cleared</span>
+                  <span className="text-[10px] text-emerald-300/80 font-mono">
+                    Valid for Entry Today ({formatPassDateShort(dateStatus.todayIso)}) • Fast-Track Gate Access
+                  </span>
+                </div>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-emerald-400/20 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+                Admitted
+              </span>
+            </div>
+          )
         )}
 
         {/* THE MOVIE TICKET CONTAINER */}
@@ -599,10 +638,28 @@ export default function HolographicGatePass({
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="text-[11px] font-bold text-emerald-400 font-mono">
-                CONFIRMED & ACTIVE
-              </span>
+              {dateStatus.isFuture ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span className="text-[11px] font-bold text-amber-300 font-mono">
+                    UPCOMING • {formatPassDateShort(dateStatus.validFrom)}
+                  </span>
+                </>
+              ) : dateStatus.isExpired ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-rose-400" />
+                  <span className="text-[11px] font-bold text-rose-300 font-mono">
+                    EXPIRED ({formatPassDateShort(dateStatus.validUntil)})
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[11px] font-bold text-emerald-400 font-mono">
+                    CONFIRMED & ACTIVE TODAY
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -647,12 +704,24 @@ export default function HolographicGatePass({
                   <Calendar className="w-3 h-3 text-emerald-400" /> Visit Date
                 </span>
                 <span className="text-xs font-bold text-white mt-1">
-                  {activePass.validFrom}
+                  {formatPassDate(dateStatus.validFrom)}
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">
-                  {activePass.durationDays && activePass.durationDays > 1 
-                    ? `Valid for ${activePass.durationDays} Days (to ${activePass.validUntil})` 
-                    : `Valid on ${activePass.validFrom || 'Visit Date'}`}
+                <span className="text-[10px] font-mono mt-0.5">
+                  {dateStatus.isFuture && (
+                    <span className="text-amber-300 font-semibold">
+                      Starts in {dateStatus.daysUntilActive} {dateStatus.daysUntilActive === 1 ? 'day' : 'days'}
+                    </span>
+                  )}
+                  {dateStatus.isActive && (
+                    <span className="text-emerald-400 font-semibold">
+                      Valid Today (06:00 - 18:00)
+                    </span>
+                  )}
+                  {dateStatus.isExpired && (
+                    <span className="text-rose-400 font-semibold">
+                      Validity Ended
+                    </span>
+                  )}
                 </span>
               </div>
 
@@ -810,34 +879,6 @@ export default function HolographicGatePass({
                   {activePass.reference}
                 </span>
               </div>
-            </div>
-
-            {/* Monument Audio Tour Bar Unlocked on Ticket */}
-            <div className="print:hidden p-3.5 rounded-2xl bg-gradient-to-r from-stone-900 via-[#151a24] to-stone-900 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
-                  <Headphones className="w-4 h-4 text-amber-300" />
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-medium font-sans-clean">
-                      Unlocked with Ticket
-                    </span>
-                    <span className="text-[10px] text-slate-400">English • Telugu • Hindi</span>
-                  </div>
-                  <h4 className="text-xs font-bold text-white font-sans-clean mt-0.5">
-                    Audio Guide Player Included
-                  </h4>
-                </div>
-              </div>
-
-              <button
-                onClick={onOpenAudioGuide}
-                className="px-4 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer shrink-0 font-sans-clean active:scale-[0.98]"
-              >
-                <Headphones className="w-3.5 h-3.5 text-slate-950" />
-                <span>Play Audio Guide</span>
-              </button>
             </div>
 
             {/* Clean Action Controls */}

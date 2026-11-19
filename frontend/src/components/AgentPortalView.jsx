@@ -27,6 +27,7 @@ import {
   isPassValidForLocation,
   checkPassDateValidity
 } from '../utils/offlineTurnstileLedger';
+import { formatPassDate } from '../utils/cryptoPassService';
 
 function playScannerSound(isGranted) {
   try {
@@ -767,12 +768,14 @@ export default function AgentPortalView({
         }
         playScannerSound(isOk);
 
+        const scheduledDate = offRes.validFrom || matchedPass?.validFrom;
         const result = {
           success: isOk,
           touristName: offRes.touristName || matchedPass?.touristName || (isOk ? 'Verified Visitor' : 'Unregistered Ticket'),
           message: isOk ? `ENTRY GRANTED • ADMIT 1 (${checkpointName})` : offRes.message,
           checkpoint: checkpointName,
-          token: tokenToVerify
+          token: tokenToVerify,
+          validDate: scheduledDate ? formatPassDate(scheduledDate) : null
         };
 
         setVerdict(result);
@@ -787,8 +790,12 @@ export default function AgentPortalView({
       const res = await scannerService.verifyPass({
         token: tokenToVerify,
         placeId: placeId,
-        turnstileId: gateId
+        turnstileId: gateId,
+        validFrom: matchedPass?.validFrom,
+        validUntil: matchedPass?.validUntil
       });
+
+      const scheduledDate = res.validFrom || matchedPass?.validFrom;
 
       if (!res.valid) {
         playScannerSound(false);
@@ -797,7 +804,8 @@ export default function AgentPortalView({
           touristName: res.touristName || matchedPass?.touristName || 'Ticket Holder',
           message: res.message || `ENTRY DENIED: Ticket not valid for ${checkpointName}.`,
           checkpoint: checkpointName,
-          token: tokenToVerify
+          token: tokenToVerify,
+          validDate: scheduledDate ? formatPassDate(scheduledDate) : null
         };
         setVerdict(result);
         recordScanResult(result, false, tokenToVerify, checkpointName);
@@ -812,7 +820,8 @@ export default function AgentPortalView({
         touristName: res.touristName || matchedPass?.touristName || 'Verified Visitor',
         message: `ENTRY GRANTED • ADMIT 1 (${checkpointName})`,
         checkpoint: checkpointName,
-        token: tokenToVerify
+        token: tokenToVerify,
+        validDate: scheduledDate ? formatPassDate(scheduledDate) : null
       };
 
       setVerdict(result);
@@ -827,12 +836,14 @@ export default function AgentPortalView({
       }
       playScannerSound(isOk);
 
+      const scheduledDate = offRes.validFrom || matchedPass?.validFrom;
       const result = {
         success: isOk,
         touristName: offRes.touristName || matchedPass?.touristName || (isOk ? 'Verified Visitor' : 'Unregistered Ticket'),
         message: isOk ? `ENTRY GRANTED • ADMIT 1 (${checkpointName})` : offRes.message,
         checkpoint: checkpointName,
-        token: tokenToVerify
+        token: tokenToVerify,
+        validDate: scheduledDate ? formatPassDate(scheduledDate) : null
       };
 
       setVerdict(result);
@@ -986,6 +997,11 @@ export default function AgentPortalView({
               <div className="flex flex-col gap-0.5">
                 <span className="text-lg sm:text-xl font-bold">{verdict.message}</span>
                 <span className="text-xs text-slate-300">Visitor: {verdict.touristName}</span>
+                {verdict.validDate && (
+                  <span className="text-[11px] font-mono text-amber-300/90 mt-0.5">
+                    Pass Visit Date: {verdict.validDate}
+                  </span>
+                )}
               </div>
             </motion.div>
           )}
@@ -1084,10 +1100,13 @@ export default function AgentPortalView({
                   setTokenInput(activeBookedPass.reference);
                   handleScanPass(activeBookedPass.reference);
                 }}
-                className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1"
+                className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <Ticket className="w-3 h-3" />
                 <span>Active Pass ({activeBookedPass.reference})</span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  • {formatPassDate(activeBookedPass.validFrom || 'Today')}
+                </span>
               </button>
             </div>
           )}

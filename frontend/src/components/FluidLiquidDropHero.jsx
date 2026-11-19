@@ -12,7 +12,6 @@ import {
   Lock,
   X,
   Info,
-  Headphones,
   AlertTriangle,
   FileText,
   Clock,
@@ -159,7 +158,6 @@ export default function FluidLiquidDropHero({
   const tomorrowIso = DEFAULT_TOMORROW_ISO;
   const [travelDate, setTravelDate] = useState(DEFAULT_TOMORROW_ISO);
   const [travelersCount, setTravelersCount] = useState(2);
-  const [addAudioTour, setAddAudioTour] = useState(false);
 
   const getDateLabel = (isoDate) => {
     if (!isoDate) return '';
@@ -187,26 +185,23 @@ export default function FluidLiquidDropHero({
     const timer = setInterval(() => {
       if (typeof document !== 'undefined' && document.hidden) return;
       setActiveIdx((prev) => (prev + 1) % HERO_DESTINATIONS.length);
-      setAddAudioTour(false); // Reset add-on when switching
     }, 14000);
     return () => clearInterval(timer);
   }, []);
 
   const handleSelectDestination = (idx) => {
     setActiveIdx(idx);
-    setAddAudioTour(false);
   };
 
   // Pricing calculations
   const baseTicketTotal = activeDest.isTicketed ? activeDest.groundRate * travelersCount : 0;
-  const audioTourTotal = addAudioTour ? activeDest.audioTourPrice : 0;
   // Official digital convenience fee: ₹0 for free places, ₹15 for ticketed government reservations
   const platformFee = activeDest.isTicketed ? 15 : 0;
-  const totalPayable = baseTicketTotal + audioTourTotal + platformFee;
+  const totalPayable = baseTicketTotal + platformFee;
 
   // Primary Action Button Handler
   const handlePrimaryAction = () => {
-    if (activeDest.isTicketed || addAudioTour) {
+    if (activeDest.isTicketed) {
       setCheckoutModalOpen(true);
     } else {
       setGuideModalOpen(true);
@@ -226,7 +221,6 @@ export default function FluidLiquidDropHero({
         price: totalPayable === 0 ? 'Free Visitor Pass (₹0)' : `₹${totalPayable}`,
         breakdown: {
           groundRate: baseTicketTotal,
-          audioGuide: audioTourTotal,
           platformFee,
           total: totalPayable
         }
@@ -377,17 +371,6 @@ export default function FluidLiquidDropHero({
                       </span>
                     )}
                   </div>
-
-                  <label className="inline-flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded-md bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={addAudioTour}
-                      onChange={(e) => setAddAudioTour(e.target.checked)}
-                      className="w-3 h-3 rounded text-amber-400 bg-slate-900 border-white/20 focus:ring-0 cursor-pointer"
-                    />
-                    <Headphones className="w-2.5 h-2.5 text-amber-400" />
-                    <span className="text-[10px] text-slate-300">Audio Walk (+₹{activeDest.audioTourPrice})</span>
-                  </label>
                 </div>
 
                 {/* Total & Action Button */}
@@ -399,7 +382,7 @@ export default function FluidLiquidDropHero({
                     </span>
                   </div>
 
-                  {!activeDest.isTicketed && !addAudioTour ? (
+                  {!activeDest.isTicketed ? (
                     <button
                       onClick={() => setGuideModalOpen(true)}
                       className="px-3.5 py-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.14] border border-white/15 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -414,7 +397,7 @@ export default function FluidLiquidDropHero({
                       className="px-4 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all active:scale-[0.98] cursor-pointer"
                     >
                       <span>
-                        {activeDest.isTicketed ? `Book e-Ticket • ₹${totalPayable}` : `Get Guide + Audio • ₹${totalPayable}`}
+                        Book e-Ticket • ₹{totalPayable}
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-950" />
                     </button>
@@ -609,31 +592,6 @@ export default function FluidLiquidDropHero({
                 </div>
               </div>
 
-              {/* Optional Audio Walk Upsell Card */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-emerald-500/10 border border-amber-400/20 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-amber-400/20 flex items-center justify-center text-amber-300 flex-shrink-0">
-                    <Headphones className="w-5 h-5" />
-                  </div>
-                  <div className="flex flex-col text-xs">
-                    <span className="font-bold text-white">Curated Heritage Audio Guide</span>
-                    <span className="text-[11px] text-slate-400">
-                      Narrated historical storytelling, architectural viewpoints & artisan guides.
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setGuideModalOpen(false);
-                    setAddAudioTour(true);
-                    setCheckoutModalOpen(true);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex-shrink-0 shadow-md cursor-pointer transition-colors"
-                >
-                  Unlock • ₹{activeDest.audioTourPrice}
-                </button>
-              </div>
-
               {/* Close Button */}
               <div className="flex justify-end pt-2">
                 <button
@@ -721,22 +679,7 @@ export default function FluidLiquidDropHero({
                   </span>
                 </div>
 
-                {/* 2. Optional Audio Guide Add-On */}
-                {addAudioTour && (
-                  <div className="flex items-center justify-between py-2 border-b border-white/5">
-                    <div className="flex flex-col">
-                      <span className="text-slate-200 font-semibold">Curated Heritage Audio Guide</span>
-                      <span className="text-[10px] text-slate-400">
-                        Official narrated storytelling & offline audio guide
-                      </span>
-                    </div>
-                    <span className="font-bold text-sm text-amber-300">
-                      ₹{audioTourTotal}.00
-                    </span>
-                  </div>
-                )}
-
-                {/* 3. Platform & E-Pass Service Fee */}
+                {/* 2. Platform & E-Pass Service Fee */}
                 {platformFee > 0 && (
                   <div className="flex items-center justify-between py-2 border-b border-white/5">
                     <div className="flex flex-col">

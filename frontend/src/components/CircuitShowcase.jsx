@@ -112,7 +112,21 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
             savings: c.basePrice && c.discountedCircuitPrice 
               ? `${Math.round((1 - Number(c.discountedCircuitPrice) / Number(c.basePrice)) * 100)}% Savings` 
               : '35% Savings',
-            image: c.coverImageUrl || '/images/telangana/bhongir_fort.jpg',
+            image: c.bannerImage || c.coverImageUrl || (
+              c.slug === 'vizag-heritage-coastal-circuit' ? '/images/circuits/vizag.jpg' :
+              c.slug === 'araku-nature-cave-circuit' ? '/images/circuits/araku.jpg' :
+              c.slug === 'tirupati-heritage-divine-circuit' ? '/images/circuits/tirupati.jpg' :
+              c.slug === 'hyderabad-royal-heritage-circuit' ? '/images/circuits/hyderabad.jpg' :
+              c.slug === 'warangal-kakatiya-unesco-circuit' ? '/images/circuits/warangal.jpg' :
+              c.slug === 'rayalaseema-canyon-caves-circuit' ? '/images/circuits/gandikota.jpg' :
+              c.slug === 'telangana-nature-heritage-pass' ? '/images/circuits/nagarjunakonda.jpg' :
+              c.slug === 'palnadu-guntur-heritage-citadel-circuit' ? '/images/circuits/palnadu.jpg' :
+              c.slug === 'buddhist-arc' ? '/images/aptourism/mahachaitya_amaravathi.jpg' :
+              c.slug === 'kakatiya-deccan' ? '/images/circuits/warangal.jpg' :
+              c.slug === 'godavari-delta' ? '/images/aptourism/coringa_wildlife_sanctuary.jpg' :
+              c.slug === 'eastern-ghats' ? '/images/circuits/araku.jpg' :
+              '/images/circuits/vizag.jpg'
+            ),
             description: c.summary || c.description || 'Verified regional tourism corridor pass.',
             places: (c.circuitPlaces && Array.isArray(c.circuitPlaces) && c.circuitPlaces.length > 0)
               ? c.circuitPlaces.map(cp => ({

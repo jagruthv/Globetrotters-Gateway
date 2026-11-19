@@ -3,8 +3,6 @@ import { motion } from 'framer-motion';
 import { 
   Sparkles, 
   MapPin, 
-  Volume2, 
-  VolumeX, 
   Trash2, 
   AlertTriangle, 
   Ticket, 
@@ -123,7 +121,6 @@ export default function AiFluidTripStudio({
     return planResult.placesHash === currentPlacesHash;
   }, [planResult, currentPlacesHash]);
 
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [generationError, setGenerationError] = useState(null);
   const [chatSessionId] = useState(() => 'trip_chat_' + Math.random().toString(36).substring(2, 9));
   const [isPocketDossierOpen, setIsPocketDossierOpen] = useState(false);
@@ -653,105 +650,6 @@ export default function AiFluidTripStudio({
     }
   };
 
-  // Audio Speech Synthesis for Itinerary Briefing (Resilient & GC-Safe)
-  const toggleSpeech = () => {
-    if (!('speechSynthesis' in window)) {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          id: `sys-${Date.now()}`,
-          sender: 'ai',
-          text: '📢 Audio speech synthesis is not supported on this browser or device. Please follow the written day-by-day briefing.',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]);
-      return;
-    }
-
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      if (window._gtStudioUtterance) {
-        window._gtStudioUtterance.onstart = null;
-        window._gtStudioUtterance.onend = null;
-        window._gtStudioUtterance.onerror = null;
-        window._gtStudioUtterance = null;
-      }
-      setIsSpeaking(false);
-      return;
-    }
-
-    let speechText = '';
-
-    if (planResult) {
-      const daysList = planResult.days || planResult.itinerary || [];
-      speechText = `Welcome to your tour plan for ${daysList.length} days across Andhra Pradesh and Telangana. ${
-        daysList.map(d => `Day ${d.dayNumber || d.day}: ${d.summary || ''}. Stops include ${d.stops?.map(s => s.name || s.spotName).join(', ')}.`).join(' ')
-      }`;
-    } else if (selectedPlaces.length > 0) {
-      const placeNames = selectedPlaces.map(p => p.name).join(', ');
-      speechText = `You have selected ${selectedPlaces.length} attractions in your travel itinerary: ${placeNames}. Click Generate Optimal Tour Plan to build your customized day-by-day route, travel schedule, and budget breakdown.`;
-    } else {
-      speechText = `Welcome to the Smart Tour Planner. Explore the 59 districts of Andhra Pradesh and Telangana, add destinations to your travel queue, and generate your customized itinerary with real-time transit times and budget estimates.`;
-    }
-
-    try {
-      window.speechSynthesis.cancel();
-      if (window._gtStudioUtterance) {
-        window._gtStudioUtterance.onstart = null;
-        window._gtStudioUtterance.onend = null;
-        window._gtStudioUtterance.onerror = null;
-        window._gtStudioUtterance = null;
-      }
-
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-      }
-
-      const utterance = new SpeechSynthesisUtterance(speechText);
-      window._gtStudioUtterance = utterance;
-
-      const voices = window.speechSynthesis.getVoices() || [];
-      const indianVoice = voices.find(v => v.lang.toLowerCase().includes('in') || v.name.toLowerCase().includes('india') || v.lang.toLowerCase().startsWith('en'));
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-        utterance.lang = indianVoice.lang;
-      } else {
-        utterance.lang = 'en-IN';
-      }
-
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        window._gtStudioUtterance = null;
-      };
-      utterance.onerror = (e) => {
-        console.warn('Trip studio speech notice:', e.error);
-        setIsSpeaking(false);
-        window._gtStudioUtterance = null;
-      };
-
-      setTimeout(() => {
-        try {
-          if (window.speechSynthesis.paused) {
-            window.speechSynthesis.resume();
-          }
-          window.speechSynthesis.speak(utterance);
-          setIsSpeaking(true);
-        } catch (err) {
-          console.warn('Speech synthesis call notice:', err);
-          setIsSpeaking(false);
-        }
-      }, 40);
-    } catch (err) {
-      console.warn('Audio guide setup notice:', err);
-      setIsSpeaking(false);
-    }
-  };
-
   return (
     <section className="relative w-full py-24 px-4 md:px-12 bg-[#06080D] text-slate-200">
       <div className="max-w-7xl mx-auto flex flex-col gap-10">
@@ -1180,26 +1078,9 @@ export default function AiFluidTripStudio({
                       className="px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-2 transition-colors font-sans-clean cursor-pointer"
                     >
                       <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Voice Assistant</span>
+                      <span>Travel Concierge</span>
                     </button>
                   )}
-
-                  <button
-                    onClick={toggleSpeech}
-                    className="px-4 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-semibold text-white flex items-center gap-2 transition-colors font-sans-clean cursor-pointer"
-                  >
-                    {isSpeaking ? (
-                      <>
-                        <VolumeX className="w-4 h-4 text-amber-400" />
-                        <span>Stop Audio Guide</span>
-                      </>
-                    ) : (
-                      <>
-                        <Volume2 className="w-4 h-4 text-amber-400" />
-                        <span>Listen to Audio Guide</span>
-                      </>
-                    )}
-                  </button>
                 </div>
               </div>
 

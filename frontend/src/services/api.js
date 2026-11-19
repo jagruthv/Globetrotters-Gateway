@@ -498,10 +498,16 @@ export const paymentService = {
 };
 
 export const scannerService = {
-  verifyPass: ({ token, placeId, turnstileId = 'Gate-01' }) =>
+  verifyPass: ({ token, placeId, turnstileId = 'Gate-01', validFrom = null, validUntil = null }) =>
     request('/verify/scan', {
       method: 'POST',
-      body: JSON.stringify({ passToken: token, placeId, gateTerminalId: turnstileId }),
+      body: JSON.stringify({ 
+        passToken: token, 
+        placeId, 
+        gateTerminalId: turnstileId,
+        validFrom,
+        validUntil
+      }),
     }),
 
   scanPass: (passToken, placeId, gateTerminalId = 'Gate-Alpha') =>

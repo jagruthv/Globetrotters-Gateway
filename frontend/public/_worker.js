@@ -885,12 +885,30 @@ Deliver an authentic 1-minute curated walk guide in ${targetLangName}.`;
           token = decodeURIComponent(urlMatch[1]).trim();
         }
 
+        const todayIso = new Date().toISOString().split('T')[0];
+
         // 1. If it's a GT_PASS token, verify with HMAC-SHA256 directly on Cloudflare Edge
         if (token.startsWith('GT_PASS:')) {
           const parts = token.split(':');
-          if (parts.length === 6) {
-            const payload = `${parts[1]}:${parts[2]}:${parts[3]}:${parts[4]}`;
-            const expectedSig = parts[5];
+          if (parts.length === 8 || parts.length === 6) {
+            let payload = '';
+            let expectedSig = '';
+            let validFrom = null;
+            let validUntil = null;
+            let bookingRef = parts[1];
+
+            if (parts.length === 8) {
+              // 8-part sovereign format: GT_PASS:ref:circuitId:userId:validFrom:validUntil:timestamp:sig
+              payload = `${parts[1]}:${parts[2]}:${parts[3]}:${parts[4]}:${parts[5]}:${parts[6]}`;
+              validFrom = parts[4];
+              validUntil = parts[5];
+              expectedSig = parts[7];
+            } else {
+              // Legacy 6-part format: GT_PASS:ref:circuitId:userId:timestamp:sig
+              payload = `${parts[1]}:${parts[2]}:${parts[3]}:${parts[4]}`;
+              expectedSig = parts[5];
+            }
+
             const enc = new TextEncoder();
             const key = await crypto.subtle.importKey(
               'raw',
@@ -905,18 +923,7 @@ Deliver an authentic 1-minute curated walk guide in ${targetLangName}.`;
             for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
             const calculatedSig = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
-            if (calculatedSig === expectedSig) {
-              return new Response(JSON.stringify({
-                valid: true,
-                status: 'EDGE_CRYPTO_VERIFIED',
-                message: 'Entry Granted • Cryptographic Pass Verified',
-                bookingReference: parts[1],
-                touristName: 'Verified Visitor'
-              }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
-              });
-            } else {
+            if (calculatedSig !== expectedSig) {
               return new Response(JSON.stringify({
                 valid: false,
                 status: 'TAMPERED_SIGNATURE',
@@ -926,11 +933,95 @@ Deliver an authentic 1-minute curated walk guide in ${targetLangName}.`;
                 headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
               });
             }
+
+            // Strict Date Enforcement on Cryptographically Verified Passes
+            if (validFrom && String(validFrom).match(/^\d{4}-\d{2}-\d{2}$/)) {
+              if (todayIso < validFrom) {
+                return new Response(JSON.stringify({
+                  valid: false,
+                  status: 'FUTURE_DATE_PASS',
+                  message: `Entry Denied: Pass is scheduled for future date (${validFrom}). Early admission before scheduled visit date is strictly prohibited.`,
+                  bookingReference: bookingRef,
+                  validFrom,
+                  validUntil,
+                  today: todayIso
+                }), {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+                });
+              }
+            }
+
+            if (validUntil && String(validUntil).match(/^\d{4}-\d{2}-\d{2}$/)) {
+              if (todayIso > validUntil) {
+                return new Response(JSON.stringify({
+                  valid: false,
+                  status: 'EXPIRED_PASS',
+                  message: `Entry Denied: Pass validity expired on ${validUntil}. Please purchase a new pass for today.`,
+                  bookingReference: bookingRef,
+                  validFrom,
+                  validUntil,
+                  today: todayIso
+                }), {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+                });
+              }
+            }
+
+            return new Response(JSON.stringify({
+              valid: true,
+              status: 'EDGE_CRYPTO_VERIFIED',
+              message: 'Entry Granted • Cryptographic Pass Verified',
+              bookingReference: bookingRef,
+              touristName: 'Verified Visitor',
+              validFrom: validFrom || todayIso,
+              validUntil: validUntil || todayIso
+            }), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+            });
           }
         }
 
         // 2. Official Booking References (e.g. GT-2026-XXXXX or APTG-XXXXX)
         if (token.startsWith('GT-') || token.startsWith('APTG-')) {
+          const reqDate = scanData.validFrom || scanData.visitDate;
+          const reqUntil = scanData.validUntil || reqDate;
+
+          if (reqDate && String(reqDate).match(/^\d{4}-\d{2}-\d{2}$/)) {
+            if (todayIso < reqDate) {
+              return new Response(JSON.stringify({
+                valid: false,
+                status: 'FUTURE_DATE_PASS',
+                message: `Entry Denied: Pass is scheduled for future date (${reqDate}). Early admission before scheduled visit date is strictly prohibited.`,
+                bookingReference: token,
+                validFrom: reqDate,
+                validUntil: reqUntil,
+                today: todayIso
+              }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+              });
+            }
+            if (reqUntil && String(reqUntil).match(/^\d{4}-\d{2}-\d{2}$/)) {
+              if (todayIso > reqUntil) {
+                return new Response(JSON.stringify({
+                  valid: false,
+                  status: 'EXPIRED_PASS',
+                  message: `Entry Denied: Pass validity expired on ${reqUntil}. Please purchase a new pass for today.`,
+                  bookingReference: token,
+                  validFrom: reqDate,
+                  validUntil: reqUntil,
+                  today: todayIso
+                }), {
+                  status: 200,
+                  headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+                });
+              }
+            }
+          }
+
           return new Response(JSON.stringify({
             valid: true,
             status: 'EDGE_REFERENCE_VERIFIED',

@@ -12,9 +12,9 @@ const AiFluidTripStudio = lazy(() => import('./components/AiFluidTripStudio'));
 const CircuitShowcase = lazy(() => import('./components/CircuitShowcase'));
 const HolographicGatePass = lazy(() => import('./components/HolographicGatePass'));
 const AgentPortalView = lazy(() => import('./components/AgentPortalView'));
-import AuthModal from './components/AuthModal';
-import TouristSafetyModal from './components/TouristSafetyModal';
-import PaymentProcessingModal from './components/PaymentProcessingModal';
+const AuthModal = lazy(() => import('./components/AuthModal'));
+const TouristSafetyModal = lazy(() => import('./components/TouristSafetyModal'));
+const PaymentProcessingModal = lazy(() => import('./components/PaymentProcessingModal'));
 const AgentVerificationModal = lazy(() => import('./components/AgentVerificationModal'));
 const VoiceConciergeModal = lazy(() => import('./components/VoiceConciergeModal'));
 const TravelAssistantDrawer = lazy(() => import('./components/TravelAssistantDrawer'));
@@ -437,7 +437,6 @@ export default function App() {
         onOpenSettings={() => setSettingsModalOpen(true)}
         onOpenAssistant={handleOpenAssistant}
         onOpenSafetyModal={() => setSafetyModalOpen(true)}
-        onOpenAudioGuide={() => setVoiceModalOpen(true)}
       />
 
       {/* Main Tab Views with Framer Motion Spring Transition */}
@@ -584,7 +583,6 @@ export default function App() {
               <Suspense fallback={<LazyFallback />}>
                 <HolographicGatePass
                 passData={issuedPassData}
-                onOpenAudioGuide={() => setVoiceModalOpen(true)}
                 onExplorePackages={() => setActiveTab('circuits')}
                 onPlanTrip={() => handleOpenAssistant('Help me plan a personalized tour across Andhra Pradesh and Telangana')}
                 />

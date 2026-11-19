@@ -36,18 +36,51 @@ public class QrCodeService {
         return "GT_PASS:" + payload + ":" + signature;
     }
 
+    public String generateSignedPassToken(String bookingReference, Long circuitId, Long userId, String validFrom, String validUntil) {
+        long timestamp = System.currentTimeMillis();
+        String payload = bookingReference + ":" + circuitId + ":" + userId + ":" + validFrom + ":" + validUntil + ":" + timestamp;
+        String signature = sign(payload);
+        return "GT_PASS:" + payload + ":" + signature;
+    }
+
     public boolean verifyPassToken(String token) {
         if (token == null || !token.startsWith("GT_PASS:")) {
             return false;
         }
 
         String[] parts = token.split(":");
-        if (parts.length != 6) {
+        if (parts.length != 6 && parts.length != 8) {
             return false;
         }
 
-        String payload = parts[1] + ":" + parts[2] + ":" + parts[3] + ":" + parts[4];
-        String expectedSignature = parts[5];
+        String payload;
+        String expectedSignature;
+        String validFromStr = null;
+        String validUntilStr = null;
+        long tokenTimestamp;
+
+        if (parts.length == 8) {
+            // GT_PASS:ref:circuitId:userId:validFrom:validUntil:timestamp:sig
+            payload = parts[1] + ":" + parts[2] + ":" + parts[3] + ":" + parts[4] + ":" + parts[5] + ":" + parts[6];
+            validFromStr = parts[4];
+            validUntilStr = parts[5];
+            try {
+                tokenTimestamp = Long.parseLong(parts[6]);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+            expectedSignature = parts[7];
+        } else {
+            // GT_PASS:ref:circuitId:userId:timestamp:sig
+            payload = parts[1] + ":" + parts[2] + ":" + parts[3] + ":" + parts[4];
+            try {
+                tokenTimestamp = Long.parseLong(parts[4]);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+            expectedSignature = parts[5];
+        }
+
         String actualSignature = sign(payload);
 
         // Constant-time signature comparison to eliminate side-channel timing attacks
@@ -61,20 +94,29 @@ public class QrCodeService {
         }
 
         // Anti-Replay & Expiry Check (Capstoned Week 7 Paper Truth)
-        try {
-            long tokenTimestamp = Long.parseLong(parts[4]);
-            long now = System.currentTimeMillis();
-            // Clock skew tolerance: reject tokens dated > 5 minutes in the future
-            if (tokenTimestamp > now + (5 * 60 * 1000L)) {
-                return false;
-            }
-            // Max validity window: 30 days (prevents indefinite reuse of obsolete tokens)
-            long maxValidityMs = 30L * 24 * 60 * 60 * 1000L;
-            if (now - tokenTimestamp > maxValidityMs) {
-                return false;
-            }
-        } catch (NumberFormatException e) {
+        long now = System.currentTimeMillis();
+        // Clock skew tolerance: reject tokens dated > 5 minutes in the future
+        if (tokenTimestamp > now + (5 * 60 * 1000L)) {
             return false;
+        }
+        // Max validity window: 30 days (prevents indefinite reuse of obsolete tokens)
+        long maxValidityMs = 30L * 24 * 60 * 60 * 1000L;
+        if (now - tokenTimestamp > maxValidityMs) {
+            return false;
+        }
+
+        // Strict Date Check if token embeds sovereign validity dates
+        if (validFromStr != null && validUntilStr != null) {
+            try {
+                java.time.LocalDate today = java.time.LocalDate.now();
+                java.time.LocalDate from = java.time.LocalDate.parse(validFromStr);
+                java.time.LocalDate until = java.time.LocalDate.parse(validUntilStr);
+                if (today.isBefore(from) || today.isAfter(until)) {
+                    return false;
+                }
+            } catch (Exception e) {
+                return false;
+            }
         }
 
         return true;

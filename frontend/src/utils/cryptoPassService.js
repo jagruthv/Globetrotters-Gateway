@@ -81,10 +81,22 @@ export async function signPayloadHmacSha256(payload) {
 
 /**
  * Generates an authentic cryptographically signed pass token.
+ * Encodes sovereign validity dates directly into the HMAC-SHA256 payload.
+ * Structure: GT_PASS:<bookingReference>:<circuitId>:<userId>:<validFrom>:<validUntil>:<timestamp>:<base64url_hmac_sha256>
  */
-export async function generateCryptographicPassToken(bookingReference, circuitId = 1, userId = 1) {
+export async function generateCryptographicPassToken(
+  bookingReference, 
+  circuitId = 1, 
+  userId = 1,
+  validFrom = null,
+  validUntil = null
+) {
   const timestamp = Date.now();
-  const payload = `${bookingReference}:${circuitId}:${userId}:${timestamp}`;
+  const todayIso = new Date().toISOString().split('T')[0];
+  const from = (validFrom && String(validFrom).match(/^\d{4}-\d{2}-\d{2}$/)) ? String(validFrom) : todayIso;
+  const until = (validUntil && String(validUntil).match(/^\d{4}-\d{2}-\d{2}$/)) ? String(validUntil) : from;
+
+  const payload = `${bookingReference}:${circuitId}:${userId}:${from}:${until}:${timestamp}`;
   const signature = await signPayloadHmacSha256(payload);
   return `GT_PASS:${payload}:${signature}`;
 }
@@ -130,18 +142,34 @@ export async function verifyPassCryptographicSignature(token) {
   }
 
   const parts = clean.split(':');
-  // Expected parts: ['GT_PASS', bookingReference, circuitId, userId, timestamp, signature]
-  if (parts.length !== 6) {
+  // Supports both modern 8-part sovereign format (with explicit dates) and legacy 6-part format
+  if (parts.length !== 8 && parts.length !== 6) {
     return {
       valid: false,
       isCryptographic: true,
       status: 'MALFORMED_TOKEN',
-      message: 'Malformed pass structure: expected 6 colon-separated segments.'
+      message: 'Malformed pass structure: expected 6 or 8 colon-separated segments.'
     };
   }
 
-  const [, bookingRef, circuitId, userId, timestampStr, expectedSignature] = parts;
-  const payload = `${bookingRef}:${circuitId}:${userId}:${timestampStr}`;
+  let bookingRef = '';
+  let circuitId = '1';
+  let userId = '1';
+  let validFrom = null;
+  let validUntil = null;
+  let timestampStr = '';
+  let expectedSignature = '';
+  let payload = '';
+
+  if (parts.length === 8) {
+    // Modern: ['GT_PASS', bookingReference, circuitId, userId, validFrom, validUntil, timestamp, signature]
+    [, bookingRef, circuitId, userId, validFrom, validUntil, timestampStr, expectedSignature] = parts;
+    payload = `${bookingRef}:${circuitId}:${userId}:${validFrom}:${validUntil}:${timestampStr}`;
+  } else {
+    // Legacy: ['GT_PASS', bookingReference, circuitId, userId, timestamp, signature]
+    [, bookingRef, circuitId, userId, timestampStr, expectedSignature] = parts;
+    payload = `${bookingRef}:${circuitId}:${userId}:${timestampStr}`;
+  }
 
   // 1. Calculate actual signature
   let calculatedSignature = '';
@@ -188,6 +216,39 @@ export async function verifyPassCryptographicSignature(token) {
     };
   }
 
+  // 4. Strict Sovereign Date Validity Check
+  const todayIso = new Date().toISOString().split('T')[0];
+
+  if (validFrom && String(validFrom).match(/^\d{4}-\d{2}-\d{2}$/)) {
+    if (todayIso < validFrom) {
+      return {
+        valid: false,
+        isCryptographic: true,
+        status: 'FUTURE_DATE_PASS',
+        message: `Entry Denied: Pass is scheduled for future date (${formatPassDate(validFrom)}). Early admission before scheduled visit date is strictly prohibited.`,
+        bookingRef,
+        validFrom,
+        validUntil,
+        todayIso
+      };
+    }
+  }
+
+  if (validUntil && String(validUntil).match(/^\d{4}-\d{2}-\d{2}$/)) {
+    if (todayIso > validUntil) {
+      return {
+        valid: false,
+        isCryptographic: true,
+        status: 'EXPIRED_PASS',
+        message: `Entry Denied: Pass validity expired on ${formatPassDate(validUntil)}. Please purchase a new pass for today.`,
+        bookingRef,
+        validFrom,
+        validUntil,
+        todayIso
+      };
+    }
+  }
+
   // Reject passes older than 30 days
   const maxValidityMs = 30 * 24 * 60 * 60 * 1000;
   if (now - tokenTimestamp > maxValidityMs) {
@@ -207,6 +268,76 @@ export async function verifyPassCryptographicSignature(token) {
     bookingRef,
     circuitId: Number(circuitId),
     userId: Number(userId),
+    validFrom: validFrom || todayIso,
+    validUntil: validUntil || validFrom || todayIso,
     timestamp: tokenTimestamp
+  };
+}
+
+/**
+ * Human-friendly date formatter conforming to Rule 0 (Plain English).
+ * Transforms "2026-11-20" -> "Fri, 20 Nov 2026"
+ */
+export function formatPassDate(dateStr) {
+  if (!dateStr) return 'Visit Date';
+  if (dateStr === 'Today') {
+    return new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  if (dateStr === 'Tomorrow') {
+    const tmrw = new Date(Date.now() + 86400000);
+    return tmrw.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const d = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    }
+  }
+  return String(dateStr);
+}
+
+/**
+ * Short date formatter for badges ("20 Nov 2026")
+ */
+export function formatPassDateShort(dateStr) {
+  if (!dateStr) return 'Date';
+  const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const d = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+  }
+  return String(dateStr);
+}
+
+/**
+ * Returns dynamic date status metadata for badges and validation.
+ */
+export function getPassDateStatus(validFrom, validUntil) {
+  const todayIso = new Date().toISOString().split('T')[0];
+  const from = (validFrom && String(validFrom).match(/^\d{4}-\d{2}-\d{2}$/)) ? String(validFrom) : todayIso;
+  const until = (validUntil && String(validUntil).match(/^\d{4}-\d{2}-\d{2}$/)) ? String(validUntil) : from;
+
+  const isFuture = todayIso < from;
+  const isExpired = todayIso > until;
+  const isActive = !isFuture && !isExpired;
+
+  let daysDiff = 0;
+  if (isFuture) {
+    const d1 = new Date(from + 'T00:00:00');
+    const d0 = new Date(todayIso + 'T00:00:00');
+    daysDiff = Math.max(1, Math.round((d1 - d0) / 86400000));
+  }
+
+  return {
+    todayIso,
+    validFrom: from,
+    validUntil: until,
+    isFuture,
+    isExpired,
+    isActive,
+    daysUntilActive: daysDiff
   };
 }
