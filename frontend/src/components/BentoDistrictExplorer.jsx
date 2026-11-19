@@ -1074,7 +1074,6 @@ export default function BentoDistrictExplorer({
                         <div className="flex flex-col gap-1">
                           {(searchQuery && searchMatchedSpots.length > 0 ? searchMatchedSpots : orderedSpots.slice(0, 3)).map((s) => {
                             const isSelected = isPlaceSelected(s.name);
-                            const isFree = s.individualPrice === 0 || s.isTicketed === false;
                             return (
                               <div
                                 key={s.name}
@@ -1083,19 +1082,16 @@ export default function BentoDistrictExplorer({
                               >
                                 <span className="text-slate-300 truncate max-w-[180px]">{s.name}</span>
                                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                                  <span className="text-emerald-400 font-mono text-[10px]">
-                                    {isFree ? 'Free' : `₹${s.individualPrice || 25}`}
-                                  </span>
                                   <button
                                     type="button"
                                     onClick={() => onSelectPlaceForTrip(s, district.name)}
-                                    className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
+                                    className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors cursor-pointer ${
                                       isSelected
                                         ? 'bg-emerald-500/20 text-emerald-300'
-                                        : 'bg-white/5 hover:bg-amber-400 hover:text-slate-950 text-slate-300'
+                                        : 'bg-white/5 hover:bg-white/10 text-slate-300'
                                     }`}
                                   >
-                                    {isSelected ? '✓' : '+ Add'}
+                                    {isSelected ? '✓ Added' : '+ Add'}
                                   </button>
                                 </div>
                               </div>

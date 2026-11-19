@@ -49,14 +49,14 @@ function pcmToWav(pcmData, sampleRate = 24000, numChannels = 1) {
 export default function VoiceConciergeModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState('stories'); // 'stories' | 'live'
   
-  // Gemini 3.1 Flash Lite Live Voice Guide States
+  // Gemini 3.8 Flash Neural Voice Guide States
   const [isListening, setIsListening] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   const [lastUserPrompt, setLastUserPrompt] = useState('');
   const [aiResponse, setAiResponse] = useState('');
-  const [activeModel] = useState('AI Audio Guide');
+  const [activeModel] = useState('Gemini 3.8 Flash TTS');
   const [liveError, setLiveError] = useState(null);
   const [textInput, setTextInput] = useState('');
 
@@ -905,7 +905,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                     {isLoadingStory ? (
                       <span className="text-amber-300 flex items-center gap-2 py-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Generating neural voice guide with Gemini...
+                        Generating neural voice guide with Gemini 3.8 Flash TTS...
                       </span>
                     ) : (
                       activeStory?.narrative || activeSpot.description

@@ -526,8 +526,11 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
           const voiceName = body.voice || "Puck";
           const apiKey = getGeminiKey(env);
 
-          // Dedicated audio models: Gemini Flash Neural Audio with fallback cascade
-          const ttsModels = ["gemini-2.0-flash", "gemini-2.0-flash-exp", "gemini-2.5-flash", "gemini-3.8-flash"];
+          // Dedicated audio models: Gemini 3.8 Flash Neural TTS
+          const ttsModels = [
+            "gemini-3.8-flash-tts",
+            "gemini-3.8-flash-lite-tts"
+          ];
           let audioBase64 = null;
           let audioMimeType = "audio/wav";
 
@@ -575,7 +578,7 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
             return new Response(JSON.stringify({
               audioBase64,
               mimeType: audioMimeType,
-              model: "AI Audio Guide"
+              model: "Gemini 3.8 Flash TTS"
             }), {
               headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
             });

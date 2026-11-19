@@ -41,7 +41,6 @@ const STARTER_TRIPS = [
     title: 'Araku Valley Nature & Caves',
     tag: 'Mountain Hill Station & Waterfalls',
     badge: 'Popular',
-    fee: '₹130 Pass Fare',
     places: [
       { name: 'Borra Caves', district: 'Alluri Sitharama Raju (ASR) District', individualPrice: 80, category: 'Nature & Wildlife' },
       { name: 'Araku Tribal Museum', district: 'Alluri Sitharama Raju (ASR) District', individualPrice: 40, category: 'Artisans & Culture' },
@@ -54,7 +53,6 @@ const STARTER_TRIPS = [
     title: 'Hyderabad Royal Heritage',
     tag: 'Charminar, Golconda & Nizam Palaces',
     badge: 'Heritage',
-    fee: '₹100 Pass Fare',
     places: [
       { name: 'Golconda Fort & Acoustic Portico Walk', district: 'Hyderabad District', individualPrice: 25, category: 'Historical Forts & Monuments' },
       { name: 'Charminar & Laad Bazaar Lacquer Bangles', district: 'Hyderabad District', individualPrice: 0, category: 'Historical Forts & Monuments' },
@@ -67,7 +65,6 @@ const STARTER_TRIPS = [
     title: 'Warangal Kakatiya Trail',
     tag: 'UNESCO Rudreshwara & Monolithic Fort',
     badge: 'UNESCO',
-    fee: '₹50 Pass Fare',
     places: [
       { name: 'Ramappa Temple (Sri Rudreshwara Swamy — UNESCO World Heritage Site)', district: 'Mulugu District', individualPrice: 25, category: 'Heritage & Spiritual' },
       { name: 'Warangal Fort & Kakatiya Kala Thoranam', district: 'Warangal District', individualPrice: 25, category: 'Historical Forts & Monuments' },
@@ -879,32 +876,32 @@ export default function AiFluidTripStudio({
 
             {/* INSTANT PASS CHECKOUT CARD FOR SELECTED MONUMENTS */}
             {selectedPlaces.length > 0 && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-stone-900/60 border border-amber-400/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+              <div className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
-                    <Ticket className="w-5 h-5 text-amber-300" />
+                  <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 shrink-0">
+                    <Ticket className="w-4 h-4" />
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white font-sans-clean">
+                      <span className="text-xs font-semibold text-white font-sans-clean">
                         Consolidated Gate Pass
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono font-semibold">
+                      <span className="text-[10px] text-slate-400 font-mono">
                         {selectedPlaces.length} {selectedPlaces.length === 1 ? 'Attraction' : 'Attractions'}
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-300 font-sans-clean">
-                      Skip counter queues with one digital QR gate pass
+                    <span className="text-[11px] text-slate-400 font-sans-clean">
+                      Direct QR admission for selected attractions
                     </span>
                   </div>
                 </div>
 
                 <button
                   onClick={() => handleBuyPass()}
-                  className="px-5 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-md cursor-pointer font-sans-clean active:scale-[0.98] transition-all shrink-0"
+                  className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer font-sans-clean active:scale-[0.98] transition-colors shrink-0"
                 >
                   <Ticket className="w-3.5 h-3.5 text-slate-950" />
-                  <span>{stagedPassPrice === 0 ? 'Get Free Entry Pass (₹0)' : `Buy Entry Pass • ₹${stagedPassPrice}`}</span>
+                  <span>{stagedPassPrice === 0 ? 'Get Free Pass' : `Get Pass • ₹${stagedPassPrice}`}</span>
                 </button>
               </div>
             )}
@@ -957,10 +954,9 @@ export default function AiFluidTripStudio({
                             {trip.tag}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-white/5 text-[11px] text-slate-300">
-                          <span className="text-amber-400 font-mono font-bold">{trip.fee}</span>
-                          <span className="text-amber-400 group-hover:translate-x-0.5 transition-transform font-bold text-xs">
-                            + Load Trip →
+                        <div className="flex items-center justify-end pt-2 border-t border-white/5 text-[11px] text-slate-300">
+                          <span className="text-amber-400 group-hover:translate-x-0.5 transition-transform font-medium text-xs">
+                            Select Itinerary →
                           </span>
                         </div>
                       </div>
