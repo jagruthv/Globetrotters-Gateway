@@ -969,6 +969,23 @@ Deliver an authentic 1-minute curated walk guide in ${targetLangName}.`;
               }
             }
 
+            // Strict Location Check on Cryptographically Verified Passes
+            const tokenCircuitId = Number(parts[2]);
+            const requestedPlaceId = Number(scanData.placeId);
+            if (tokenCircuitId > 0 && requestedPlaceId > 0 && tokenCircuitId !== requestedPlaceId) {
+              return new Response(JSON.stringify({
+                valid: false,
+                status: 'LOCATION_MISMATCH',
+                message: `Entry Denied: Pass is only valid for Checkpoint #${tokenCircuitId}. Not valid for admission at this checkpoint.`,
+                bookingReference: bookingRef,
+                tokenCircuitId,
+                requestedPlaceId
+              }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request) }
+              });
+            }
+
             return new Response(JSON.stringify({
               valid: true,
               status: 'EDGE_CRYPTO_VERIFIED',

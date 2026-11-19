@@ -48,13 +48,18 @@ export function isPassValidForLocation(pass, locationId = 1, keyword = 'borra', 
   if (matchesText(pass.destination)) {
     return true;
   }
-  // Check circuit ID
-  if (pass.circuitId === Number(locationId) || String(pass.circuitId).toLowerCase().includes(kw)) {
+  // Universal corridor all-access pass
+  if (typeof pass.circuitName === 'string' && (pass.circuitName.includes('All-Access') || pass.circuitName.includes('All Access') || pass.circuitName.includes('Corridor Pass'))) {
     return true;
   }
 
-  // Universal corridor all-access pass
-  if (typeof pass.circuitName === 'string' && (pass.circuitName.includes('All-Access') || pass.circuitName.includes('All Access') || pass.circuitName.includes('Corridor Pass'))) {
+  // Check circuit ID only if no conflicting named destination was defined on the pass
+  const hasNamedDestinations = (Array.isArray(pass.destinations) && pass.destinations.length > 0) ||
+                               (Array.isArray(pass.placesAllowed) && pass.placesAllowed.length > 0) ||
+                               Boolean(pass.destination) ||
+                               Boolean(pass.circuitName);
+
+  if (!hasNamedDestinations && (pass.circuitId === Number(locationId) || String(pass.circuitId).toLowerCase().includes(kw))) {
     return true;
   }
 

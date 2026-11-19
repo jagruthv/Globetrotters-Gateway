@@ -391,6 +391,29 @@ export default function AgentPortalView({
       return;
     }
 
+    // 1a. Direct Cryptographic Location Enforcement (e.g. cross-device ticket scan)
+    if (tokenToVerify.startsWith('GT_PASS:')) {
+      const parts = tokenToVerify.split(':');
+      const tokenCircuitId = parts.length >= 3 ? Number(parts[2]) : 0;
+      if (tokenCircuitId > 0 && tokenCircuitId !== placeId) {
+        const allowedCp = CHECKPOINTS.find(c => c.id === tokenCircuitId);
+        const targetName = allowedCp ? allowedCp.name : `Checkpoint #${tokenCircuitId}`;
+        setIsScanning(false);
+        playScannerSound(false);
+        const result = {
+          success: false,
+          touristName: matchedPass?.touristName || 'Ticket Holder',
+          message: `ENTRY DENIED: Pass is only valid for "${targetName}". It cannot be used at ${checkpointName}.`,
+          checkpoint: checkpointName,
+          token: tokenToVerify
+        };
+        setVerdict(result);
+        recordScanResult(result, false, tokenToVerify, checkpointName);
+        setTimeout(() => setVerdict(null), 5000);
+        return;
+      }
+    }
+
     // 1b. Date Validity Check: Ensure pass is active today and not scheduled for a future date or expired
     if (matchedPass) {
       const dateCheck = checkPassDateValidity(matchedPass);
