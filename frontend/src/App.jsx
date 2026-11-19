@@ -249,8 +249,35 @@ export default function App() {
     setPaymentModalOpen(true);
   };
 
+  // Multi-Device Cloud Sync: fetch verified passes from backend and merge into local offline cache
+  const syncCloudPasses = React.useCallback(async () => {
+    try {
+      const user = authService.getCurrentUser();
+      if (!user || user.isGuest) return;
+      const cloudPasses = await bookingService.getMyPasses();
+      if (Array.isArray(cloudPasses) && cloudPasses.length > 0) {
+        const stored = localStorage.getItem('globetrotter_passes');
+        const localList = stored ? JSON.parse(stored) : [];
+        const existingRefs = new Set(localList.map((p) => p?.reference?.toLowerCase()));
+        const newFromCloud = cloudPasses.filter((cp) => !existingRefs.has(cp?.reference?.toLowerCase()));
+        if (newFromCloud.length > 0) {
+          const merged = [...newFromCloud, ...localList];
+          localStorage.setItem('globetrotter_passes', JSON.stringify(merged));
+        }
+      }
+    } catch {
+      // Offline fallback: keep local passes intact
+    }
+  }, []);
+
+  // Sync passes on mount
+  useEffect(() => {
+    syncCloudPasses();
+  }, [syncCloudPasses]);
+
   const handleAuthSuccess = (userData) => {
     setAuthModalOpen(false);
+    syncCloudPasses();
     if (pendingBooking) {
       const booking = pendingBooking;
       setPendingBooking(null);

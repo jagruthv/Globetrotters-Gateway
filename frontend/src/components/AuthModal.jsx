@@ -15,7 +15,7 @@ import {
   Ticket
 } from 'lucide-react';
 import { authService } from '../services/api';
-import { launchMsg91Otp, isMsg91Loaded } from '../utils/msg91OtpClient';
+import { launchMsg91Otp } from '../utils/msg91OtpClient';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = null }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -253,9 +253,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
         onFailure: (err) => {
           console.warn('MSG91 launch notice:', err);
           setLoading(false);
-          if (err && err.message) {
-            setError(err.message);
-          }
+          const msg = (err && (err.message || err.error || (typeof err === 'string' ? err : null))) || 'MSG91 verification could not be completed.';
+          setError(msg);
         }
       });
 
@@ -440,109 +439,247 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
               </div>
             )}
 
-            {/* ── TAB 1: OPTION B — 6-DIGIT EMAIL OTP FLOW ──────────────────── */}
-            {activeMethod === 'email_otp' && (
+            {/* ── TAB 1: ONE-TIME PASSWORD (OTP) FLOW WITH SUB-TOGGLE ─────── */}
+            {activeTab === 'otp' && (
               <div className="flex flex-col gap-4">
-                {emailOtpStep === 'input_email' ? (
-                  <form onSubmit={handleSendEmailOtp} className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-semibold text-slate-300 font-sans-clean">
-                        Your Email Address
-                      </label>
-                      <div className="relative">
-                        <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="email"
-                          required
-                          value={emailForOtp}
-                          onChange={(e) => setEmailForOtp(e.target.value)}
-                          placeholder="jagruth@gmail.com"
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400 transition-colors font-sans-clean"
-                        />
-                      </div>
-                      <p className="text-[11px] text-slate-400">
-                        We will send a 6-digit authentication code directly to your email.
-                      </p>
-                    </div>
+                {/* OTP Sub-Toggle: Email Code vs Mobile SMS */}
+                <div className="flex items-center p-0.5 rounded-lg bg-white/[0.04] border border-white/5 text-[11px] font-sans-clean">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOtpChannel('email');
+                      setError(null);
+                    }}
+                    className={`flex-1 py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                      otpChannel === 'email'
+                        ? 'bg-amber-400/20 text-amber-300 font-semibold border border-amber-400/30'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Mail className="w-3 h-3 text-amber-400" />
+                    <span>Email Code</span>
+                  </button>
 
-                    <button
-                      type="submit"
-                      disabled={loading || !emailForOtp.includes('@')}
-                      className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
-                    >
-                      {loading ? (
-                        <span>Sending Code...</span>
-                      ) : (
-                        <>
-                          <span>Send 6-Digit Verification Code</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </>
-                      )}
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyEmailOtp} className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center justify-between text-xs font-sans-clean">
-                        <label className="text-slate-300 font-semibold">
-                          Enter 6-Digit Code
-                        </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOtpChannel('mobile');
+                      setError(null);
+                    }}
+                    className={`flex-1 py-1.5 rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                      otpChannel === 'mobile'
+                        ? 'bg-emerald-400/20 text-emerald-300 font-semibold border border-emerald-400/30'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Phone className="w-3 h-3 text-emerald-400" />
+                    <span>Mobile SMS</span>
+                  </button>
+                </div>
+
+                {/* Email OTP Channel */}
+                {otpChannel === 'email' && (
+                  <div>
+                    {emailOtpStep === 'input_email' ? (
+                      <form onSubmit={handleSendEmailOtp} className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs font-semibold text-slate-300 font-sans-clean">
+                            Your Email Address
+                          </label>
+                          <div className="relative">
+                            <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="email"
+                              required
+                              value={emailForOtp}
+                              onChange={(e) => setEmailForOtp(e.target.value)}
+                              placeholder="jagruth@gmail.com"
+                              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400 transition-colors font-sans-clean"
+                            />
+                          </div>
+                          <p className="text-[11px] text-slate-400">
+                            We will send a 6-digit authentication code directly to your email.
+                          </p>
+                        </div>
+
                         <button
-                          type="button"
-                          onClick={() => setEmailOtpStep('input_email')}
-                          className="text-[11px] text-amber-400 hover:underline cursor-pointer"
+                          type="submit"
+                          disabled={loading || !emailForOtp.includes('@')}
+                          className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
                         >
-                          Change {emailForOtp}
+                          {loading ? (
+                            <span>Sending Code...</span>
+                          ) : (
+                            <>
+                              <span>Send 6-Digit Verification Code</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </>
+                          )}
                         </button>
-                      </div>
+                      </form>
+                    ) : (
+                      <form onSubmit={handleVerifyEmailOtp} className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center justify-between text-xs font-sans-clean">
+                            <label className="text-slate-300 font-semibold">
+                              Enter 6-Digit Code
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => setEmailOtpStep('input_email')}
+                              className="text-[11px] text-amber-400 hover:underline cursor-pointer"
+                            >
+                              Change {emailForOtp}
+                            </button>
+                          </div>
 
-                      <div className="relative">
-                        <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          required
-                          autoFocus
-                          maxLength={6}
-                          value={enteredEmailOtp}
-                          onChange={(e) => setEnteredEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                          placeholder="6-digit code"
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg font-mono tracking-widest text-center focus:outline-none focus:border-amber-400 transition-colors"
-                        />
-                      </div>
-                      <p className="text-[11px] text-slate-400 text-center">
-                        Check your inbox for the code sent to <strong className="text-slate-200">{emailForOtp}</strong>
-                      </p>
-                    </div>
+                          <div className="relative">
+                            <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="text"
+                              required
+                              autoFocus
+                              maxLength={6}
+                              value={enteredEmailOtp}
+                              onChange={(e) => setEnteredEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                              placeholder="6-digit code"
+                              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg font-mono tracking-widest text-center focus:outline-none focus:border-amber-400 transition-colors"
+                            />
+                          </div>
+                          <p className="text-[11px] text-slate-400 text-center">
+                            Check your inbox for the code sent to <strong className="text-slate-200">{emailForOtp}</strong>
+                          </p>
+                        </div>
 
-                    <button
-                      type="submit"
-                      disabled={loading || enteredEmailOtp.length !== 6}
-                      className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
-                    >
-                      {loading ? <span>Verifying Code...</span> : <span>Verify & Sign In</span>}
-                    </button>
-
-                    <div className="flex items-center justify-center text-xs text-slate-400 font-sans-clean">
-                      {emailResendTimer > 0 ? (
-                        <span>Resend code in <strong className="font-mono text-slate-200">{emailResendTimer}s</strong></span>
-                      ) : (
                         <button
-                          type="button"
-                          onClick={handleSendEmailOtp}
-                          className="flex items-center gap-1.5 text-amber-400 hover:underline cursor-pointer font-medium"
+                          type="submit"
+                          disabled={loading || enteredEmailOtp.length !== 6}
+                          className="w-full py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
                         >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>Resend verification code</span>
+                          {loading ? <span>Verifying Code...</span> : <span>Verify & Sign In</span>}
                         </button>
-                      )}
-                    </div>
-                  </form>
+
+                        <div className="flex items-center justify-center text-xs text-slate-400 font-sans-clean">
+                          {emailResendTimer > 0 ? (
+                            <span>Resend code in <strong className="font-mono text-slate-200">{emailResendTimer}s</strong></span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleSendEmailOtp}
+                              className="flex items-center gap-1.5 text-amber-400 hover:underline cursor-pointer font-medium"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              <span>Resend verification code</span>
+                            </button>
+                          )}
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                )}
+
+                {/* Mobile SMS OTP Channel */}
+                {otpChannel === 'mobile' && (
+                  <div>
+                    {phoneOtpStep === 'input_phone' ? (
+                      <form onSubmit={handleSendPhoneOtp} className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-xs font-semibold text-slate-300 font-sans-clean">
+                            Indian Mobile Number
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <div className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-xs font-mono">
+                              +91
+                            </div>
+                            <input
+                              type="tel"
+                              required
+                              maxLength={10}
+                              value={phoneNumber}
+                              onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                              placeholder="9876543210"
+                              className="flex-1 px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-emerald-400 transition-colors"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={loading || phoneNumber.length !== 10}
+                          className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
+                        >
+                          {loading ? (
+                            <span>Sending SMS...</span>
+                          ) : (
+                            <>
+                              <span>Send Mobile OTP</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </>
+                          )}
+                        </button>
+                      </form>
+                    ) : (
+                      <form onSubmit={handleVerifyPhoneOtp} className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center justify-between text-xs font-sans-clean">
+                            <label className="text-slate-300 font-semibold">
+                              Enter 6-Digit SMS Code
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => setPhoneOtpStep('input_phone')}
+                              className="text-[11px] text-emerald-400 hover:underline cursor-pointer"
+                            >
+                              Change +91 {phoneNumber}
+                            </button>
+                          </div>
+
+                          <div className="relative">
+                            <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="text"
+                              required
+                              autoFocus
+                              maxLength={6}
+                              value={enteredPhoneOtp}
+                              onChange={(e) => setEnteredPhoneOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                              placeholder="6-digit code"
+                              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg font-mono tracking-widest text-center focus:outline-none focus:border-emerald-400 transition-colors"
+                            />
+                          </div>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={loading || enteredPhoneOtp.length !== 6}
+                          className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
+                        >
+                          {loading ? <span>Verifying OTP...</span> : <span>Verify & Enter Gateway</span>}
+                        </button>
+
+                        <div className="flex items-center justify-center text-xs text-slate-400 font-sans-clean">
+                          {phoneResendTimer > 0 ? (
+                            <span>Resend OTP in <strong className="font-mono text-slate-200">{phoneResendTimer}s</strong></span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleSendPhoneOtp}
+                              className="flex items-center gap-1.5 text-emerald-400 hover:underline cursor-pointer font-medium"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              <span>Resend verification code</span>
+                            </button>
+                          )}
+                        </div>
+                      </form>
+                    )}
+                  </div>
                 )}
               </div>
             )}
 
             {/* ── TAB 2: EMAIL & PASSWORD LOGIN ─────────────────────────────── */}
-            {activeMethod === 'password' && (
+            {activeTab === 'password' && (
               <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-3">
                 {isRegister && (
                   <div className="flex flex-col gap-1">
@@ -629,104 +766,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                   )}
                 </div>
               </form>
-            )}
-
-            {/* ── TAB 3: MOBILE PHONE OTP ───────────────────────────────────── */}
-            {activeMethod === 'phone' && (
-              <div className="flex flex-col gap-4">
-                {phoneOtpStep === 'input_phone' ? (
-                  <form onSubmit={handleSendPhoneOtp} className="flex flex-col gap-3">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-semibold text-slate-300 font-sans-clean">
-                        Indian Mobile Number
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <div className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-xs font-mono">
-                          +91
-                        </div>
-                        <input
-                          type="tel"
-                          required
-                          maxLength={10}
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                          placeholder="9876543210"
-                          className="flex-1 px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-emerald-400 transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loading || phoneNumber.length !== 10}
-                      className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
-                    >
-                      {loading ? (
-                        <span>Sending SMS...</span>
-                      ) : (
-                        <>
-                          <span>Send Mobile OTP</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </>
-                      )}
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyPhoneOtp} className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="flex items-center justify-between text-xs font-sans-clean">
-                        <label className="text-slate-300 font-semibold">
-                          Enter 6-Digit SMS Code
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => setPhoneOtpStep('input_phone')}
-                          className="text-[11px] text-emerald-400 hover:underline cursor-pointer"
-                        >
-                          Change +91 {phoneNumber}
-                        </button>
-                      </div>
-
-                      <div className="relative">
-                        <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          required
-                          autoFocus
-                          maxLength={6}
-                          value={enteredPhoneOtp}
-                          onChange={(e) => setEnteredPhoneOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                          placeholder="6-digit code"
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 text-lg font-mono tracking-widest text-center focus:outline-none focus:border-emerald-400 transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loading || enteredPhoneOtp.length !== 6}
-                      className="w-full py-3 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-40 cursor-pointer shadow-md font-sans-clean active:scale-[0.98]"
-                    >
-                      {loading ? <span>Verifying OTP...</span> : <span>Verify & Enter Gateway</span>}
-                    </button>
-
-                    <div className="flex items-center justify-center text-xs text-slate-400 font-sans-clean">
-                      {phoneResendTimer > 0 ? (
-                        <span>Resend OTP in <strong className="font-mono text-slate-200">{phoneResendTimer}s</strong></span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleSendPhoneOtp}
-                          className="flex items-center gap-1.5 text-emerald-400 hover:underline cursor-pointer font-medium"
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>Resend verification code</span>
-                        </button>
-                      )}
-                    </div>
-                  </form>
-                )}
-              </div>
             )}
 
             {/* ── FOOTER: INSTANT GUEST PASS ─────────────────────────────────── */}
