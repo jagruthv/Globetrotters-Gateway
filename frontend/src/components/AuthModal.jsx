@@ -15,6 +15,7 @@ import {
   Ticket
 } from 'lucide-react';
 import { authService } from '../services/api';
+import { logger } from '../utils/telemetryLogger';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = null }) {
   const [isRegister, setIsRegister] = useState(false);
@@ -44,6 +45,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
   const [successMsg, setSuccessMsg] = useState(null);
 
   const handleFinishAuth = useCallback((userData, message) => {
+    logger.success('AUTH', message, { userId: userData?.id, role: userData?.role });
     setLoading(false);
     setSuccessMsg(message);
     if (onAuthSuccess) onAuthSuccess(userData);
@@ -228,18 +230,23 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
     const clean = phoneNumber.replace(/\D/g, '').slice(-10);
     if (clean.length !== 10) {
       setError('Please enter a valid 10-digit Indian mobile number.');
+      logger.warn('AUTH', 'User entered invalid mobile length', { input: phoneNumber });
       return;
     }
     setError(null);
     setLoading(true);
+    logger.info('AUTH', `Dispatching mobile OTP to +91 ${clean}`);
 
     try {
       await authService.sendMobileOtp(clean);
       setPhoneOtpStep('input_otp');
       setPhoneResendTimer(60);
       setLoading(false);
+      logger.success('AUTH', `OTP dispatched to +91 ${clean}`);
     } catch (err) {
-      setError(err.message || 'Failed to dispatch SMS code. Please try again.');
+      const msg = err.message || 'Failed to dispatch SMS code. Please try again.';
+      setError(msg);
+      logger.error('AUTH', `Failed to dispatch OTP to +91 ${clean}`, { error: msg });
       setLoading(false);
     }
   };
@@ -249,16 +256,21 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
     const cleanOtp = enteredPhoneOtp.trim();
     if (!cleanOtp || cleanOtp.length < 4) {
       setError('Please enter the 4 to 6-digit verification code.');
+      logger.warn('AUTH', 'User entered short OTP', { length: cleanOtp?.length });
       return;
     }
     setError(null);
     setLoading(true);
+    logger.info('AUTH', `Verifying mobile OTP for +91 ${phoneNumber}`);
 
     try {
       const userData = await authService.verifyMobileOtp(phoneNumber, cleanOtp);
+      logger.success('AUTH', `Mobile verification confirmed for +91 ${phoneNumber}`);
       handleFinishAuth(userData, `Phone verified! Welcome ${userData.fullName}`);
     } catch (err) {
-      setError(err.message || 'Invalid verification OTP.');
+      const msg = err.message || 'Invalid verification OTP.';
+      setError(msg);
+      logger.error('AUTH', `Mobile verification failed for +91 ${phoneNumber}`, { error: msg });
       setLoading(false);
     }
   };

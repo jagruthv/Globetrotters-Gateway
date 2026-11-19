@@ -1,3 +1,5 @@
+import { logger } from '../utils/telemetryLogger';
+
 const API_BASE_URL = '/api';
 
 function getAuthHeader() {
@@ -7,37 +9,44 @@ function getAuthHeader() {
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
+  const method = options.method || 'GET';
   const headers = {
     'Content-Type': 'application/json',
     ...getAuthHeader(),
     ...options.headers,
   };
 
-  const response = await fetch(url, { ...options, headers });
-  
-  if (response.status === 401) {
-    // If unauthorized, clear invalid token
-    if (localStorage.getItem('globetrotter_token') && !endpoint.includes('/auth/login')) {
-      localStorage.removeItem('globetrotter_token');
-      localStorage.removeItem('globetrotter_user');
-      window.dispatchEvent(new Event('auth-change'));
+  try {
+    const response = await fetch(url, { ...options, headers });
+    
+    if (response.status === 401) {
+      if (localStorage.getItem('globetrotter_token') && !endpoint.includes('/auth/login')) {
+        localStorage.removeItem('globetrotter_token');
+        localStorage.removeItem('globetrotter_user');
+        window.dispatchEvent(new Event('auth-change'));
+      }
     }
-  }
 
-  const contentType = response.headers.get('content-type');
-  let data;
-  if (contentType && contentType.includes('application/json')) {
-    data = await response.json();
-  } else {
-    data = await response.text();
-  }
+    const contentType = response.headers.get('content-type');
+    let data;
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      data = await response.text();
+    }
 
-  if (!response.ok) {
-    const errorMsg = data?.message || data?.error || (typeof data === 'string' ? data : 'API Request Failed');
-    throw new Error(errorMsg);
-  }
+    if (!response.ok) {
+      const errorMsg = data?.message || data?.error || (typeof data === 'string' ? data : 'API Request Failed');
+      logger.error('NETWORK', `${method} ${endpoint} [${response.status}]`, { error: errorMsg });
+      throw new Error(errorMsg);
+    }
 
-  return data;
+    logger.success('NETWORK', `${method} ${endpoint} [${response.status}]`);
+    return data;
+  } catch (err) {
+    logger.error('NETWORK', `${method} ${endpoint} Network Failure`, { message: err.message });
+    throw err;
+  }
 }
 
 export const authService = {

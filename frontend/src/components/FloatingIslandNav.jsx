@@ -15,6 +15,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import AuthModal from './AuthModal';
+import { logger } from '../utils/telemetryLogger';
 
 export default function FloatingIslandNav({ 
   activeTab, 
@@ -181,7 +182,10 @@ export default function FloatingIslandNav({
             </div>
           ) : (
             <button
-              onClick={() => setAuthModalOpen(true)}
+              onClick={() => {
+                logger.info('UI', 'Sign In button clicked from navbar dock');
+                setAuthModalOpen(true);
+              }}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-slate-100 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
               title="Tourist Account Sign In"
             >
