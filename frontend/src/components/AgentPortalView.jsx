@@ -24,7 +24,8 @@ import {
   syncLedgerToCentralCore,
   getAdmittedPasses,
   markPassVisited,
-  isPassValidForLocation
+  isPassValidForLocation,
+  checkPassDateValidity
 } from '../utils/offlineTurnstileLedger';
 
 function playScannerSound(isGranted) {
@@ -499,6 +500,26 @@ export default function AgentPortalView({
       recordScanResult(result, false, tokenToVerify, checkpointName);
       setTimeout(() => setVerdict(null), 5000);
       return;
+    }
+
+    // 1b. Date Validity Check: Ensure pass is active today and not scheduled for a future date or expired
+    if (matchedPass) {
+      const dateCheck = checkPassDateValidity(matchedPass);
+      if (!dateCheck.valid) {
+        setIsScanning(false);
+        playScannerSound(false);
+        const result = {
+          success: false,
+          touristName: matchedPass.touristName || 'Ticket Holder',
+          message: dateCheck.message,
+          checkpoint: checkpointName,
+          token: tokenToVerify
+        };
+        setVerdict(result);
+        recordScanResult(result, false, tokenToVerify, checkpointName);
+        setTimeout(() => setVerdict(null), 5000);
+        return;
+      }
     }
 
     // 2. Anti-Revisit Check: Check local offline cache and pass visited history
