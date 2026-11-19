@@ -115,7 +115,7 @@ export default function FloatingIslandNav({
           })}
         </div>
 
-        {/* Right Action: Tourist Safety & Auth Button */}
+        {/* Right Action: Tourist Safety, Settings & Auth Button */}
         <div className="flex items-center gap-1.5 sm:gap-2 pr-1 shrink-0">
           {/* Persistent High-Visibility SOS Emergency Alert Trigger */}
           <button
@@ -129,16 +129,30 @@ export default function FloatingIslandNav({
             <span className="font-mono text-[10px] tracking-wider font-extrabold text-rose-300">SOS</span>
           </button>
 
-          {/* User Sign In / Account Avatar - No bulky text greeting */}
+          {/* Desktop & Mobile Settings Button - Always accessible */}
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
+            title="Settings & Preferences"
+            aria-label="Open Settings"
+          >
+            <Settings className="w-3.5 h-3.5 text-slate-300" />
+          </button>
+
+          {/* User Sign In / Account Avatar */}
           {currentUser ? (
             <div className="flex items-center gap-1.5 pl-0.5 shrink-0">
-              <div 
-                className="w-8 h-8 rounded-full bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-emerald-300 text-xs font-semibold relative cursor-default"
-                title={`Signed in as ${currentUser.fullName || currentUser.phoneNumber || currentUser.email || 'Traveler'}`}
+              <button
+                type="button"
+                onClick={onOpenSettings}
+                className="w-8 h-8 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/30 flex items-center justify-center text-emerald-300 text-xs font-semibold relative cursor-pointer transition-colors"
+                title={`Signed in as ${currentUser.fullName || currentUser.phoneNumber || currentUser.email || 'Traveler'} (Click to open Settings)`}
+                aria-label="Manage Account Settings"
               >
                 <User className="w-3.5 h-3.5 text-emerald-400" />
                 <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#06080D]" />
-              </div>
+              </button>
               <button
                 onClick={handleSignOut}
                 className="w-8 h-8 rounded-full bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-slate-400 hover:text-rose-300 transition-colors cursor-pointer shrink-0"

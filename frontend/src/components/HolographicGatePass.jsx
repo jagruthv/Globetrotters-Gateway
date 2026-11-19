@@ -34,6 +34,7 @@ export default function HolographicGatePass({
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [sunlightScanMode, setSunlightScanMode] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [selectedReceiptPass, setSelectedReceiptPass] = useState(null);
 
   const allPasses = React.useMemo(() => {
     const list = [];

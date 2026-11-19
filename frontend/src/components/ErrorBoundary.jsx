@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle, RotateCcw, Home } from 'lucide-react';
+import { logger } from '../utils/telemetryLogger';
 
 /**
  * ErrorBoundary: Application Runtime Exception Guard
@@ -21,9 +22,11 @@ export default class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    if (import.meta.env.DEV) {
-      console.error('Globetrotter Runtime Boundary Caught Exception:', error, errorInfo);
-    }
+    logger.error('CRASH', error?.message || 'Component crash', {
+      name: error?.name,
+      stack: errorInfo?.componentStack || error?.stack
+    });
+    console.error('Globetrotter Runtime Boundary Caught Exception:', error, errorInfo);
     this.setState({ errorInfo });
   }
 

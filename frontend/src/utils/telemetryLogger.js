@@ -48,16 +48,14 @@ class TelemetryLogger {
     }
     this.persistLogs();
 
-    // Mirror to native console in development only
+    // Mirror to native console (errors/warnings always visible for runtime troubleshooting)
     const prefix = `[GT-${category}]`;
-    if (import.meta.env.DEV) {
-      if (level === 'ERROR') {
-        console.error(prefix, message, details || '');
-      } else if (level === 'WARN') {
-        console.warn(prefix, message, details || '');
-      } else {
-        console.log(prefix, message, details || '');
-      }
+    if (level === 'ERROR') {
+      console.error(prefix, message, details || '');
+    } else if (level === 'WARN') {
+      console.warn(prefix, message, details || '');
+    } else if (import.meta.env.DEV) {
+      console.log(prefix, message, details || '');
     }
 
     return entry;

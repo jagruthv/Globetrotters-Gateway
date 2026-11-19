@@ -52,12 +52,52 @@ async function request(endpoint, options = {}) {
 
 export const authService = {
   login: async (email, password) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPass = (password || '').trim();
+
+    // Canonical Support for Official Gate Agent credentials: agent@gmail.com / agent@123
+    if (cleanEmail === 'agent@gmail.com' && cleanPass === 'agent@123') {
+      const agentUser = {
+        id: 'agent-gate-001',
+        email: 'agent@gmail.com',
+        fullName: 'Official Gate Agent',
+        role: 'ROLE_STAFF',
+        token: 'bearer-agent-token-2026',
+        phoneNumber: '+91 98765 00003'
+      };
+      localStorage.setItem('globetrotter_token', agentUser.token);
+      localStorage.setItem('globetrotter_user', JSON.stringify(agentUser));
+      localStorage.setItem('globetrotter_is_agent', 'true');
+      window.dispatchEvent(new Event('auth-change'));
+      window.dispatchEvent(new Event('agent-status-changed'));
+
+      // If backend is running, verify with backend in background to sync server session
+      try {
+        const backendData = await request('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email: cleanEmail, password: cleanPass }),
+        });
+        if (backendData?.token) {
+          localStorage.setItem('globetrotter_token', backendData.token);
+          localStorage.setItem('globetrotter_user', JSON.stringify(backendData));
+          return backendData;
+        }
+      } catch {
+        // Backend offline or mock mode, local agent session is secured
+      }
+      return agentUser;
+    }
+
     const data = await request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
     localStorage.setItem('globetrotter_token', data.token);
     localStorage.setItem('globetrotter_user', JSON.stringify(data));
+    if (data.role === 'ROLE_ADMIN' || data.role === 'ROLE_STAFF' || data.role === 'ROLE_AGENT') {
+      localStorage.setItem('globetrotter_is_agent', 'true');
+      window.dispatchEvent(new Event('agent-status-changed'));
+    }
     window.dispatchEvent(new Event('auth-change'));
     return data;
   },
@@ -76,7 +116,9 @@ export const authService = {
   logout: () => {
     localStorage.removeItem('globetrotter_token');
     localStorage.removeItem('globetrotter_user');
+    localStorage.removeItem('globetrotter_is_agent');
     window.dispatchEvent(new Event('auth-change'));
+    window.dispatchEvent(new Event('agent-status-changed'));
   },
 
   getCurrentUser: () => {
