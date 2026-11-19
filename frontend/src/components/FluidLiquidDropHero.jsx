@@ -151,9 +151,10 @@ export default function FluidLiquidDropHero({
 
   const activeDest = HERO_DESTINATIONS[activeIdx];
 
-  // Auto-advance showcase every 14 seconds if user is idle
+  // Auto-advance showcase every 14 seconds if user is active & tab visible
   useEffect(() => {
     const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       setActiveIdx((prev) => (prev + 1) % HERO_DESTINATIONS.length);
       setAddAudioTour(false); // Reset add-on when switching
     }, 14000);
@@ -214,11 +215,11 @@ export default function FluidLiquidDropHero({
             key={activeDest.id}
             src={activeDest.image}
             alt={activeDest.name}
-            initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.01 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-full object-cover object-center brightness-115 contrast-105 saturate-120"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className="w-full h-full object-cover object-center"
           />
         </AnimatePresence>
 
@@ -231,8 +232,8 @@ export default function FluidLiquidDropHero({
         {/* Soft Top Clearance Under Island Nav */}
         <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#080A0F]/50 to-transparent pointer-events-none" />
 
-        {/* Golden-Hour Warmth Light Accent (Subtle & Non-Intrusive) */}
-        <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-amber-400/10 via-emerald-400/5 to-transparent rounded-full blur-[140px] pointer-events-none" />
+        {/* Golden-Hour Warmth Light Accent (High-performance gradient, zero GPU blur thrashing) */}
+        <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.06)_0,transparent_70%)] pointer-events-none" />
       </div>
 
       {/* Main Content Grid: Balanced Typography + Viewport-Disciplined Tourism Dock */}

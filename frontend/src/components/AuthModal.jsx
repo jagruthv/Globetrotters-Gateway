@@ -18,6 +18,8 @@ import { authService } from '../services/api';
 import { logger } from '../utils/telemetryLogger';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = null }) {
+  const [activeTab, setActiveTab] = useState('otp'); // 'otp' | 'password'
+  const [otpChannel, setOtpChannel] = useState('mobile'); // 'mobile' | 'email'
   const [isRegister, setIsRegister] = useState(false);
   const [googleButtonRendered, setGoogleButtonRendered] = useState(false);
   const googleBtnRef = useRef(null);
