@@ -44,7 +44,28 @@ export default function AiFluidTripStudio({
   const [selectedDuration, setSelectedDuration] = useState('AUTO');
   const [travelPace, setTravelPace] = useState('BALANCED');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [planResult, setPlanResult] = useState(null);
+  const [planResult, setPlanResultState] = useState(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const saved = localStorage.getItem('globetrotter_active_plan');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setPlanResult = useCallback((plan) => {
+    setPlanResultState(plan);
+    try {
+      if (plan) {
+        localStorage.setItem('globetrotter_active_plan', JSON.stringify(plan));
+      } else {
+        localStorage.removeItem('globetrotter_active_plan');
+      }
+    } catch (e) {
+      console.warn('Failed to persist plan to localStorage:', e);
+    }
+  }, []);
   const [geminiDrawerOpen, setGeminiDrawerOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [generationError, setGenerationError] = useState(null);

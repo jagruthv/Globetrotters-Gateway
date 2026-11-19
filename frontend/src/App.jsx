@@ -30,7 +30,8 @@ const HASH_MAP = {
   'packages': 'circuits',
   'circuits': 'circuits',
   'passes': 'passes',
-  'tickets': 'passes'
+  'tickets': 'passes',
+  'verify': 'passes'
 };
 
 const TAB_TO_HASH = {
@@ -44,8 +45,9 @@ const TAB_TO_HASH = {
 const getInitialTab = () => {
   if (typeof window === 'undefined') return 'home';
   const raw = window.location.hash.replace('#/', '').replace('#', '').trim().toLowerCase();
-  if (raw.startsWith('pass=') || raw.startsWith('ref=')) return 'passes';
-  return HASH_MAP[raw] || 'home';
+  if (raw.startsWith('pass=') || raw.startsWith('ref=') || raw.startsWith('verify')) return 'passes';
+  const base = raw.split('?')[0];
+  return HASH_MAP[base] || HASH_MAP[raw] || 'home';
 };
 
 export default function App() {
@@ -542,9 +544,13 @@ export default function App() {
       {/* Field Agent Verification & Accreditation Modal */}
       <AgentVerificationModal
         isOpen={agentVerificationOpen}
-        onClose={() => setAgentVerificationOpen(false)}
+        onClose={() => {
+          setAgentVerificationOpen(false);
+          if (activeTab === 'scanner') setActiveTab('home');
+        }}
         onAgentApproved={() => {
           setIsAgentPortalActive(true);
+          setAgentVerificationOpen(false);
           window.history.pushState(null, '', '#/agent');
         }}
       />

@@ -8,8 +8,7 @@ import {
   ArrowRight,
   AlertTriangle,
   Lock,
-  Mail,
-  KeyRound
+  Mail
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { authService } from '../services/api';
@@ -76,12 +75,6 @@ export default function AgentVerificationModal({
       setError(err.message || 'Authentication failed. Please verify your officer credentials.');
       setLoading(false);
     }
-  };
-
-  const handleQuickFill = (officerEmail, pass) => {
-    setEmail(officerEmail);
-    setPassword(pass);
-    setError('');
   };
 
   if (!isOpen) return null;
@@ -177,30 +170,6 @@ export default function AgentVerificationModal({
                   disabled={loading}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400/60 transition-colors"
                 />
-              </div>
-
-              {/* Quick Fill for Examiners / Evaluators */}
-              <div className="flex flex-col gap-1 pt-1">
-                <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-                  <KeyRound className="w-3 h-3 text-slate-400" />
-                  Official Evaluator Presets:
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('staff@globetrotter.com', 'staff123')}
-                    className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] text-amber-300 font-mono text-left transition-colors cursor-pointer"
-                  >
-                    Gate Staff Inspector
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleQuickFill('admin@globetrotter.com', 'admin123')}
-                    className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] text-teal-300 font-mono text-left transition-colors cursor-pointer"
-                  >
-                    Tourism Director
-                  </button>
-                </div>
               </div>
 
               <button

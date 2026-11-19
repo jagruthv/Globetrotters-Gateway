@@ -79,8 +79,8 @@ public class ProofOfArrivalService {
             result.put("transitType", place.getLastMileTransitType());
             result.put("issuedAt", now.toString());
             result.put("expiresAt", exp.toString());
-            result.put("legalProtectionNotice", "STATUTORY PRICE CAP: Token is cryptographically signed. Local operators must honor maximum ₹"
-                    + fareCap + " per passenger. Extortion or cartel refusal is punishable under Consumer Protection and Tourism Act.");
+            result.put("legalProtectionNotice", "FAIR FARE BENCHMARK: Official estimated government transit rate is ₹"
+                    + fareCap + " per passenger for this route. Tourists can use this benchmark to negotiate fair rates with local operators.");
             return result;
         } catch (Exception e) {
             log.error("Failed to generate PoA token: {}", e.getMessage(), e);

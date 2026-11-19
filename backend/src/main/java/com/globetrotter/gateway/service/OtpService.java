@@ -29,6 +29,16 @@ public class OtpService {
     private final MailService mailService;
     private final SecureRandom secureRandom = new SecureRandom();
 
+    // 0. MSG91 Secure OTP Gateway (Widget ID: 366b7364466f323431363330)
+    @Value("${app.auth.msg91.auth-key:${MSG91_AUTH_KEY:}}")
+    private String msg91AuthKey;
+
+    @Value("${app.auth.msg91.widget-id:${MSG91_WIDGET_ID:366b7364466f323431363330}}")
+    private String msg91WidgetId;
+
+    @Value("${app.auth.msg91.template-id:${MSG91_OTP_TEMPLATE_ID:}}")
+    private String msg91TemplateId;
+
     // 1. Generic SMS Gateway Config
     @Value("${app.auth.sms.auth-key:${SMS_GATEWAY_AUTH_KEY:}}")
     private String smsAuthKey;
@@ -216,17 +226,35 @@ public class OtpService {
     /**
      * Cascading External Gateway Dispatcher:
      * Attempts real external transmission in priority order:
-     * 1. Meta WhatsApp Cloud API (1,000 free monthly conversations with Virtual Number, 0 GST)
-     * 2. Fast2SMS Quick OTP
-     * 3. Twilio (Global SMS API)
-     * 4. Telegram Bot (Free instantaneous mobile push)
-     * 5. Webhook (WhatsApp / n8n workflow)
-     * 6. Local Safe Fallback (Live Toast & Server Console)
+     * 1. MSG91 Secure OTP (Widget ID: 366b7364466f323431363330)
+     * 2. Meta WhatsApp Cloud API (1,000 free monthly conversations with Virtual Number, 0 GST)
+     * 3. Fast2SMS Quick OTP
+     * 4. Twilio (Global SMS API)
+     * 5. Telegram Bot (Free instantaneous mobile push)
+     * 6. Webhook (WhatsApp / n8n workflow)
+     * 7. Local Safe Fallback (Live Toast & Server Console)
      */
     private String dispatchToExternalGateways(String cleanPhone, String code) {
         RestClient restClient = RestClient.create();
 
-        // 1. Meta WhatsApp Cloud API (Zero GST, Virtual Number, 1,000 free/month)
+        // 1. MSG91 Secure Carrier OTP (Widget 366b7364466f323431363330)
+        if (msg91AuthKey != null && !msg91AuthKey.isBlank()) {
+            try {
+                String uri = "https://control.msg91.com/api/v5/otp?mobile=91" + cleanPhone + "&authkey=" + msg91AuthKey.trim() + "&otp=" + code;
+                if (msg91TemplateId != null && !msg91TemplateId.isBlank()) {
+                    uri += "&template_id=" + msg91TemplateId.trim();
+                }
+                restClient.post()
+                        .uri(uri)
+                        .retrieve()
+                        .toBodilessEntity();
+                return "MSG91 (Secure Carrier OTP)";
+            } catch (Exception e) {
+                log.warn("MSG91 dispatch error: {}", e.getMessage());
+            }
+        }
+
+        // 2. Meta WhatsApp Cloud API (Zero GST, Virtual Number, 1,000 free/month)
         if (whatsappAccessToken != null && !whatsappAccessToken.isBlank() &&
             whatsappPhoneNumberId != null && !whatsappPhoneNumberId.isBlank()) {
             try {

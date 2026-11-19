@@ -15,7 +15,8 @@ import {
   Plus, 
   PhoneCall,
   Loader2,
-  Trash2
+  Trash2,
+  ShieldCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData';
@@ -164,47 +165,19 @@ export default function TravelAssistantDrawer({
       const unitPrice = matchedPlace.individualPrice || 40;
       const totalAmount = unitPrice * touristCount;
 
-      const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-      const generatedPass = {
-        reference: `GT-2026-${randomCode}`,
-        token: `GT_PASS:${matchedPlace.name.replace(/\s+/g, '')}:${Date.now()}:hmac_sha256_${randomCode}`,
-        circuitName: `${matchedPlace.name} Priority Pass`,
-        touristName: 'Verified Visitor',
-        validFrom: new Date().toISOString().split('T')[0],
-        validUntil: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-        placesAllowed: [matchedPlace.name],
-        gateFeeTotal: `₹${totalAmount}`,
-        status: 'ACTIVE_AUTHENTICATED'
-      };
-
-      try {
-        const stored = localStorage.getItem('globetrotter_passes');
-        const list = stored ? JSON.parse(stored) : [];
-        list.unshift(generatedPass);
-        localStorage.setItem('globetrotter_passes', JSON.stringify(list));
-      } catch {
-        // Local storage fallback
-      }
-
-      try {
-        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-      } catch {
-        // Confetti fallback
-      }
-
       if (onInitiateBooking) {
         onInitiateBooking({
-          circuitName: `${matchedPlace.name} Priority Pass`,
+          circuitName: `${matchedPlace.name} Entry Pass`,
           destinations: [matchedPlace.name],
           totalAmount: totalAmount
         });
       }
 
       return {
-        type: 'booked_pass',
-        pass: generatedPass,
+        type: 'initiated_booking',
         place: matchedPlace,
-        touristCount
+        touristCount,
+        totalAmount
       };
     }
 
@@ -375,7 +348,9 @@ export default function TravelAssistantDrawer({
 
     } catch {
       let fallbackText = "I have processed your request using the verified 59-district tourism atlas.";
-      if (actionResult?.type === 'booked_pass') {
+      if (actionResult?.type === 'initiated_booking') {
+        fallbackText = `Opening official checkout for ${actionResult.place.name} (${actionResult.touristCount} visitor${actionResult.touristCount > 1 ? 's' : ''} • ₹${actionResult.totalAmount}). Please confirm your booking details in the secure payment gateway.`;
+      } else if (actionResult?.type === 'booked_pass') {
         fallbackText = `Your pass for ${actionResult.place.name} has been authenticated! Your digital entry ticket with turnstile QR code is issued below.`;
       } else if (actionResult?.type === 'navigated') {
         fallbackText = `Navigating to ${actionResult.label} for you right now!`;
@@ -533,6 +508,51 @@ export default function TravelAssistantDrawer({
                 {msg.actionResult && (
                   <div className="w-full max-w-[92%] mt-2 space-y-2">
                     
+                    {/* Tool Result: Initiated Booking Card */}
+                    {msg.actionResult.type === 'initiated_booking' && (
+                      <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#0D1524] to-[#09101C] border border-amber-500/30 shadow-lg flex flex-col gap-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] uppercase tracking-wider font-mono text-amber-400 font-bold flex items-center gap-1.5">
+                            <Ticket className="w-3.5 h-3.5" /> Official Gate Pass Checkout
+                          </span>
+                          <span className="text-xs font-mono font-bold text-amber-300">
+                            ₹{msg.actionResult.totalAmount}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-white/5 border border-white/10">
+                            <ShieldCheck className="w-7 h-7 text-amber-300" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-bold text-white">{msg.actionResult.place.name}</span>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {msg.actionResult.touristCount} Visitor{msg.actionResult.touristCount > 1 ? 's' : ''} • {msg.actionResult.place.district}
+                            </span>
+                            <span className="text-[10px] text-emerald-300">Official State Tourism Verification</span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (onInitiateBooking) {
+                              onInitiateBooking({
+                                circuitName: `${msg.actionResult.place.name} Entry Pass`,
+                                destinations: [msg.actionResult.place.name],
+                                totalAmount: msg.actionResult.totalAmount
+                              });
+                            }
+                            onClose();
+                          }}
+                          className="w-full py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-md"
+                        >
+                          <span>Proceed to Payment</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+
                     {/* Tool Result: Booked Pass Card */}
                     {msg.actionResult.type === 'booked_pass' && (
                       <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#0D1524] to-[#09101C] border border-emerald-500/30 shadow-lg flex flex-col gap-2.5">
