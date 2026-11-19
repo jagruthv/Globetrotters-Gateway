@@ -105,14 +105,10 @@ export default function TravelAssistantDrawer({
   const recognitionRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen) {
-      if (initialQuery) {
-        setInputQuery(initialQuery);
-        if (onClearInitialQuery) onClearInitialQuery();
-      }
+    if (isOpen && !initialQuery) {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [isOpen, initialQuery, onClearInitialQuery]);
+  }, [isOpen, initialQuery]);
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
