@@ -584,7 +584,15 @@ export default function AiFluidTripStudio({
   // Audio Speech Synthesis for Itinerary Briefing
   const toggleSpeech = () => {
     if (!('speechSynthesis' in window)) {
-      alert('Speech synthesis is not supported on this browser.');
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `sys-${Date.now()}`,
+          sender: 'ai',
+          text: '📢 Audio speech synthesis is not supported on this browser or device. Please follow the written day-by-day briefing.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
       return;
     }
 

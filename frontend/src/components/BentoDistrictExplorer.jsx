@@ -305,9 +305,12 @@ export default function BentoDistrictExplorer({
     return ZONES.filter(z => z.state === 'all' || z.state === activeState);
   }, [activeState]);
 
-  useEffect(() => {
+  const filterKey = `${searchQuery}_${activeState}_${activeZone}_${activeTheme}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
     setDisplayLimit(12);
-  }, [searchQuery, activeState, activeZone, activeTheme]);
+  }
 
   // Parse and extract valid 59 districts with spots
   const allDistricts = useMemo(() => {

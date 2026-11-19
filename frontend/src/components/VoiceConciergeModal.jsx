@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Headphones, 
@@ -11,8 +11,11 @@ import {
   Volume2, 
   VolumeX, 
   Send,
-  AlertCircle
+  AlertCircle,
+  Search,
+  MapPin
 } from 'lucide-react';
+import { MASTER_ATLAS_DATA } from '../utils/masterAtlasData.js';
 
 const HERITAGE_STORIES = [
   {
@@ -211,6 +214,79 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [activeStoryId, setActiveStoryId] = useState(HERITAGE_STORIES[0].id);
   const [isPlayingStory, setIsPlayingStory] = useState(false);
+  const [storySearchQuery, setStorySearchQuery] = useState('');
+  const [storyFilter, setStoryFilter] = useState('ALL'); // 'ALL' | 'FEATURED' | 'AP' | 'TG'
+
+  // Extract all 646 destinations dynamically from Master Atlas
+  const allAtlasDestinations = useMemo(() => {
+    const list = [];
+    const processDistricts = (districts, stateName) => {
+      if (!Array.isArray(districts)) return;
+      districts.forEach(d => {
+        if (!Array.isArray(d.spots)) return;
+        d.spots.forEach(s => {
+          const id = `atlas-${s.slug || s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+          const safeTimings = s.timings || s.openingTime || '09:00 AM – 06:00 PM';
+          const safeFees = s.fees || s.feesDescription || (s.individualPrice ? `₹${s.individualPrice}` : 'Free entry');
+          const safeDesc = s.description || s.backstory || 'Historical regional landmark in the tourism corridor.';
+          const safeFood = s.culinarySpecialty || '';
+
+          list.push({
+            id,
+            title: s.name,
+            district: `${d.name}, ${stateName}`,
+            state: stateName,
+            duration: '1 min 15 sec',
+            image: s.imageUrl || '',
+            standout: s.category || 'Corridor Destination',
+            isAtlasSpot: true,
+            languages: {
+              en: {
+                title: s.name,
+                narrative: `Welcome to ${s.name}, situated in ${d.name}, ${stateName}. ${safeDesc} Official visiting hours are ${safeTimings}, and entrance admission is ${safeFees}. ${safeFood ? `When you are in the area, authentic regional delicacies include ${safeFood}.` : ''}`
+              },
+              te: {
+                title: s.name,
+                narrative: `${stateName} లోని ${d.name} జిల్లాలో ఉన్న ${s.name} పర్యాటక ప్రాంతం. ${safeDesc} సందర్శన వేళలు: ${safeTimings}. ప్రవేశ రుసుము: ${safeFees}. ${safeFood ? `ఇక్కడి ప్రత్యేక ఆహారం: ${safeFood}.` : ''}`
+              },
+              hi: {
+                title: s.name,
+                narrative: `${stateName} के ${d.name} जिले में स्थित ${s.name} एक प्रसिद्ध स्थल है। ${safeDesc} समय: ${safeTimings}. प्रवेश शुल्क: ${safeFees}. ${safeFood ? `यहाँ का प्रमुख स्थानीय भोजन: ${safeFood}.` : ''}`
+              }
+            }
+          });
+        });
+      });
+    };
+
+    processDistricts(MASTER_ATLAS_DATA?.andhraPradesh, 'Andhra Pradesh');
+    processDistricts(MASTER_ATLAS_DATA?.telangana, 'Telangana');
+    return list;
+  }, []);
+
+  const filteredStories = useMemo(() => {
+    let pool = [];
+    if (storyFilter === 'FEATURED') {
+      pool = HERITAGE_STORIES;
+    } else if (storyFilter === 'AP') {
+      pool = allAtlasDestinations.filter(s => s.state === 'Andhra Pradesh');
+    } else if (storyFilter === 'TG') {
+      pool = allAtlasDestinations.filter(s => s.state === 'Telangana');
+    } else {
+      pool = [...HERITAGE_STORIES, ...allAtlasDestinations];
+    }
+
+    if (!storySearchQuery.trim()) {
+      return pool.slice(0, 30);
+    }
+
+    const q = storySearchQuery.toLowerCase().trim();
+    return pool.filter(s =>
+      s.title.toLowerCase().includes(q) ||
+      s.district.toLowerCase().includes(q) ||
+      (s.standout && s.standout.toLowerCase().includes(q))
+    ).slice(0, 40);
+  }, [allAtlasDestinations, storyFilter, storySearchQuery]);
 
   // Refs
   const recognitionRef = useRef(null);
@@ -302,7 +378,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
       setAiResponse(reply);
       speakResponse(reply);
     } catch (err) {
-      console.error('Voice Assistant Query Error:', err);
+      if (import.meta.env.DEV) console.warn('Voice Assistant Query Error:', err);
       setLiveError(err.message || 'Error connecting to Voice Assistant');
       setAiResponse(`Notice: Unable to reach Voice Assistant: ${err.message}. Please check your connection.`);
     } finally {
@@ -382,7 +458,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
       recognition.start();
       setIsListening(true);
     } catch (err) {
-      console.error('Speech recognition initiation error:', err);
+      if (import.meta.env.DEV) console.warn('Speech recognition initiation error:', err);
       setLiveError('Could not access microphone: ' + err.message);
     }
   };
@@ -691,7 +767,7 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
                         setIsPlayingStory(false);
                       }
                     }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                       selectedLanguage === lang.code
                         ? 'bg-amber-400 text-slate-950 font-bold'
                         : 'bg-white/5 text-slate-300 hover:text-white'
@@ -703,75 +779,130 @@ export default function VoiceConciergeModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Crowd Audio Accessibility Notice */}
+            {/* Search Bar for all 646 Destinations */}
+            <div className="relative flex items-center">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
+              <input
+                type="text"
+                value={storySearchQuery}
+                onChange={(e) => setStorySearchQuery(e.target.value)}
+                placeholder="Search audio guides for 646 destinations (e.g., Belum Caves, Gandikota)..."
+                className="w-full pl-9 pr-9 py-2 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400/60 transition-colors"
+              />
+              {storySearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setStorySearchQuery('')}
+                  className="absolute right-3 text-slate-400 hover:text-white text-xs cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              {[
+                { id: 'ALL', label: 'All 646 Sights' },
+                { id: 'FEATURED', label: 'Flagship (8)' },
+                { id: 'AP', label: 'Andhra Pradesh (312)' },
+                { id: 'TG', label: 'Telangana (334)' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setStoryFilter(tab.id)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                    storyFilter === tab.id
+                      ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
+                      : 'bg-white/[0.02] text-slate-400 hover:text-white border border-white/5'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Accessibility / Audio Guidance Notice */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200 font-sans-clean">
               <Headphones className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>In noisy queues or echoes, use earphones or follow the synchronized live text transcript below.</span>
+              <span>In busy queues, plug in earphones or read the live captions synchronized with the audio player.</span>
             </div>
 
             {/* Story Cards List */}
             <div className="flex flex-col gap-3">
-              {HERITAGE_STORIES.map((story) => {
-                const isSelected = activeStoryId === story.id;
-                const isCurrentlyPlaying = isPlayingStory && isSelected;
-                const langContent = story.languages[selectedLanguage] || story.languages.en;
+              {filteredStories.length === 0 ? (
+                <div className="p-8 text-center bg-white/[0.02] border border-white/5 rounded-2xl text-slate-400 text-xs">
+                  No destinations found matching "{storySearchQuery}". Try another sight or district name.
+                </div>
+              ) : (
+                filteredStories.map((story) => {
+                  const isSelected = activeStoryId === story.id;
+                  const isCurrentlyPlaying = isPlayingStory && isSelected;
+                  const langContent = story.languages[selectedLanguage] || story.languages.en;
 
-                return (
-                  <div
-                    key={story.id}
-                    className={`p-4 rounded-2xl border transition-all ${
-                      isSelected
-                        ? 'bg-amber-950/20 border-amber-500/40 shadow-lg'
-                        : 'bg-white/[0.02] border-white/5 hover:border-white/10'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 font-semibold">
-                            {story.district}
-                          </span>
-                          <span className="text-[10px] text-slate-400">{story.duration}</span>
-                        </div>
-                        <h4 className="text-sm font-bold text-white font-sans-clean mt-1">
-                          {langContent.title}
-                        </h4>
-                        <p className={`text-xs text-slate-300 font-sans-clean leading-relaxed transition-all ${
-                          isSelected ? 'mt-1 text-slate-200' : 'line-clamp-2'
-                        }`}>
-                          {langContent.narrative}
-                        </p>
-                      </div>
-
-                      <button
-                        onClick={() => togglePlayStory(story)}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform active:scale-95 ${
-                          isCurrentlyPlaying
-                            ? 'bg-emerald-400 text-slate-950'
-                            : 'bg-amber-400 text-slate-950 hover:bg-amber-300'
-                        }`}
-                        title={isCurrentlyPlaying ? 'Pause Audio' : 'Play Heritage Story'}
-                      >
-                        {isCurrentlyPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-                      </button>
-                    </div>
-
-                    {isCurrentlyPlaying && (
-                      <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5 animate-in fade-in">
-                        <Volume2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 animate-pulse" />
-                        <div className="flex flex-col">
-                          <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-300">
-                            Live Captions ({selectedLanguage === 'te' ? 'తెలుగు' : selectedLanguage === 'hi' ? 'हिन्दी' : 'English'}):
-                          </span>
-                          <p className="text-xs text-white mt-1 leading-relaxed font-medium">
+                  return (
+                    <div
+                      key={story.id}
+                      className={`p-4 rounded-2xl border transition-all ${
+                        isSelected
+                          ? 'bg-amber-950/20 border-amber-500/40 shadow-lg'
+                          : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 font-semibold flex items-center gap-1">
+                              <MapPin className="w-2.5 h-2.5" />
+                              <span>{story.district}</span>
+                            </span>
+                            {story.standout && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-slate-300 border border-white/10 font-sans-clean">
+                                {story.standout}
+                              </span>
+                            )}
+                            <span className="text-[10px] text-slate-400">{story.duration}</span>
+                          </div>
+                          <h4 className="text-sm font-bold text-white font-sans-clean mt-1">
+                            {langContent.title}
+                          </h4>
+                          <p className={`text-xs text-slate-300 font-sans-clean leading-relaxed transition-all ${
+                            isSelected ? 'mt-1 text-slate-200' : 'line-clamp-2'
+                          }`}>
                             {langContent.narrative}
                           </p>
                         </div>
+
+                        <button
+                          onClick={() => togglePlayStory(story)}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform active:scale-95 cursor-pointer ${
+                            isCurrentlyPlaying
+                              ? 'bg-emerald-400 text-slate-950'
+                              : 'bg-amber-400 text-slate-950 hover:bg-amber-300'
+                          }`}
+                          title={isCurrentlyPlaying ? 'Pause Audio' : 'Play Audio Guide'}
+                        >
+                          {isCurrentlyPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                        </button>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+
+                      {isCurrentlyPlaying && (
+                        <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-2.5 animate-in fade-in">
+                          <Volume2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 animate-pulse" />
+                          <div className="flex flex-col">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-300">
+                              Live Captions ({selectedLanguage === 'te' ? 'తెలుగు' : selectedLanguage === 'hi' ? 'हिन्दी' : 'English'}):
+                            </span>
+                            <p className="text-xs text-white mt-1 leading-relaxed font-medium">
+                              {langContent.narrative}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         )}

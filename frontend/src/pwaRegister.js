@@ -29,11 +29,20 @@ export function registerServiceWorker() {
   }
 
   if ('serviceWorker' in navigator) {
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+
     window.addEventListener('load', () => {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('[Globetrotter PWA] Service Worker registered successfully with scope:', registration.scope);
+          // Force update check on load to prevent stale code retention
+          registration.update().catch(() => {});
           
           // Check for worker updates
           registration.onupdatefound = () => {
@@ -41,7 +50,8 @@ export function registerServiceWorker() {
             if (installingWorker) {
               installingWorker.onstatechange = () => {
                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[Globetrotter PWA] New version ready for offline caching.');
+                  console.log('[Globetrotter PWA] New build deployed. Activating immediately...');
+                  installingWorker.postMessage({ type: 'SKIP_WAITING' });
                 }
               };
             }

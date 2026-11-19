@@ -14,7 +14,6 @@ import {
   Settings,
   Sparkles
 } from 'lucide-react';
-import AuthModal from './AuthModal';
 import { logger } from '../utils/telemetryLogger';
 
 export default function FloatingIslandNav({ 
@@ -26,7 +25,6 @@ export default function FloatingIslandNav({
   onOpenSafetyModal
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const stored = localStorage.getItem('globetrotter_user');
@@ -47,11 +45,8 @@ export default function FloatingIslandNav({
     };
 
     window.addEventListener('auth-change', handleAuthChange);
-    const handleOpenAuthModal = () => setAuthModalOpen(true);
-    window.addEventListener('open-auth-modal', handleOpenAuthModal);
     return () => {
       window.removeEventListener('auth-change', handleAuthChange);
-      window.removeEventListener('open-auth-modal', handleOpenAuthModal);
     };
   }, []);
 
@@ -73,28 +68,28 @@ export default function FloatingIslandNav({
   return (
     <>
       {/* Desktop Floating Island Dock */}
-      <nav className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-5xl glass-island rounded-full px-4 py-2.5 flex items-center justify-between transition-colors duration-200">
+      <nav className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-5xl glass-island rounded-full px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between transition-colors duration-200">
         
         {/* Brand Emblem */}
         <div 
           onClick={() => setActiveTab('home')}
-          className="flex items-center gap-2.5 cursor-pointer group pl-2"
+          className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group pl-1 sm:pl-2 shrink-0"
         >
-          <div className="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-400/30 flex items-center justify-center transition-transform group-hover:scale-105">
+          <div className="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-400/30 flex items-center justify-center transition-transform group-hover:scale-105 shrink-0">
             <span className="font-display font-bold text-sm text-amber-400 tracking-wider">G</span>
           </div>
           <div className="flex flex-col">
-            <span className="font-display font-bold tracking-wider text-sm text-white group-hover:text-amber-300 transition-colors">
+            <span className="font-display font-bold tracking-wider text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors">
               GLOBETROTTER
             </span>
-            <span className="text-[9px] tracking-wide text-slate-400 font-medium font-sans-clean">
+            <span className="text-[9px] tracking-wide text-slate-400 font-medium font-sans-clean hidden sm:block">
               Andhra & Telangana Gateway
             </span>
           </div>
         </div>
 
-        {/* Center Nav Links with Shared Layout */}
-        <div className="hidden md:flex items-center gap-1">
+        {/* Center Nav Links with Shared Layout (Visible on desktop >= 1280px; collapses into hamburger on split-screen/tablet) */}
+        <div className="hidden xl:flex items-center gap-1 shrink-0">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -126,23 +121,23 @@ export default function FloatingIslandNav({
         </div>
 
         {/* Right Action: Settings & Auth Button */}
-        <div className="flex items-center gap-2 pr-1">
+        <div className="flex items-center gap-1.5 sm:gap-2 pr-1 shrink-0">
           {/* Ask Travel Assistant Button */}
           <button
             type="button"
             onClick={onOpenAssistant}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 border border-emerald-500/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/15 to-teal-500/15 hover:from-emerald-500/25 hover:to-teal-500/25 border border-emerald-500/30 hover:border-emerald-400/50 text-emerald-300 hover:text-emerald-200 text-xs font-semibold transition-all cursor-pointer shadow-sm shrink-0"
             title="Ask Travel Assistant (Ctrl+K)"
           >
             <Sparkles className="w-3.5 h-3.5 fill-emerald-400/30 text-emerald-400" />
-            <span className="hidden sm:inline">Assistant</span>
+            <span className="hidden md:inline">Assistant</span>
           </button>
 
           {/* Tourist Safety & Emergency Helplines Button */}
           <button
             type="button"
             onClick={onOpenSafetyModal}
-            className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 text-slate-300 hover:text-rose-300 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-rose-500/15 border border-white/10 hover:border-rose-500/30 text-slate-300 hover:text-rose-300 flex items-center justify-center transition-colors cursor-pointer shrink-0"
             title="Tourist Safety & 24/7 Helplines (112, 108, 1363)"
             aria-label="Tourist Safety & Helplines"
           >
@@ -152,7 +147,7 @@ export default function FloatingIslandNav({
           {/* Settings & Preferences Button */}
           <button
             onClick={onOpenSettings}
-            className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
             title="Settings & Preferences"
             aria-label="Settings"
           >
@@ -161,19 +156,19 @@ export default function FloatingIslandNav({
 
           {/* User Sign In / Account Button */}
           {currentUser ? (
-            <div className="flex items-center gap-1.5 pl-1">
+            <div className="flex items-center gap-1.5 pl-1 shrink-0">
               <div 
                 className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-xs text-amber-200"
                 title={`Signed in as ${currentUser.fullName || currentUser.email || 'Traveler'}`}
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="max-w-[100px] truncate text-[11px] font-semibold">
+                <span className="max-w-[80px] sm:max-w-[100px] truncate text-[11px] font-semibold">
                   {currentUser.fullName || (currentUser.email ? currentUser.email.split('@')[0] : 'Traveler')}
                 </span>
               </div>
               <button
                 onClick={handleSignOut}
-                className="w-7 h-7 rounded-full bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-slate-400 hover:text-rose-300 transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-full bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/30 flex items-center justify-center text-slate-400 hover:text-rose-300 transition-colors cursor-pointer shrink-0"
                 title="Sign Out"
                 aria-label="Sign Out"
               >
@@ -184,9 +179,9 @@ export default function FloatingIslandNav({
             <button
               onClick={() => {
                 logger.info('UI', 'Sign In button clicked from navbar dock');
-                setAuthModalOpen(true);
+                window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { reason: 'Sign in to access your booked passes and account.' } }));
               }}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-slate-100 hover:text-white text-xs font-semibold transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/15 text-slate-100 hover:text-white text-xs font-semibold transition-colors cursor-pointer shrink-0"
               title="Tourist Account Sign In"
             >
               <User className="w-3.5 h-3.5 text-amber-400" />
@@ -194,10 +189,10 @@ export default function FloatingIslandNav({
             </button>
           )}
 
-          {/* Mobile Hamburger Button */}
+          {/* Split-Screen & Mobile Hamburger Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden w-8 h-8 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center text-slate-300"
+            className="xl:hidden w-8 h-8 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -246,7 +241,7 @@ export default function FloatingIslandNav({
                     <button
                       onClick={() => {
                         setMobileMenuOpen(false);
-                        setAuthModalOpen(true);
+                        window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { reason: 'Sign in to access your booked passes and account.' } }));
                       }}
                       className="px-4 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer hover:bg-amber-300 transition-colors"
                     >
@@ -347,14 +342,6 @@ export default function FloatingIslandNav({
         )}
       </AnimatePresence>
 
-      {/* Tourist Authentication Modal */}
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        onAuthSuccess={(user) => {
-          setCurrentUser(user);
-        }}
-      />
     </>
   );
 }

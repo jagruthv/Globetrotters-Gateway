@@ -30,8 +30,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('masterAtlasData')) {
-            return 'chunk-atlas-data';
+          const lowerId = id.toLowerCase();
+          if (lowerId.includes('masteratlasap')) {
+            return 'chunk-atlas-ap';
+          }
+          if (lowerId.includes('masteratlastg') || lowerId.includes('masteratlasdata')) {
+            return 'chunk-atlas-tg';
           }
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {

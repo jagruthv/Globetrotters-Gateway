@@ -24,7 +24,7 @@ export function getOfflineLedgerEntries() {
     const raw = localStorage.getItem(LEDGER_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch (e) {
-    console.error('[Turnstile Ledger] Read error:', e);
+    if (import.meta.env.DEV) console.warn('[Turnstile Ledger] Read notice:', e);
     return [];
   }
 }
@@ -34,7 +34,7 @@ export function saveOfflineLedgerEntries(entries) {
     localStorage.setItem(LEDGER_KEY, JSON.stringify(entries));
     window.dispatchEvent(new CustomEvent('globetrotter-ledger-updated', { detail: { count: entries.length } }));
   } catch (e) {
-    console.error('[Turnstile Ledger] Write error:', e);
+    if (import.meta.env.DEV) console.warn('[Turnstile Ledger] Write notice:', e);
   }
 }
 
@@ -57,7 +57,7 @@ function recordAdmittedPass(token, placeId) {
     };
     localStorage.setItem(ADMITTED_SET_KEY, JSON.stringify(admitted));
   } catch (e) {
-    console.error('[Turnstile Ledger] Replay cache error:', e);
+    if (import.meta.env.DEV) console.warn('[Turnstile Ledger] Replay cache notice:', e);
   }
 }
 
@@ -301,7 +301,7 @@ export async function syncLedgerToCentralCore() {
       message: `Successfully synchronized ${pendingScans.length} offline check-in records.`
     };
   } catch (error) {
-    console.error('[Turnstile Ledger] Batch sync error:', error);
+    if (import.meta.env.DEV) console.warn('[Turnstile Ledger] Batch sync notice:', error);
     throw new Error(error.message || 'Batch sync to Gateway Core failed. Will retry on next heartbeat.');
   }
 }

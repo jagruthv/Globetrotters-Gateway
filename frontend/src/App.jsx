@@ -93,6 +93,7 @@ export default function App() {
   const [activeBookingForPayment, setActiveBookingForPayment] = useState(null);
   const [pendingBooking, setPendingBooking] = useState(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [scannerAuthError, setScannerAuthError] = useState(null);
 
   const [issuedPassData, setIssuedPassData] = useState(() => {
     try {
@@ -562,9 +563,17 @@ export default function App() {
                   </div>
                 </div>
 
+                {scannerAuthError && (
+                  <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center justify-between font-sans-clean">
+                    <span>{scannerAuthError}</span>
+                    <button type="button" onClick={() => setScannerAuthError(null)} className="text-rose-400 hover:text-white cursor-pointer ml-2">✕</button>
+                  </div>
+                )}
+
                 <form
                   onSubmit={async (e) => {
                     e.preventDefault();
+                    setScannerAuthError(null);
                     const email = e.target.officerEmail.value.trim();
                     const pass = e.target.officerPassword.value.trim();
                     if (!email || !pass) return;
@@ -574,10 +583,10 @@ export default function App() {
                       if (role === 'ROLE_ADMIN' || role === 'ROLE_STAFF' || role === 'ROLE_AGENT') {
                         setIsAgentPortalActive(true);
                       } else {
-                        alert('Access Denied (RBAC-403): Account lacks gate scanner authorization.');
+                        setScannerAuthError('Access Denied (RBAC-403): Account lacks gate scanner authorization.');
                       }
                     } catch (err) {
-                      alert(err?.message || 'Login failed. Please check credentials.');
+                      setScannerAuthError(err?.message || 'Login failed. Please check credentials.');
                     }
                   }}
                   className="flex flex-col gap-3.5 font-sans-clean"

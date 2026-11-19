@@ -16,7 +16,9 @@ import {
   ArrowRight,
   Sun,
   X,
-  History
+  History,
+  FileText,
+  Printer
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import QRCode from 'qrcode';
@@ -142,7 +144,9 @@ export default function HolographicGatePass({
         }
       })
       .then((url) => setQrCodeDataUrl(url))
-      .catch((err) => console.error('QR Generator Error:', err));
+      .catch((err) => {
+        if (import.meta.env.DEV) console.warn('QR Generator Notice:', err);
+      });
     }
   }, [activePass?.reference, activePass?.token]);
 
@@ -180,6 +184,258 @@ export default function HolographicGatePass({
     });
   };
 
+  // ── Render Tax Invoice Modal ────────────────────────────────────────────────
+  const renderReceiptModal = () => {
+    if (!selectedReceiptPass) return null;
+    const rawPrice = parseFloat(String(selectedReceiptPass.gateFeeTotal || '40').replace(/[^0-9.]/g, '')) || 40.0;
+    const baseAmount = (rawPrice / 1.18).toFixed(2);
+    const gstTotal = (rawPrice - parseFloat(baseAmount)).toFixed(2);
+    const cgst = (parseFloat(gstTotal) / 2).toFixed(2);
+    const sgst = (parseFloat(gstTotal) / 2).toFixed(2);
+    const invoiceNum = `INV-2026-${(selectedReceiptPass.reference || 'GT000').slice(-6)}`;
+    const issueDate = selectedReceiptPass.validFrom || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    return (
+      <AnimatePresence>
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+          onClick={() => setSelectedReceiptPass(null)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-lg bg-[#0F141E] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl text-slate-200 font-sans-clean flex flex-col gap-5 max-h-[90vh] overflow-y-auto"
+          >
+            {/* Receipt Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-300">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">GST Tax Invoice & Receipt</h3>
+                  <p className="text-[11px] text-slate-400">Tourism Corridor Fast-Track Gate Pass</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedReceiptPass(null)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Receipt Content */}
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-3 font-mono text-xs">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-slate-400">Invoice Number:</span>
+                <span className="font-bold text-white">{invoiceNum}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-slate-400">Issue Date:</span>
+                <span className="text-white">{issueDate}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-slate-400">Tourist / Pass Holder:</span>
+                <span className="text-amber-300 font-bold">{selectedReceiptPass.touristName || 'Registered Traveler'}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-slate-400">Pass Reference:</span>
+                <span className="text-emerald-400 font-bold">{selectedReceiptPass.reference}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-slate-400">Package / Circuit:</span>
+                <span className="text-white text-right font-sans-clean">{selectedReceiptPass.circuitName || 'Corridor Entry Pass'}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <span className="text-slate-400">GSTIN Registration:</span>
+                <span className="text-slate-300">37AAAAA0000A1Z5</span>
+              </div>
+            </div>
+
+            {/* Price Breakdown Table */}
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col gap-2 font-mono text-xs">
+              <div className="flex justify-between text-slate-400 pb-1 border-b border-white/5">
+                <span>Description</span>
+                <span>Amount (INR)</span>
+              </div>
+              <div className="flex justify-between text-slate-300">
+                <span className="font-sans-clean">Monument Entry & Heritage Maintenance</span>
+                <span>₹{baseAmount}</span>
+              </div>
+              <div className="flex justify-between text-slate-400 text-[11px]">
+                <span>CGST (9%)</span>
+                <span>₹{cgst}</span>
+              </div>
+              <div className="flex justify-between text-slate-400 text-[11px]">
+                <span>SGST (9%)</span>
+                <span>₹{sgst}</span>
+              </div>
+              <div className="flex justify-between text-white font-bold text-sm pt-2 border-t border-white/10">
+                <span className="font-sans-clean">Total Paid:</span>
+                <span className="text-emerald-400">₹{rawPrice.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1 font-sans-clean">
+              <button
+                type="button"
+                onClick={() => {
+                  document.title = `Tax-Invoice-${invoiceNum}`;
+                  window.print();
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-md"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>Print Official Receipt</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedReceiptPass(null)}
+                className="py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </AnimatePresence>
+    );
+  };
+
+  // ── Render Booking History & Wallet Modal ──────────────────────────────────
+  const renderHistoryModal = () => (
+    <AnimatePresence>
+      {showHistoryModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          onClick={() => setShowHistoryModal(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-2xl bg-[#0B0F17] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-2xl text-white font-sans-clean flex flex-col gap-5 max-h-[85vh] overflow-hidden"
+          >
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                  <History className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">My Pass Wallet & Booking History</h3>
+                  <p className="text-xs text-slate-400">Verified offline tickets across Andhra Pradesh & Telangana</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowHistoryModal(false)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto space-y-3 pr-1 scrollbar-none flex-1">
+              {allPasses.length === 0 ? (
+                <p className="text-xs text-slate-400 text-center py-8">No booking history available yet.</p>
+              ) : (
+                allPasses.map((pass, idx) => {
+                  const isSelected = selectedPassIndex === idx;
+                  return (
+                    <div
+                      key={pass.reference || idx}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                        isSelected
+                          ? 'bg-amber-400/10 border-amber-400/40 text-white'
+                          : 'bg-white/[0.02] border-white/5 hover:border-white/15'
+                      }`}
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-white">
+                            {pass.circuitName || pass.destination || 'Corridor Gate Pass'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-amber-300">
+                            {pass.reference}
+                          </span>
+                        </div>
+                        <div className="text-xs text-slate-400 flex flex-wrap items-center gap-2 font-mono">
+                          <span>Admit: {pass.touristName}</span>
+                          <span>•</span>
+                          <span>Valid: {pass.validFrom} to {pass.validUntil}</span>
+                          <span>•</span>
+                          <span className="text-emerald-400 font-semibold">{pass.gateFeeTotal}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPassIndex(idx);
+                            setShowHistoryModal(false);
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer font-sans-clean ${
+                            isSelected
+                              ? 'bg-amber-400 text-slate-950 shadow-md'
+                              : 'bg-white/10 text-white hover:bg-white/20'
+                          }`}
+                        >
+                          {isSelected ? 'Viewing Pass' : 'View Pass'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedReceiptPass(pass);
+                          }}
+                          className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                          title="View GST Tax Invoice"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPassIndex(idx);
+                            setShowHistoryModal(false);
+                            setTimeout(() => {
+                              document.title = `Globetrotter-Gate-Pass-${pass.reference}`;
+                              window.print();
+                            }, 200);
+                          }}
+                          className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                          title="Download PDF"
+                        >
+                          <Download className="w-3.5 h-3.5 text-amber-400" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-slate-400 font-sans-clean">
+              <span>Total Bookings: {allPasses.length}</span>
+              <button
+                type="button"
+                onClick={() => setShowHistoryModal(false)}
+                className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              >
+                Close History
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+
   // EMPTY STATE: User hasn't bought any pass yet
   if (!activePass) {
     return (
@@ -202,6 +458,17 @@ export default function HolographicGatePass({
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            {allPasses.length > 0 && (
+              <button
+                onClick={() => setShowHistoryModal(true)}
+                className="px-6 py-3 rounded-full bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/50 text-amber-300 font-bold text-xs flex items-center gap-2 cursor-pointer font-sans-clean active:scale-[0.98] transition-all"
+                title="View your stored passes, past bookings, and tax receipts"
+              >
+                <History className="w-4 h-4 text-amber-300" />
+                <span>View Stored Passes & Receipts ({allPasses.length})</span>
+              </button>
+            )}
+
             {onExplorePackages && (
               <button
                 onClick={onExplorePackages}
@@ -223,6 +490,8 @@ export default function HolographicGatePass({
             )}
           </div>
         </div>
+        {renderHistoryModal()}
+        {renderReceiptModal()}
       </section>
     );
   }
@@ -553,6 +822,17 @@ export default function HolographicGatePass({
                   {isCopied ? <CheckCircle className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
                   <span>{isCopied ? 'Copied!' : 'Copy Ticket Info'}</span>
                 </button>
+
+                {/* Tax Receipt Button */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedReceiptPass(activePass)}
+                  className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer font-sans-clean"
+                  title="View itemized GST tax invoice and receipt"
+                >
+                  <FileText className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Tax Receipt</span>
+                </button>
               </div>
 
               <div className="flex items-center gap-2">
@@ -678,123 +958,8 @@ export default function HolographicGatePass({
         </div>
       )}
 
-      {/* Booking History & Account Pass Wallet Modal */}
-      <AnimatePresence>
-        {showHistoryModal && (
-          <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
-            onClick={() => setShowHistoryModal(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-2xl bg-[#0B0F17] border border-white/10 rounded-3xl p-6 sm:p-7 shadow-2xl text-white font-sans-clean flex flex-col gap-5 max-h-[85vh] overflow-hidden"
-            >
-              <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
-                    <History className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">My Pass Wallet & Booking History</h3>
-                    <p className="text-xs text-slate-400">Verified offline tickets across Andhra Pradesh & Telangana</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowHistoryModal(false)}
-                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="overflow-y-auto space-y-3 pr-1 scrollbar-none flex-1">
-                {allPasses.length === 0 ? (
-                  <p className="text-xs text-slate-400 text-center py-8">No booking history available yet.</p>
-                ) : (
-                  allPasses.map((pass, idx) => {
-                    const isSelected = selectedPassIndex === idx;
-                    return (
-                      <div
-                        key={pass.reference || idx}
-                        className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                          isSelected
-                            ? 'bg-amber-400/10 border-amber-400/40 text-white'
-                            : 'bg-white/[0.02] border-white/5 hover:border-white/15'
-                        }`}
-                      >
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-white">
-                              {pass.circuitName || pass.destination || 'Corridor Gate Pass'}
-                            </span>
-                            <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-amber-300">
-                              {pass.reference}
-                            </span>
-                          </div>
-                          <div className="text-xs text-slate-400 flex flex-wrap items-center gap-2 font-mono">
-                            <span>Admit: {pass.touristName}</span>
-                            <span>•</span>
-                            <span>Valid: {pass.validFrom} to {pass.validUntil}</span>
-                            <span>•</span>
-                            <span className="text-emerald-400 font-semibold">{pass.gateFeeTotal}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedPassIndex(idx);
-                              setShowHistoryModal(false);
-                            }}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer font-sans-clean ${
-                              isSelected
-                                ? 'bg-amber-400 text-slate-950 shadow-md'
-                                : 'bg-white/10 text-white hover:bg-white/20'
-                            }`}
-                          >
-                            {isSelected ? 'Viewing Pass' : 'View Pass'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedPassIndex(idx);
-                              setShowHistoryModal(false);
-                              setTimeout(() => {
-                                document.title = `Globetrotter-Gate-Pass-${pass.reference}`;
-                                window.print();
-                              }, 200);
-                            }}
-                            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                            title="Download PDF"
-                          >
-                            <Download className="w-3.5 h-3.5 text-amber-400" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-slate-400 font-sans-clean">
-                <span>Total Bookings: {allPasses.length}</span>
-                <button
-                  type="button"
-                  onClick={() => setShowHistoryModal(false)}
-                  className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-                >
-                  Close History
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {renderHistoryModal()}
+      {renderReceiptModal()}
     </section>
   );
 }

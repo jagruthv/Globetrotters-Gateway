@@ -117,7 +117,15 @@ export default function TravelAssistantDrawer({
 
   const toggleVoiceListening = () => {
     if (!recognitionRef.current) {
-      alert('Voice dictation is supported in Chrome, Edge, and Safari.');
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `sys-${Date.now()}`,
+          sender: 'assistant',
+          text: '🎙️ Voice dictation requires microphone support in Chrome, Edge, or Safari. You can type your travel query in the chat box below!',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
       return;
     }
     if (isListening) {
