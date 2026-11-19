@@ -606,10 +606,32 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
         dayKm += legDist;
         currentMinutes += driveMins;
 
+        const isAPSpot = `${spot.district || ''} ${spot.name || ''}`.toLowerCase().match(/(alluri|ananthapur|annamayya|bapatla|chittoor|east godavari|eluru|guntur|kakinada|konaseema|krishna|kurnool|nandyal|ntr|palnadu|parvathipuram|prakasam|srikakulam|sri sathya sai|tirupati|visakhapatnam|vizianagaram|west godavari|ysr|kadapa)/);
+        const publicBusFeed = isAPSpot ? {
+          agency: "APSRTC",
+          agencyName: "Andhra Pradesh State Road Transport Corporation",
+          hubStation: `${spot.district || 'District'} RTC Bus Complex`,
+          serviceType: isGhatLeg ? "Palle Velugu / Ultra Deluxe Ghat Fleet" : "Super Luxury / Express",
+          liveTrackingPortal: "https://www.apsrtconline.in/",
+          officialApp: "APSRTC LIVE TRACK",
+          helpline: "0866-2570005",
+          advisory: "Buses connect RTC complexes to rural mandal stops every 30–60 mins."
+        } : {
+          agency: "TSRTC",
+          agencyName: "Telangana State Road Transport Corporation",
+          hubStation: `${spot.district || 'District'} Bus Station`,
+          serviceType: isGhatLeg ? "Palle Velugu Hill Connect" : "Rajdhani / Express Bus",
+          liveTrackingPortal: "https://www.tsrtconline.in/",
+          officialApp: "TSRTC Gamyam Bus Tracker",
+          helpline: "040-69440000",
+          advisory: "Buses connect MGBS/JBS and district bus depots every 20–45 mins."
+        };
+
         transitFromPrev = {
           from: prev.name,
           distanceKm: legDist,
           drivingMinutes: driveMins,
+          publicBusFeed
         };
       }
 
@@ -684,6 +706,7 @@ export function generateOptimalTripPlan(selectedSpots, options = {}) {
         emergencyMedicalDistance: spot.emergencyMedicalDistance || 'Government Hospital within 15 km.',
         latitude: spot.latitude,
         longitude: spot.longitude,
+        publicBusFeed: transitFromPrev?.publicBusFeed || null,
         googleMapsUri: spot.googleMapsUri || null,
         googlePlaceId: spot.googlePlaceId || null,
         averageRating: spot.averageRating || null,

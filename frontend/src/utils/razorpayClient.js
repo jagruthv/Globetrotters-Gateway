@@ -135,13 +135,13 @@ export async function launchRazorpayCheckout({
 
     const rzpInstance = new window.Razorpay(options);
     rzpInstance.on('payment.failed', (failResponse) => {
-      console.error('[Razorpay] Payment failed:', failResponse.error);
+      if (import.meta.env.DEV) console.warn('[Razorpay] Payment notice:', failResponse.error);
       if (onError) onError(failResponse.error);
     });
 
     rzpInstance.open();
   } catch (err) {
-    console.error('[Razorpay] Checkout launch error:', err);
+    if (import.meta.env.DEV) console.warn('[Razorpay] Checkout launch notice:', err);
     if (onError) onError(err);
   }
 }

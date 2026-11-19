@@ -21,7 +21,9 @@ export default class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Globetrotter Runtime Boundary Caught Exception:', error, errorInfo);
+    if (import.meta.env.DEV) {
+      console.error('Globetrotter Runtime Boundary Caught Exception:', error, errorInfo);
+    }
     this.setState({ errorInfo });
   }
 

@@ -29,29 +29,19 @@ export function registerServiceWorker() {
   }
 
   if ('serviceWorker' in navigator) {
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!refreshing) {
-        refreshing = true;
-        window.location.reload();
-      }
-    });
-
     window.addEventListener('load', () => {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          // Force update check on load to prevent stale code retention
-          registration.update().catch(() => {});
-          
-          // Check for worker updates
+          // Check for worker updates in the background without aggressive reloading
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
             if (installingWorker) {
               installingWorker.onstatechange = () => {
                 if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[Globetrotter PWA] New build deployed. Activating immediately...');
-                  installingWorker.postMessage({ type: 'SKIP_WAITING' });
+                  console.log('[Globetrotter PWA] Fresh background cache ready for next visit.');
+                  // Dispatch non-disruptive update notification event instead of force-reloading
+                  window.dispatchEvent(new CustomEvent('globetrotter-update-available'));
                 }
               };
             }
