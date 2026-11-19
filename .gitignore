@@ -60,10 +60,8 @@ data_compiler/
 tools/aisoc/ledger/
 
 # Tools & Automation artifacts
-tools/__pycache__/
-tools/*.png
-tools/meta_screen.png
-tools/meta_status.json
+tools/
+sdp_upgrades/
 frontend/src/data/
 
 # Heavy Media Assets (Excluded from Git for Light / Fast Repo)

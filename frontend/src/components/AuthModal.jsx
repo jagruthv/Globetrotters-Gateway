@@ -15,6 +15,7 @@ import {
   Ticket
 } from 'lucide-react';
 import { authService } from '../services/api';
+import { launchMsg91Otp } from '../utils/msg91OtpClient';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = null }) {
   // 'email_otp' | 'password' | 'phone'
@@ -255,6 +256,27 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
       setError(err.message || 'Invalid verification OTP.');
       setLoading(false);
     }
+  };
+
+  const handleLaunchMsg91 = () => {
+    setError(null);
+    launchMsg91Otp({
+      phoneNumber,
+      onSuccess: () => {
+        const verifiedUser = {
+          id: Date.now(),
+          fullName: `Verified Traveler (+91 ${phoneNumber || 'User'})`,
+          phoneNumber: phoneNumber,
+          isPhoneVerified: true,
+          role: 'ROLE_TOURIST',
+          token: `msg91_${Date.now()}`
+        };
+        handleFinishAuth(verifiedUser, `Phone verified via MSG91! Welcome ${verifiedUser.fullName}`);
+      },
+      onFailure: (err) => {
+        setError(err.message || 'MSG91 OTP verification failed.');
+      }
+    });
   };
 
   // ── 5. INSTANT GUEST PASS ──────────────────────────────────────────────────
@@ -643,6 +665,22 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                           <ArrowRight className="w-3.5 h-3.5" />
                         </>
                       )}
+                    </button>
+
+                    <div className="relative flex items-center justify-center my-0.5">
+                      <div className="border-t border-white/10 w-full" />
+                      <span className="bg-[#0E131F] px-2 text-[10px] text-slate-500 uppercase tracking-wider font-mono">or</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleLaunchMsg91}
+                      disabled={loading || phoneNumber.length !== 10}
+                      className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-emerald-500/30 hover:border-emerald-500/50 text-emerald-300 font-semibold text-xs flex items-center justify-center gap-2 transition-all disabled:opacity-40 cursor-pointer font-sans-clean active:scale-[0.98]"
+                      title="Launch official MSG91 popup widget for SMS or WhatsApp OTP"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Verify via MSG91 Secure Widget</span>
                     </button>
                   </form>
                 ) : (
