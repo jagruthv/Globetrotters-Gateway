@@ -21,10 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * Multi-Model Cloud AI Router with 5-Minute Failure Circuit Breaker.
  *
  * Prioritizes high-brain models verified via live integration testing:
- * 1. Groq OpenAI GPT-OSS 120B (120 Billion Parameters, deep reasoning, live-verified)
- * 2. Google Gemini 3.5 Flash (Flagship reasoning & structured JSON, live-verified)
- * 3. Nvidia NIM Nemotron / Llama-3.1 70B+ (when valid nvapi- key is present)
- * 4. Google Gemini 3.8 Flash / 3.7 Flash (Next-gen hybrid reasoning)
+ * 1. Google Gemini 3.1 Flash Lite (High-speed, low-latency flagship conversational AI)
+ * 2. Google Gemini 2.5 Flash Lite (High-throughput fallback)
+ * 3. Groq OpenAI GPT-OSS 120B (120 Billion Parameters, deep reasoning)
+ * 4. Nvidia NIM Nemotron / Llama-3.1 70B+ (when valid nvapi- key is present)
  * 5. Groq Qwen 3.8 27B (Ultra-fast ~200ms LPU fallback)
  * 6. Google Gemini 3.1 Flash Lite (High-speed lite fallback)
  *
