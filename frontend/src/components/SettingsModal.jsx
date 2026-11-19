@@ -661,10 +661,10 @@ export default function SettingsModal({
               </div>
             </div>
 
-            {/* SECTION 5: AGENT MODE (Staff turnstile access) */}
+            {/* SECTION 5: AGENT MODE (Staff gate access) */}
             <div className="flex flex-col gap-3 pt-2 border-t border-white/10">
               <span className="text-xs font-semibold text-slate-400 font-sans-clean">
-                Gate conductor
+                Gate Staff Portal
               </span>
 
               <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-3">
@@ -686,7 +686,7 @@ export default function SettingsModal({
                       </span>
                     </div>
                     <span className="text-[11px] text-slate-400 font-sans-clean truncate">
-                      Ticket scanning for gate conductors & verified staff
+                      Ticket verification for monument gate officers
                     </span>
                   </div>
                 </div>
@@ -700,7 +700,7 @@ export default function SettingsModal({
                   }}
                   className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer shrink-0 font-sans-clean"
                 >
-                  {isAgent ? 'Open' : 'Switch'}
+                  {isAgent ? 'Open Scanner' : 'Staff Login'}
                 </button>
               </div>
             </div>

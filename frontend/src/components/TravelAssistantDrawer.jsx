@@ -27,7 +27,7 @@ const TAB_NAMES = {
   planner: 'Day-by-Day Trip Studio',
   circuits: 'Curated Heritage Circuits',
   passes: 'Paperless Pass Wallet',
-  scanner: 'Turnstile Gate Scanner'
+  scanner: 'Gate Scanner'
 };
 
 const PROMPT_SUGGESTIONS = [
@@ -35,7 +35,7 @@ const PROMPT_SUGGESTIONS = [
   { label: 'Plan 2-day Araku trip', text: 'Plan a 2-day scenic nature trip to Araku Valley with waterfalls and coffee plantations' },
   { label: 'Show my passes', text: 'Show all my active booked passes and tickets' },
   { label: 'Find top temples', text: 'Find top heritage temples in Warangal' },
-  { label: 'Open gate scanner', text: 'Take me to the gate turnstile scanner' },
+  { label: 'Open gate scanner', text: 'Take me to the monument gate scanner' },
   { label: 'Local scam warnings', text: 'What scams or fake purchases should I avoid in Ponduru Khadi?' }
 ];
 
@@ -196,7 +196,7 @@ export default function TravelAssistantDrawer({
     if (lower.includes('take me to') || lower.includes('go to') || lower.includes('open') || lower.includes('switch to')) {
       if (lower.includes('scanner') || lower.includes('gate') || lower.includes('turnstile')) {
         if (setActiveTab) setActiveTab('scanner');
-        return { type: 'navigated', target: 'scanner', label: 'Turnstile Gate Scanner' };
+        return { type: 'navigated', target: 'scanner', label: 'Gate Scanner' };
       }
       if (lower.includes('pass') || lower.includes('ticket') || lower.includes('wallet')) {
         if (setActiveTab) setActiveTab('passes');
@@ -265,7 +265,7 @@ export default function TravelAssistantDrawer({
               time: idx === 0 ? '09:00 AM' : '02:30 PM',
               name: s.name,
               category: s.category || 'Sightseeing',
-              fee: s.fees || '₹40'
+              fee: s.fees || (s.individualPrice === 0 ? 'Free Entry' : (s.individualPrice ? `₹${s.individualPrice}` : 'Free Entry'))
             }))
           },
           {
@@ -275,7 +275,7 @@ export default function TravelAssistantDrawer({
               time: idx === 0 ? '10:00 AM' : '04:30 PM',
               name: s.name,
               category: s.category || 'Scenic Views',
-              fee: s.fees || '₹20'
+              fee: s.fees || (s.individualPrice === 0 ? 'Free Entry' : (s.individualPrice ? `₹${s.individualPrice}` : 'Free Entry'))
             }))
           }
         ]
@@ -365,7 +365,7 @@ export default function TravelAssistantDrawer({
       if (actionResult?.type === 'initiated_booking') {
         fallbackText = `Opening official checkout for ${actionResult.place.name} (${actionResult.touristCount} visitor${actionResult.touristCount > 1 ? 's' : ''} • ₹${actionResult.totalAmount}). Please confirm your booking details in the secure payment gateway.`;
       } else if (actionResult?.type === 'booked_pass') {
-        fallbackText = `Your pass for ${actionResult.place.name} has been authenticated! Your digital entry ticket with turnstile QR code is issued below.`;
+        fallbackText = `Your pass for ${actionResult.place.name} has been issued! Your digital entry ticket with gate QR code is ready below.`;
       } else if (actionResult?.type === 'navigated') {
         fallbackText = `Navigating to ${actionResult.label} for you right now!`;
       } else if (actionResult?.type === 'itinerary_plan') {

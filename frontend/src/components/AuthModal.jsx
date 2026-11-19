@@ -546,7 +546,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                               onClick={() => setEnteredEmailOtp(emailDevCode)}
                               className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-amber-400/10 border border-amber-400/20 text-amber-300 text-[11px] font-mono hover:bg-amber-400/20 transition-colors mx-auto cursor-pointer"
                             >
-                              <span>Testing Code: <strong>{emailDevCode}</strong> (Tap to fill)</span>
+                              <span>One-Click Code: <strong>{emailDevCode}</strong> (Tap to fill)</span>
                             </button>
                           )}
                         </div>
@@ -657,7 +657,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, reason = nul
                               onClick={() => setEnteredPhoneOtp(phoneDevCode)}
                               className="inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-[11px] font-mono hover:bg-emerald-400/20 transition-colors mx-auto cursor-pointer"
                             >
-                              <span>Testing Code: <strong>{phoneDevCode}</strong> (Tap to fill)</span>
+                              <span>One-Click Code: <strong>{phoneDevCode}</strong> (Tap to fill)</span>
                             </button>
                           )}
                         </div>

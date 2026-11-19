@@ -583,7 +583,7 @@ export default function App() {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-white font-sans-clean">Monument Gate Scanner</h3>
-                    <p className="text-xs text-slate-400">Turnstile checkpoint authentication for official staff</p>
+                    <p className="text-xs text-slate-400">Authorized gate staff login</p>
                   </div>
                 </div>
 

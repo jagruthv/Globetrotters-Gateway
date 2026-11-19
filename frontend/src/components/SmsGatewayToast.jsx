@@ -52,7 +52,7 @@ export default function SmsGatewayToast() {
                 <MessageSquare className="w-4 h-4" />
               </div>
               <span className="text-xs font-semibold text-emerald-300 font-sans-clean">
-                Instant SMS Gateway
+                SMS Verification Code
               </span>
             </div>
 
@@ -83,7 +83,7 @@ export default function SmsGatewayToast() {
           </div>
 
           <span className="text-[10px] text-slate-400 font-sans-clean">
-            Enter this 6-digit code in the prompt to verify phone ownership.
+            Enter this 6-digit code to complete verification.
           </span>
         </motion.div>
       </div>

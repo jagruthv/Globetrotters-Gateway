@@ -218,8 +218,8 @@ CRITICAL FORMAT: Return ONLY valid raw JSON conforming strictly to this schema:
 
           const userPrompt = `Generate a ${requestedDays ? `${requestedDays}-day` : 'comfortable'} ${pace.toLowerCase()} pace itinerary for these ${places.length} destinations:\n${placesDescription}`;
 
-          // Primary: gemini-3.1-flash-lite (Fastest, High-Volume Free Tier)
-          const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
+          // Primary: High-Speed Multimodal Production Models
+          const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
           let planData = null;
 
           for (const modelId of modelsToTry) {
@@ -348,8 +348,8 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
 
           const userPrompt = `Current Itinerary Plan:\n${JSON.stringify(currentPlan, null, 2)}\n\nTourist Modification Request:\n"${userFeedback}"`;
 
-          // Primary: gemini-3.1-flash-lite (Fastest, High-Volume Free Tier)
-          const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
+          // Primary: High-Speed Multimodal Production Models
+          const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
           let modifyData = null;
 
           for (const modelId of modelsToTry) {
@@ -425,8 +425,8 @@ CRITICAL: Return ONLY raw JSON adhering strictly to this schema:
             contentsParts.push({ text: "Hello" });
           }
 
-          // Primary: gemini-3.1-flash-lite (Fastest, High-Volume Free Tier)
-          const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
+          // Primary: High-Speed Multimodal Production Models
+          const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
           let replyText = null;
           let usedModelName = "AI Assistant";
 
@@ -637,7 +637,7 @@ Language requested: ${targetLangName}
 
 Deliver an authentic 1-minute curated walk guide in ${targetLangName}.`;
 
-          const modelsToTry = ["gemini-3.1-flash-lite", "gemini-2.5-flash-lite"];
+          const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-flash-8b"];
           const apiKey = getGeminiKey(env);
           let storyData = null;
 

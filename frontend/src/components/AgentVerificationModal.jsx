@@ -111,17 +111,17 @@ export default function AgentVerificationModal({
 
             <div className="flex flex-col gap-1">
               <span className="text-[11px] text-amber-400 font-sans-clean font-semibold">
-                Tourism gate protocol • AP & TG
+                Authorized gate officer login • AP & TG
               </span>
               <h3 className="text-xl font-bold text-white font-sans-clean">
-                {success ? 'Agent Mode Activated' : 'Agent Mode Verification'}
+                {success ? 'Staff Access Confirmed' : 'Gate Officer Login'}
               </h3>
             </div>
 
             <p className="text-xs text-slate-400 max-w-xs leading-relaxed font-sans-clean">
               {success
-                ? 'Identity verified by central core. Launching operational scanner...'
-                : 'Agent Mode is reserved for ticket conductors, gate officers, and staff.'}
+                ? 'Staff login confirmed. Opening gate scanner...'
+                : 'Gate Officer Mode is reserved for verified monument admission staff.'}
             </p>
           </div>
 
