@@ -1422,10 +1422,21 @@ export default function AiFluidTripStudio({
                       </p>
                     </div>
                   </div>
-                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-sans-clean font-semibold flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                    <span>Verified Local Knowledge</span>
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {onOpenAssistant && (
+                      <button
+                        onClick={() => onOpenAssistant("Help me plan and optimize my itinerary")}
+                        className="text-[11px] px-3 py-1.5 rounded-full bg-amber-400/15 hover:bg-amber-400/25 text-amber-300 border border-amber-400/30 font-sans-clean font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        <span>Open in AI Assistant</span>
+                      </button>
+                    )}
+                    <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-sans-clean font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <span>Verified Local Knowledge</span>
+                    </span>
+                  </div>
                 </div>
 
                 {/* Pre-set Quick Suggestion Chips */}
@@ -1439,7 +1450,13 @@ export default function AiFluidTripStudio({
                   ].map((chip) => (
                     <button
                       key={chip}
-                      onClick={() => handleSendChatMessage(chip)}
+                      onClick={() => {
+                        if (onOpenAssistant) {
+                          onOpenAssistant(chip);
+                        } else {
+                          handleSendChatMessage(chip);
+                        }
+                      }}
                       className="px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 text-[11px] text-slate-300 transition-colors flex items-center gap-1.5 font-sans-clean cursor-pointer"
                     >
                       <Sparkles className="w-3 h-3 text-amber-400" />
@@ -1450,7 +1467,7 @@ export default function AiFluidTripStudio({
 
                 {/* Chat Conversation Thread */}
                 <div className="p-4 rounded-2xl bg-[#080A0F]/90 border border-white/10 flex flex-col gap-3 max-h-[360px] overflow-y-auto font-sans-clean text-xs">
-                  {chatMessages.map((msg) => (
+                  {chatMessages.filter(m => m.text && m.text.trim()).map((msg) => (
                     <div
                       key={msg.id}
                       className={`flex flex-col gap-1 max-w-[85%] ${
@@ -1485,7 +1502,13 @@ export default function AiFluidTripStudio({
                             {msg.suggestions.map((sug, sIdx) => (
                               <button
                                 key={sIdx}
-                                onClick={() => handleSendChatMessage(sug)}
+                                onClick={() => {
+                                  if (onOpenAssistant) {
+                                    onOpenAssistant(sug);
+                                  } else {
+                                    handleSendChatMessage(sug);
+                                  }
+                                }}
                                 className="px-2.5 py-1 rounded-lg bg-white/[0.05] hover:bg-amber-500/15 text-amber-300 border border-white/10 text-[10px] flex items-center gap-1 transition-colors text-left font-sans-clean cursor-pointer"
                               >
                                 <CornerDownRight className="w-2.5 h-2.5 text-amber-400 flex-shrink-0" />
@@ -1518,7 +1541,14 @@ export default function AiFluidTripStudio({
                     value={inputQuery}
                     onChange={(e) => setInputQuery(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleSendChatMessage();
+                      if (e.key === 'Enter') {
+                        if (onOpenAssistant && inputQuery.trim()) {
+                          onOpenAssistant(inputQuery);
+                          setInputQuery('');
+                        } else {
+                          handleSendChatMessage();
+                        }
+                      }
                     }}
                     placeholder="Ask a question about your trip, swap a destination, or find authentic food..."
                     autoComplete="off"
@@ -1526,7 +1556,14 @@ export default function AiFluidTripStudio({
                     className="flex-1 h-11 px-4 rounded-xl bg-white/[0.04] border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-amber-400/50 transition-colors font-sans-clean"
                   />
                   <button
-                    onClick={() => handleSendChatMessage()}
+                    onClick={() => {
+                      if (onOpenAssistant && inputQuery.trim()) {
+                        onOpenAssistant(inputQuery);
+                        setInputQuery('');
+                      } else {
+                        handleSendChatMessage();
+                      }
+                    }}
                     disabled={!inputQuery.trim() || isChatThinking}
                     className="h-11 px-5 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:bg-white/[0.05] disabled:text-slate-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-md flex-shrink-0 font-sans-clean cursor-pointer"
                   >
