@@ -81,6 +81,12 @@ public class SecurityConfig {
                     .requestMatchers("/actuator/health").permitAll()
                     // Turnstile scanner demo endpoints
                     .requestMatchers("/api/verify/**").permitAll()
+                    // Circuit passes endpoints
+                    .requestMatchers(HttpMethod.GET, "/api/passes/{passId}").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/passes/{passId}/qr-image").permitAll()
+                    .requestMatchers("/api/passes/**").authenticated()
+                    // Venue agent verification endpoints
+                    .requestMatchers("/api/agent/**").hasAnyAuthority("ROLE_AGENT", "ROLE_STAFF", "ROLE_ADMIN")
                     // Tourism officer audit report export (strictly restricted to verified administrators)
                     .requestMatchers("/api/admin/analytics/export-csv").hasAuthority("ROLE_ADMIN")
                     // Payment endpoints — requires authenticated tourist

@@ -497,6 +497,41 @@ export const paymentService = {
     }),
 };
 
+export const agentScanService = {
+  verifyScan: ({ qrPayload, locationId, deviceTerminalId = 'Gate-Alpha' }) =>
+    request('/agent/verify-scan', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        qrPayload, 
+        locationId, 
+        deviceTerminalId 
+      }),
+    }),
+
+  getSyncManifest: (locationId) =>
+    request(locationId ? `/agent/sync-manifest?locationId=${locationId}` : '/agent/sync-manifest'),
+
+  syncRedemptions: (scans) =>
+    request('/agent/sync-redemptions', {
+      method: 'POST',
+      body: JSON.stringify({ scans }),
+    }),
+};
+
+export const circuitPassService = {
+  createPass: (passData) =>
+    request('/passes', {
+      method: 'POST',
+      body: JSON.stringify(passData),
+    }),
+
+  getPass: (passId) => request(`/passes/${encodeURIComponent(passId)}`),
+
+  getMyPasses: () => request('/passes/my-passes'),
+
+  getQrImageUrl: (passId) => `/api/passes/${encodeURIComponent(passId)}/qr-image`,
+};
+
 export const scannerService = {
   verifyPass: ({ token, placeId, turnstileId = 'Gate-01', validFrom = null, validUntil = null }) =>
     request('/verify/scan', {

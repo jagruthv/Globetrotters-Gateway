@@ -23,6 +23,8 @@ public class UserDetailsImpl implements UserDetails {
     private Boolean isEmailVerified;
     private Boolean isPhoneVerified;
     private String avatarUrl;
+    private Long assignedLocationId;
+    private String assignedLocationName;
 
     @JsonIgnore
     private String password;
@@ -30,7 +32,7 @@ public class UserDetailsImpl implements UserDetails {
     private Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(Long id, String email, String fullName, String password, Collection<? extends GrantedAuthority> authorities) {
-        this(id, email, fullName, null, false, false, null, password, authorities);
+        this(id, email, fullName, null, false, false, null, null, null, password, authorities);
     }
 
     public static UserDetailsImpl build(User user) {
@@ -41,6 +43,9 @@ public class UserDetailsImpl implements UserDetails {
         String username = user.getEmail() != null ? user.getEmail() :
                 (user.getPhoneNumber() != null ? user.getPhoneNumber() : "user_" + user.getId());
 
+        Long assignedLocationId = user.getAssignedLocation() != null ? user.getAssignedLocation().getId() : null;
+        String assignedLocationName = user.getAssignedLocation() != null ? user.getAssignedLocation().getName() : null;
+
         return new UserDetailsImpl(
                 user.getId(),
                 username,
@@ -49,6 +54,8 @@ public class UserDetailsImpl implements UserDetails {
                 user.getIsEmailVerified(),
                 user.getIsPhoneVerified(),
                 user.getAvatarUrl(),
+                assignedLocationId,
+                assignedLocationName,
                 user.getPassword() != null ? user.getPassword() : "",
                 authorities
         );

@@ -29,6 +29,7 @@ public class BookingService {
     private final TicketRedemptionRepository redemptionRepository;
     private final QrCodeService qrCodeService;
     private final MailService mailService;
+    private final CircuitPassService circuitPassService;
 
     /**
      * Creates a PENDING booking with no QR token.
@@ -117,6 +118,9 @@ public class BookingService {
             redemptionRepository.save(redemption);
             savedBooking.getRedemptions().add(redemption);
         }
+
+        // Create CircuitPass and PassLocations for the new architecture
+        circuitPassService.createCircuitPassForBooking(savedBooking);
 
         // Dispatch email confirmation receipt with inline QR pass
         if ("PAID".equals(savedBooking.getPaymentStatus()) && savedBooking.getUser() != null) {

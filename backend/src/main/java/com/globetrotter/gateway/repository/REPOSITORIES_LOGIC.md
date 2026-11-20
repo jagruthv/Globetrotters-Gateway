@@ -70,3 +70,31 @@ This document provides a factual, code-verified audit of all 7 Spring Data JPA r
   - `findBySessionIdOrderByTimestampAsc(String)`: Loads conversation dialogue in sequence.
 - **Not Yet Implemented / Gaps**:
   - No chat message retention/pruning query (transcripts persist indefinitely).
+
+---
+
+## 6. CircuitPassRepository
+- **File**: `CircuitPassRepository.java`
+- **Queries & Logic**:
+  - `findByPassId(String)`: Resolves pass by compact unique ID.
+  - `findByPassIdWithLocations(String)`: Eagerly fetches pass with booked locations and place metadata in a single join.
+  - `findByUser_IdOrderByCreatedAtDesc(Long)`: Retrieves all passes owned by a tourist.
+
+---
+
+## 7. PassLocationRepository
+- **File**: `PassLocationRepository.java`
+- **Queries & Logic**:
+  - `findByPass_PassIdAndLocation_Id(String, Long)`: $O(\log N)$ unique index lookup via `idx_pass_location_lookup`.
+  - `atomicRedeem(passId, locationId, agent, now)`:
+    - Custom `@Modifying` update: `UPDATE PassLocation pl SET pl.status = 'REDEEMED', pl.redeemedAt = :now, pl.redeemedByAgent = :agent WHERE pl.pass.passId = :passId AND pl.location.id = :locationId AND pl.status = 'UNUSED'`
+    - Guarantees strict single-admission execution under high concurrent load.
+  - `findActiveUnusedForLocation(locationId, now)`: Extracts all active unused passes for offline gate manifest downloads.
+
+---
+
+## 8. ScanAuditLogRepository
+- **File**: `ScanAuditLogRepository.java`
+- **Queries & Logic**:
+  - `findTop50ByLocationIdOrderByScannedAtDesc(Long)`: Real-time security and audit feed per gate terminal.
+  - `findByPassIdOrderByScannedAtDesc(String)`: Forensic scan history for a pass identifier.

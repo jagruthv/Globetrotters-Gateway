@@ -213,3 +213,36 @@ This document provides a factual, code-verified audit of all 14 Spring services 
   - **Spot Conservation Validator**: Validates cloud LLM outputs; if the model dropped candidate destinations, smoothly falls back to the deterministic topographical solver.
   - **Exact Distance Consistency**: Guarantees that `totalRoadKm` is the exact mathematical sum of all daily travel distances.
 
+---
+
+## 16. QrSignatureService
+- **File**: `QrSignatureService.java`
+- **Dependencies**: `Mac` (HmacSHA256), `MessageDigest`, `SecureRandom`, `Base64`
+- **Implemented Logic**:
+  - **$O(1)$ Constant Payload Size Invariance**: Generates constant-length compact QR tokens formatted strictly as `v1.<pass_id>.<expiry_epoch_sec>.<hmac_signature>`. Size is strictly independent of the number of attractions booked (1 or 100+ spots yield ~70 characters). Zero PII or location list is embedded in the QR payload.
+  - **Fail-Fast Secret Validation**: `@PostConstruct` checks `app.qr.hmac-secret` has at least 32 bytes (256 bits), aborting startup immediately if missing or weak.
+  - **Constant-Time Verification First**: Verifies version prefix, parses expiry epoch, recomputes HMAC-SHA256, and checks signature using `MessageDigest.isEqual()` before touching the database.
+  - **Typed Exception Layer**: Throws `InvalidQrFormatException`, `InvalidQrSignatureException`, and `QrExpiredException` directly without database roundtrips.
+
+---
+
+## 17. AgentScanService
+- **File**: `AgentScanService.java`
+- **Dependencies**: `QrSignatureService`, `CircuitPassRepository`, `PassLocationRepository`, `ScanAuditLogRepository`, `PlaceRepository`
+- **Implemented Logic**:
+  - **Atomic Conditional Anti-Replay Lock**: Single SQL update: `UPDATE PassLocation pl SET pl.status = 'REDEEMED', pl.redeemedAt = :now, pl.redeemedByAgent = :agent WHERE pl.pass.passId = :passId AND pl.location.id = :locationId AND pl.status = 'UNUSED'`. Prevents concurrent duplicate scans at the database engine level without distributed lock overhead.
+  - **Agent Location Security**: Enforces assigned gate location from the authenticated agent's record, blocking spoofed or unassigned client location requests.
+  - **Immutable Audit Logging**: Persists every scan attempt in `scan_audit_logs` (`SUCCESS`, `ALREADY_REDEEMED`, `NOT_BOOKED_HERE`, `PASS_EXPIRED`, `PASS_REVOKED`, `INVALID_SIGNATURE`, `INVALID_FORMAT`).
+  - **Offline Manifest & Sync**: `getManifest()` extracts active unused passes for local caching at mountain gates with zero cellular coverage. `syncRedemptions()` batches and executes offline redemptions.
+
+---
+
+## 18. CircuitPassService
+- **File**: `CircuitPassService.java`
+- **Dependencies**: `CircuitPassRepository`, `PassLocationRepository`, `PlaceRepository`, `UserRepository`, `QrSignatureService`
+- **Implemented Logic**:
+  - **Multi-Location Circuit Pass Issuance**: Generates a unified `CircuitPass` and batch creates `PassLocation` records with `guestCount` and `status = 'UNUSED'`.
+  - **Seamless Booking & Payment Integration**: Automatically creates `CircuitPass` and `PassLocation` entries upon confirmed booking payment.
+  - **Read Queries & Metadata**: Exposes authenticated pass retrieval and QR code generation endpoints.
+
+

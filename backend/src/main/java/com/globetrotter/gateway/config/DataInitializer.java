@@ -142,6 +142,19 @@ public class DataInitializer implements CommandLineRunner {
                 "04:30 PM", "06:30 PM", "Golden hour sunset over the Bay of Bengal coastline with scenic illuminated ropeway ride.",
                 "05:00 PM", "07:30 PM", 173);
 
+        userRepository.findByEmail("agent@gmail.com").ifPresent(agent -> {
+            if (agent.getAssignedLocation() == null) {
+                agent.setAssignedLocation(kailasagiri);
+                userRepository.save(agent);
+            }
+        });
+        userRepository.findByEmail("staff@globetrotter.com").ifPresent(staff -> {
+            if (staff.getAssignedLocation() == null) {
+                staff.setAssignedLocation(kailasagiri);
+                userRepository.save(staff);
+            }
+        });
+
         Place rkBeach = getOrCreatePlace("Ramakrishna (RK) Beach & Seafront Promenade", "ramakrishna-rk-beach-seafront-promenade", "Coastal Promenade",
                 "Andhra Pradesh", "Visakhapatnam",
                 "Vibrant urban beachfront featuring seaside walking esplanades, war memorials, cultural statues, and local cuisine.",

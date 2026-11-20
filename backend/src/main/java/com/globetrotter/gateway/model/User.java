@@ -53,6 +53,10 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_location_id")
+    private Place assignedLocation;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

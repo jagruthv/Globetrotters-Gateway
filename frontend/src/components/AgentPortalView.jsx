@@ -18,7 +18,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import jsQR from 'jsqr';
-import { scannerService } from '../services/api';
+import { scannerService, agentScanService } from '../services/api';
 import { 
   verifyPassOffline, 
   syncLedgerToCentralCore,
@@ -487,6 +487,58 @@ export default function AgentPortalView({
 
     // 4. Cloud Server verification with offline fallback
     try {
+      if (tokenToVerify.startsWith('v1.')) {
+        try {
+          const res = await agentScanService.verifyScan({
+            qrPayload: tokenToVerify,
+            locationId: placeId,
+            deviceTerminalId: gateId
+          });
+
+          const isSuccess = res.status === 'SUCCESS';
+          playScannerSound(isSuccess);
+
+          if (isSuccess) {
+            markPassVisited(tokenToVerify, placeId, checkpointName, gateId);
+          }
+
+          const result = {
+            success: isSuccess,
+            status: res.status,
+            touristName: res.touristName || 'Ticket Holder',
+            guestCount: res.guestCount || 1,
+            message: isSuccess
+              ? `ENTRY GRANTED • ADMIT ${res.guestCount || 1} GUEST(S) (${res.locationName || checkpointName})`
+              : (res.message || `ENTRY DENIED: ${res.status}`),
+            checkpoint: res.locationName || checkpointName,
+            token: tokenToVerify,
+            redeemedAt: res.redeemedAt
+          };
+
+          setVerdict(result);
+          recordScanResult(result, isSuccess, tokenToVerify, checkpointName);
+          setTimeout(() => setVerdict(null), 5000);
+          return;
+        } catch (agentErr) {
+          const errMsg = agentErr.message || '';
+          playScannerSound(false);
+          const isConflict = errMsg.toLowerCase().includes('already redeemed') || errMsg.includes('409');
+          const isNotFound = errMsg.toLowerCase().includes('not included') || errMsg.includes('404');
+          const result = {
+            success: false,
+            status: isConflict ? 'ALREADY_REDEEMED' : (isNotFound ? 'NOT_BOOKED_HERE' : 'DENIED'),
+            touristName: matchedPass?.touristName || 'Ticket Holder',
+            message: errMsg || `ENTRY DENIED at ${checkpointName}.`,
+            checkpoint: checkpointName,
+            token: tokenToVerify
+          };
+          setVerdict(result);
+          recordScanResult(result, false, tokenToVerify, checkpointName);
+          setTimeout(() => setVerdict(null), 5000);
+          return;
+        }
+      }
+
       const res = await scannerService.verifyPass({
         token: tokenToVerify,
         placeId: placeId,
@@ -697,12 +749,24 @@ export default function AgentPortalView({
               <div className="flex flex-col gap-0.5">
                 <span className="text-lg sm:text-xl font-bold">{verdict.message}</span>
                 <span className="text-xs text-slate-300">Visitor: {verdict.touristName}</span>
+                {verdict.guestCount && (
+                  <span className="text-xs font-semibold text-emerald-300">Party Size: {verdict.guestCount} Guest(s)</span>
+                )}
+                {verdict.status === 'ALREADY_REDEEMED' && (
+                  <span className="text-xs font-semibold text-rose-300">Duplicate Replay Alert: Pass was previously scanned</span>
+                )}
                 {verdict.validDate && (
                   <span className="text-[11px] font-mono text-amber-300/90 mt-0.5">
                     Pass Visit Date: {verdict.validDate}
                   </span>
                 )}
               </div>
+              <button
+                onClick={() => setVerdict(null)}
+                className="mt-2 px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold transition-all cursor-pointer"
+              >
+                Scan Next Visitor
+              </button>
             </motion.div>
           )}
         </AnimatePresence>

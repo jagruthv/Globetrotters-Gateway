@@ -75,3 +75,21 @@ This document provides a factual, code-verified audit of the security and authen
   - mCAPTCHA (Work-factor-based rate limiting, Aravind, 2022)
   - OWASP Automated Threats (OAT-005 Scraping, OAT-006 Scalping, OAT-008 DoS)
 
+---
+
+## 6. Production QR Circuit Pass & Turnstile Security Architecture
+- **Files**: `QrSignatureService.java`, `AgentScanService.java`, `AgentScanController.java`
+- **Implemented Logic**:
+  - **$O(1)$ Constant-Size Signed Token Format**: `v1.<pass_id>.<expiry_epoch_sec>.<hmac_signature>`. Size is strictly constant (~70 chars) whether 1 or 100+ destinations are booked.
+  - **Strict No-PII Invariant**: No user PII, accounts, or location IDs are embedded in the QR token payload.
+  - **Constant-Time Verification First**: Formats, HMAC signatures, and expiry timestamps are verified in constant time (`MessageDigest.isEqual()`) before any database connection or query is made, neutralizing timing attacks.
+  - **Single Atomic Anti-Replay Lock**: Conditional update query (`UPDATE pass_locations SET status = 'REDEEMED', redeemed_at = :now, redeemed_by_agent_id = :agentId WHERE pass_id = :passId AND location_id = :locationId AND status = 'UNUSED'`) completely eliminates check-then-act race conditions across concurrent turnstile gates.
+  - **Zero Hardcoded Secrets**: Requires `QR_HMAC_SECRET` (minimum 32 bytes / 256 bits) from environment configuration and fails fast on startup.
+  - **Agent Location Security**: Enforces assigned gate checkpoint on the server from authenticated agent credentials, preventing client-sent location spoofing.
+- **Academic & Industry Citations**:
+  - RFC 2104: HMAC: Keyed-Hashing for Message Authentication (Krawczyk, Bellare, Canetti, 1997)
+  - RFC 7515: JSON Web Signature (JWS) compact serialization principles
+  - NIST SP 800-107: Recommendation for Applications Using Approved Hash Algorithms
+  - OWASP Top 10 API Security Risks: API1:2023 Broken Object Level Authorization (BOLA) & API8:2023 Security Misconfiguration
+
+

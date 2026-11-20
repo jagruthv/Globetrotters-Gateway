@@ -46,6 +46,7 @@ public class PaymentService {
     private final TicketRedemptionRepository redemptionRepository;
     private final QrCodeService qrCodeService;
     private final MailService mailService;
+    private final CircuitPassService circuitPassService;
 
     @Value("${app.razorpay.key-id:rzp_test_mock_gateway_key}")
     private String razorpayKeyId;
@@ -224,6 +225,7 @@ public class PaymentService {
         }
 
         Booking savedBooking = bookingRepository.save(booking);
+        circuitPassService.createCircuitPassForBooking(savedBooking);
         log.info("Booking {} confirmed after successful payment. QR pass generated.", booking.getBookingReference());
 
         // Send confirmation email asynchronously

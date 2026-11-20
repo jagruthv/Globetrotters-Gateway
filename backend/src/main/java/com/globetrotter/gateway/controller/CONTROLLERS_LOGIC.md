@@ -160,3 +160,30 @@ This document provides a factual, code-verified audit of all 9 REST controllers 
 - **Not Yet Implemented / Gaps**:
   - Frontend currently lacks management UI forms to call these CRUD endpoints (frontend only has Admin Analytics view).
   - No image file upload multipart endpoint (image URLs must be provided as text strings).
+
+---
+
+## 10. AgentScanController (`/api/agent`)
+- **File**: `AgentScanController.java`
+- **Endpoints**:
+  - `POST /api/agent/verify-scan`: Validates constant-size signed QR pass and executes atomic conditional redemption. Returns 200 on `SUCCESS`, 409 on `ALREADY_REDEEMED`, 404 on `NOT_BOOKED_HERE`, 400 on `INVALID_SIGNATURE` / `INVALID_FORMAT` / `PASS_EXPIRED`, 403 on `PASS_REVOKED`.
+  - `GET /api/agent/sync-manifest`: Extracts active unused passes for the venue agent's assigned location for offline local storage.
+  - `POST /api/agent/sync-redemptions`: Batch uploads offline redemptions collected during zero-connectivity intervals.
+- **Implemented Logic**:
+  - Guarded with `@PreAuthorize("hasAnyAuthority('ROLE_AGENT', 'ROLE_STAFF', 'ROLE_ADMIN')")`.
+  - Derives venue agent's authorized `locationId` on the backend, blocking client spoofing.
+  - Constant-time verification first before executing any database query.
+  - Single atomic anti-replay update (`UPDATE PassLocation ... WHERE status = 'UNUSED'`).
+
+---
+
+## 11. CircuitPassController (`/api/passes`)
+- **File**: `CircuitPassController.java`
+- **Endpoints**:
+  - `POST /api/passes`: Issues a multi-location circuit pass and returns constant-size signed QR payload.
+  - `GET /api/passes/{passId}`: Retrieves pass metadata and live venue redemption statuses.
+  - `GET /api/passes/my-passes`: Returns authenticated user's circuit passes.
+  - `GET /api/passes/{passId}/qr-image`: Serves cached PNG QR code for the compact signed payload.
+- **Implemented Logic**:
+  - Guarded with `@PreAuthorize("isAuthenticated()")` for creation and user listings.
+  - Returns `O(1)` payload size invariant signed QR tokens.
