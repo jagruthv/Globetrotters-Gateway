@@ -6,8 +6,20 @@
  * Works 100% offline with zero external canvas dependencies.
  */
 
+import QRCode from 'qrcode';
+
 export async function downloadPassImage(pass, qrDataUrl) {
   if (!pass) return;
+
+  let activeQrUrl = qrDataUrl;
+  if (!activeQrUrl && (pass.token || pass.qrPayload || pass.reference)) {
+    try {
+      const raw = pass.qrPayload || pass.token || pass.reference;
+      activeQrUrl = await QRCode.toDataURL(raw, { width: 480, margin: 2 });
+    } catch {
+      // fallback
+    }
+  }
 
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
@@ -152,7 +164,7 @@ export async function downloadPassImage(pass, qrDataUrl) {
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(qrX - 12, qrY - 12, qrBoxSize + 24, qrBoxSize + 24);
 
-  if (qrDataUrl) {
+  if (activeQrUrl) {
     const img = new Image();
     await new Promise((resolve) => {
       img.onload = () => {
@@ -160,7 +172,7 @@ export async function downloadPassImage(pass, qrDataUrl) {
         resolve();
       };
       img.onerror = () => resolve();
-      img.src = qrDataUrl;
+      img.src = activeQrUrl;
     });
   }
 

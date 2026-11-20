@@ -157,26 +157,38 @@ export default function HolographicGatePass({
 
   // Real Dynamic QR Code Generator (Encodes cryptographic signed ticket token)
   useEffect(() => {
-    if (activePass?.reference || activePass?.token) {
-      const tokenPayload = activePass.token || activePass.reference;
-      const qrPayload = typeof window !== 'undefined'
-        ? `${window.location.origin}/#/verify?t=${encodeURIComponent(tokenPayload)}`
-        : tokenPayload;
+    const tokenPayload = activePass?.qrPayload || activePass?.token || activePass?.reference || activePass?.passId;
+    if (!tokenPayload) return;
 
-      QRCode.toDataURL(qrPayload, {
-        width: 480,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      })
-      .then((url) => setQrCodeDataUrl(url))
-      .catch((err) => {
-        if (import.meta.env.DEV) console.warn('QR Generator Notice:', err);
-      });
-    }
-  }, [activePass?.reference, activePass?.token]);
+    let isCurrent = true;
+    const qrPayload = typeof window !== 'undefined'
+      ? (tokenPayload.startsWith('v1.') ? tokenPayload : `${window.location.origin}/#/verify?t=${encodeURIComponent(tokenPayload)}`)
+      : tokenPayload;
+
+    QRCode.toDataURL(qrPayload, {
+      width: 480,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    })
+    .then((url) => {
+      if (isCurrent) setQrCodeDataUrl(url);
+    })
+    .catch((err) => {
+      if (import.meta.env.DEV) console.warn('QR Generator Notice:', err);
+      QRCode.toDataURL(tokenPayload, { width: 480, margin: 2 })
+        .then((url) => {
+          if (isCurrent) setQrCodeDataUrl(url);
+        })
+        .catch(() => {});
+    });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [activePass?.reference, activePass?.token, activePass?.qrPayload, activePass?.passId]);
 
   const handleShareWhatsApp = () => {
     if (!activePass) return;

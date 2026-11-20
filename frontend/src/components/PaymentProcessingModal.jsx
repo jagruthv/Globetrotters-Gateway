@@ -133,6 +133,7 @@ export default function PaymentProcessingModal({
       }
     }
 
+    let signedToken = refNumber;
     try {
       signedToken = await generateCryptographicPassToken(
         refNumber, 
@@ -155,6 +156,8 @@ export default function PaymentProcessingModal({
     const passPayload = {
       reference: refNumber,
       token: signedToken,
+      qrPayload: signedToken,
+      passId: refNumber,
       circuitId: targetPlaceId,
       circuitName: circuitName,
       touristName: touristName,
