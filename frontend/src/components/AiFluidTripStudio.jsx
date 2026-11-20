@@ -98,7 +98,7 @@ export default function AiFluidTripStudio({
   // 'AUTO' allows the AI to calculate the optimal days based on spots count & elevation fatigue
   const [selectedDuration, setSelectedDuration] = useState('AUTO');
   const [travelPace, setTravelPace] = useState('BALANCED');
-  const [selectedTripDate, setSelectedTripDate] = useState(MODULE_TOMORROW_ISO);
+  const [selectedTripDate, setSelectedTripDate] = useState(MODULE_TODAY_ISO);
   const [isGenerating, setIsGenerating] = useState(false);
   const [planResult, setPlanResultState] = useState(() => {
     if (typeof window === 'undefined') return null;

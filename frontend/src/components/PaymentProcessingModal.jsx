@@ -66,6 +66,8 @@ export default function PaymentProcessingModal({
       setSelectedVisitDate(String(bookingDetails.date));
     } else if (bookingDetails?.date === 'Tomorrow') {
       setSelectedVisitDate(MODULE_TOMORROW_ISO);
+    } else {
+      setSelectedVisitDate(MODULE_TODAY_ISO);
     }
   }
 
@@ -117,7 +119,16 @@ export default function PaymentProcessingModal({
     // Determine accurate checkpoint ID for the pass
     let targetPlaceId = Number(bookingDetails?.circuitId || bookingDetails?.placeId || 0);
     if (!targetPlaceId) {
-      if (Array.isArray(destinations) && destinations.length > 1) {
+      const isMulti = (Array.isArray(destinations) && destinations.length > 1) ||
+        (circuitName && (
+          circuitName.toLowerCase().includes('consolidated') ||
+          circuitName.toLowerCase().includes('circuit') ||
+          circuitName.toLowerCase().includes('corridor') ||
+          circuitName.toLowerCase().includes('tour pass') ||
+          circuitName.toLowerCase().includes('arc') ||
+          circuitName.toLowerCase().includes('trail')
+        ));
+      if (isMulti) {
         targetPlaceId = 0; // multi-destination circuit: 0 denotes universal circuit pass valid at all included stops
       } else {
         const destText = [
@@ -166,6 +177,7 @@ export default function PaymentProcessingModal({
       durationDays: durationDays,
       validityLabel: durationDays === 1 ? `Valid on ${startDate}` : `Valid for ${durationDays} Days (${startDate} to ${validUntil})`,
       placesAllowed: destinations,
+      destinations: destinations,
       status: isCounterPay ? 'PENDING_GATE_PAYMENT' : 'ACTIVE_AUTHENTICATED'
     };
 

@@ -134,7 +134,22 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
                   district: cp.place?.district || 'Regional',
                   category: cp.place?.category || 'Heritage'
                 }))
-              : (SIGNATURE_CIRCUITS.find(sc => sc.id === (c.slug || String(c.id)))?.places || [])
+              : (() => {
+                  const s = String(c.slug || c.id || '').toLowerCase();
+                  if (s.includes('araku') || s.includes('eastern-ghats') || s.includes('borra')) {
+                    return SIGNATURE_CIRCUITS.find(sc => sc.id === 'eastern-ghats')?.places || [];
+                  }
+                  if (s.includes('kakatiya') || s.includes('warangal') || s.includes('deccan')) {
+                    return SIGNATURE_CIRCUITS.find(sc => sc.id === 'kakatiya-deccan')?.places || [];
+                  }
+                  if (s.includes('godavari') || s.includes('delta') || s.includes('coringa')) {
+                    return SIGNATURE_CIRCUITS.find(sc => sc.id === 'godavari-delta')?.places || [];
+                  }
+                  if (s.includes('buddhist') || s.includes('amaravati') || s.includes('palnadu')) {
+                    return SIGNATURE_CIRCUITS.find(sc => sc.id === 'buddhist-arc')?.places || [];
+                  }
+                  return SIGNATURE_CIRCUITS.find(sc => sc.id === (c.slug || String(c.id)))?.places || SIGNATURE_CIRCUITS[0]?.places || [];
+                })()
           }));
           setCircuits(mapped);
         }
@@ -244,7 +259,7 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
                     <input
                       type="date"
                       min={MODULE_TODAY_ISO}
-                      value={circuitDates[circuit.id] || MODULE_TOMORROW_ISO}
+                      value={circuitDates[circuit.id] || MODULE_TODAY_ISO}
                       onChange={(e) => setCircuitDates(prev => ({ ...prev, [circuit.id]: e.target.value }))}
                       aria-label={`Select start date for ${circuit.title}`}
                       className="bg-white/5 hover:bg-white/10 text-white text-[11px] font-mono border border-white/10 rounded-lg px-2 py-1 focus:outline-none focus:border-amber-400 cursor-pointer text-center"
@@ -254,7 +269,7 @@ export default function CircuitShowcase({ onSelectCircuit, onBookCircuit }) {
                   {/* Actions */}
                   <div className="flex items-center gap-3 pt-1">
                     <button
-                      onClick={() => onBookCircuit(circuit, circuitDates[circuit.id] || MODULE_TOMORROW_ISO)}
+                      onClick={() => onBookCircuit(circuit, circuitDates[circuit.id] || MODULE_TODAY_ISO)}
                       className="flex-1 py-2.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-colors font-sans-clean cursor-pointer active:scale-[0.98]"
                     >
                       <Ticket className="w-3.5 h-3.5" />

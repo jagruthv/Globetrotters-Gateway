@@ -399,9 +399,12 @@ export default function App() {
   const handleBookCircuit = (circuit, chosenDate = null) => {
     const durMatch = (circuit?.duration || '').match(/(\d+)\s*Day/i);
     const parsedDays = durMatch ? parseInt(durMatch[1], 10) : 2;
+    const destinations = (Array.isArray(circuit.places) && circuit.places.length > 0)
+      ? circuit.places.map(p => p.name || p.spotName || p)
+      : (circuit.standout ? circuit.standout.split('&').map(s => s.trim()) : [circuit.title]);
     handleInitiateBooking({
       circuitName: circuit.title || 'Curated Heritage Circuit Pass',
-      destinations: circuit.places?.map(p => p.name) || [circuit.standout],
+      destinations: destinations,
       totalAmount: circuit.passPrice || 480,
       durationDays: parsedDays,
       date: chosenDate || 'Today'
