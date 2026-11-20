@@ -392,9 +392,11 @@ export default function AgentPortalView({
     }
 
     // 1a. Direct Cryptographic Location Enforcement (e.g. cross-device ticket scan)
-    if (tokenToVerify.startsWith('GT_PASS:')) {
+    const isPassExplicitlyAllowed = matchedPass ? isPassValidForLocation(matchedPass, placeId, kw, checkpointName) : false;
+    if (!isPassExplicitlyAllowed && tokenToVerify.startsWith('GT_PASS:')) {
       const parts = tokenToVerify.split(':');
       const tokenCircuitId = parts.length >= 3 ? Number(parts[2]) : 0;
+      // tokenCircuitId === 0 denotes multi-destination corridor pass
       if (tokenCircuitId > 0 && tokenCircuitId !== placeId) {
         const allowedCp = CHECKPOINTS.find(c => c.id === tokenCircuitId);
         const targetName = allowedCp ? allowedCp.name : `Checkpoint #${tokenCircuitId}`;
@@ -861,8 +863,9 @@ export default function AgentPortalView({
               <span className="text-[10px] text-slate-400 font-mono">Quick scan:</span>
               <button
                 onClick={() => {
-                  setTokenInput(activeBookedPass.reference);
-                  handleScanPass(activeBookedPass.reference);
+                  const targetToken = activeBookedPass.token || activeBookedPass.reference;
+                  setTokenInput(targetToken);
+                  handleScanPass(targetToken);
                 }}
                 className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 text-amber-300 text-[11px] font-medium transition-colors cursor-pointer flex items-center gap-1.5"
               >

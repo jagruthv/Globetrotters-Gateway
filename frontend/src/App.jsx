@@ -285,7 +285,7 @@ export default function App() {
     if (!user) {
       setPendingBooking({
         ...bookingData,
-        date: bookingData?.date || 'Tomorrow'
+        date: bookingData?.date || 'Today'
       });
       setAuthModalReason('Please sign in or continue as Guest to issue your entry pass.');
       setAuthModalOpen(true);
@@ -294,7 +294,7 @@ export default function App() {
 
     setActiveBookingForPayment({
       ...bookingData,
-      date: bookingData?.date || 'Tomorrow',
+      date: bookingData?.date || 'Today',
       touristName: user.fullName || user.email || 'Guest Traveler',
       touristEmail: user.email || '',
       touristPhone: user.phoneNumber || ''
@@ -375,7 +375,7 @@ export default function App() {
       circuitName: `${passInfo.destination} Official Gate Pass`,
       destinations: [passInfo.destination],
       totalAmount: finalAmount,
-      date: passInfo.date || 'Tomorrow',
+      date: passInfo.date || 'Today',
       touristCount: passInfo.travelers || 1,
       durationDays: passInfo.durationDays || 1
     });
@@ -404,7 +404,7 @@ export default function App() {
       destinations: circuit.places?.map(p => p.name) || [circuit.standout],
       totalAmount: circuit.passPrice || 480,
       durationDays: parsedDays,
-      date: chosenDate || 'Tomorrow'
+      date: chosenDate || 'Today'
     });
   };
 
@@ -416,7 +416,7 @@ export default function App() {
       destinations: allStops.length > 0 ? allStops : selectedPlaces.map(p => p.name),
       totalAmount: customPlan.packagePrice || 0,
       durationDays: tripDays,
-      date: chosenDate || customPlan.startDate || 'Tomorrow'
+      date: chosenDate || customPlan.startDate || 'Today'
     });
   };
 

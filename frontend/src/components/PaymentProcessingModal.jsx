@@ -117,19 +117,17 @@ export default function PaymentProcessingModal({
     // Determine accurate checkpoint ID for the pass
     let targetPlaceId = Number(bookingDetails?.circuitId || bookingDetails?.placeId || 0);
     if (!targetPlaceId) {
-      const destText = [
-        circuitName,
-        ...(Array.isArray(destinations) ? destinations : [])
-      ].join(' ').toLowerCase();
-      const matchedCp = CHECKPOINTS.find(cp => 
-        destText.includes(cp.keyword) || destText.includes(cp.name.toLowerCase())
-      );
-      if (matchedCp) {
-        targetPlaceId = matchedCp.id;
-      } else if (destinations.length > 1) {
-        targetPlaceId = 0; // multi-destination circuit
+      if (Array.isArray(destinations) && destinations.length > 1) {
+        targetPlaceId = 0; // multi-destination circuit: 0 denotes universal circuit pass valid at all included stops
       } else {
-        targetPlaceId = 1;
+        const destText = [
+          circuitName,
+          ...(Array.isArray(destinations) ? destinations : [])
+        ].join(' ').toLowerCase();
+        const matchedCp = CHECKPOINTS.find(cp => 
+          destText.includes(cp.keyword) || destText.includes(cp.name.toLowerCase())
+        );
+        targetPlaceId = matchedCp ? matchedCp.id : 1;
       }
     }
 

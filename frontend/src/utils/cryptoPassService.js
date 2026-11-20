@@ -220,12 +220,14 @@ export async function verifyPassCryptographicSignature(token) {
   const todayIso = new Date().toISOString().split('T')[0];
 
   if (validFrom && String(validFrom).match(/^\d{4}-\d{2}-\d{2}$/)) {
-    if (todayIso < validFrom) {
+    const fromMs = new Date(validFrom + 'T00:00:00').getTime();
+    const todayMs = new Date(todayIso + 'T00:00:00').getTime();
+    if (todayMs < fromMs - (2 * 86400000)) {
       return {
         valid: false,
         isCryptographic: true,
         status: 'FUTURE_DATE_PASS',
-        message: `Entry Denied: Pass is scheduled for future date (${formatPassDate(validFrom)}). Early admission before scheduled visit date is strictly prohibited.`,
+        message: `Entry Denied: Pass is scheduled for future date (${formatPassDate(validFrom)}). Early admission is only permitted on or near scheduled visit date.`,
         bookingRef,
         validFrom,
         validUntil,

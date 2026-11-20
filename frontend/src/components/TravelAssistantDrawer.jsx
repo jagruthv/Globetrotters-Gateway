@@ -228,7 +228,7 @@ export default function TravelAssistantDrawer({
           circuitName: `${matchedPlace.name} Entry Pass`,
           destinations: [matchedPlace.name],
           totalAmount: totalAmount,
-          date: 'Tomorrow'
+          date: 'Today'
         });
       }
 
@@ -620,7 +620,7 @@ export default function TravelAssistantDrawer({
                                 circuitName: `${msg.actionResult.place.name} Entry Pass`,
                                 destinations: [msg.actionResult.place.name],
                                 totalAmount: msg.actionResult.totalAmount,
-                                date: 'Tomorrow'
+                                date: 'Today'
                               });
                             }
                             onClose();
@@ -721,7 +721,7 @@ export default function TravelAssistantDrawer({
                                 circuitName: msg.actionResult.plan.title,
                                 destinations: msg.actionResult.plan.days.flatMap((d) => d.stops.map((s) => s.name)),
                                 totalAmount: msg.actionResult.plan.packagePrice,
-                                date: 'Tomorrow'
+                                date: 'Today'
                               });
                             }
                           }}
@@ -772,7 +772,7 @@ export default function TravelAssistantDrawer({
                                       totalAmount: (place.individualPrice !== undefined && place.individualPrice !== null)
                                         ? Number(place.individualPrice)
                                         : (place.isTicketed === false ? 0 : 25),
-                                      date: 'Tomorrow'
+                                      date: 'Today'
                                     });
                                   }
                                 }}

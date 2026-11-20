@@ -32,6 +32,17 @@ export function isPassValidForLocation(pass, locationId = 1, keyword = 'borra', 
     return false;
   };
 
+  // 0. Multi-destination corridor pass or multi-stop itinerary
+  if (pass.circuitId === 0 || pass.targetPlaceId === 0 || (Array.isArray(pass.placesAllowed) && pass.placesAllowed.length > 1) || (Array.isArray(pass.destinations) && pass.destinations.length > 1)) {
+    const dests = pass.placesAllowed || pass.destinations;
+    if (Array.isArray(dests) && dests.length > 0) {
+      if (dests.some(d => matchesText(typeof d === 'string' ? d : d?.name || d?.spotName))) {
+        return true;
+      }
+    }
+    if (matchesText(pass.circuitName)) return true;
+  }
+
   // Check array of destinations
   if (Array.isArray(pass.destinations) && pass.destinations.some(d => matchesText(typeof d === 'string' ? d : d?.name || d?.spotName))) {
     return true;
@@ -49,7 +60,7 @@ export function isPassValidForLocation(pass, locationId = 1, keyword = 'borra', 
     return true;
   }
   // Universal corridor all-access pass
-  if (typeof pass.circuitName === 'string' && (pass.circuitName.includes('All-Access') || pass.circuitName.includes('All Access') || pass.circuitName.includes('Corridor Pass'))) {
+  if (typeof pass.circuitName === 'string' && (pass.circuitName.includes('All-Access') || pass.circuitName.includes('All Access') || pass.circuitName.includes('Corridor Pass') || pass.circuitName.includes('Circuit') || pass.circuitName.includes('Tour') || pass.circuitName.includes('Consolidated'))) {
     return true;
   }
 
@@ -68,13 +79,17 @@ export function isPassValidForLocation(pass, locationId = 1, keyword = 'borra', 
 
 /**
  * Validates whether a pass is active today or scheduled for a future/past date.
+ * Allows a 2-day early window so passes booked for tomorrow or this weekend are accepted.
  */
 export function checkPassDateValidity(pass) {
   if (!pass) return { valid: true };
   const todayIso = new Date().toISOString().split('T')[0];
 
   if (pass.validFrom && String(pass.validFrom).match(/^\d{4}-\d{2}-\d{2}$/)) {
-    if (todayIso < pass.validFrom) {
+    const fromMs = new Date(pass.validFrom + 'T00:00:00').getTime();
+    const todayMs = new Date(todayIso + 'T00:00:00').getTime();
+    // Only reject if pass is more than 2 days in the future
+    if (todayMs < fromMs - (2 * 86400000)) {
       return {
         valid: false,
         status: 'FUTURE_DATE_PASS',
