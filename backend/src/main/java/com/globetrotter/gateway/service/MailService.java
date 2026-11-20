@@ -26,6 +26,7 @@ public class MailService {
 
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
     private final QrCodeService qrCodeService;
+    private final ObjectProvider<com.globetrotter.gateway.emailotp.service.OtpEmailSender> otpEmailSenderProvider;
 
     @Value("${app.mail.from:noreply@globetrotter.com}")
     private String fromAddress;
@@ -77,6 +78,19 @@ public class MailService {
      */
     @Async
     public void sendOtpEmail(String toEmail, String code) {
+        // 1. Try Amazon SES v2 first (Active cloud transactional email service)
+        com.globetrotter.gateway.emailotp.service.OtpEmailSender sesSender = otpEmailSenderProvider.getIfAvailable();
+        if (sesSender != null) {
+            try {
+                sesSender.sendOtp(toEmail, code, 10);
+                log.info("Verification code email successfully dispatched via Amazon SES to: {}", toEmail);
+                return;
+            } catch (Exception e) {
+                log.warn("Amazon SES dispatch failed, attempting SMTP fallback: {}", e.getMessage());
+            }
+        }
+
+        // 2. Fallback to JavaMailSender (SMTP)
         JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
         if (mailSender == null) {
             log.info("[EMAIL SIMULATION] SMTP not configured. OTP for {}: {}", toEmail, code);
